@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Data Table</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #020617;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.14);
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --text-muted: #9ca3af;
+      --header-bg: #020617;
+      --cell-bg: #020617;
+      --cell-hover: #111827;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top, #1f2937, #020617 55%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      background: linear-gradient(
+        145deg,
+        rgba(15, 23, 42, 0.96),
+        rgba(15, 23, 42, 0.98)
+      );
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+      padding: 20px 20px 24px;
+      backdrop-filter: blur(18px);
+    }
+
+    @media (min-width: 768px) {
+      .app {
+        padding: 24px 28px 28px;
+      }
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+      padding-bottom: 12px;
+    }
+
+    .app-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: var(--text-muted);
+    }
+
+    .app-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      border-radius: 999px;
+      padding: 7px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: radial-gradient(
+        circle at top left,
+        rgba(34, 197, 94, 0.12),
+        rgba(15, 23, 42, 0.95)
+      );
+      color: var(--text);
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      outline: none;
+      transition: background 0.15s ease, border-color 0.15s ease,
+        transform 0.06s ease, box-shadow 0.15s ease;
+      box-shadow: 0 0 0 rgba(34, 197, 94, 0.0);
+    }
+
+    button span.icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    button:hover {
+      background: radial-gradient(
+        circle at top left,
+        rgba(34, 197, 94, 0.21),
+        rgba(15, 23, 42, 0.98)
+      );
+      border-color: var(--accent);
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.25);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 0 0 rgba(34, 197, 94, 0.0);
+    }
+
+    .table-wrapper {
+      border-radius: 14px;
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      background: rgba(15, 23, 42, 0.95);
+      overflow: auto;
+      max-height: 70vh;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 450px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: linear-gradient(
+        to bottom,
+        rgba(15, 23, 42, 1),
+        rgba(15, 23, 42, 0.96)
+      );
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid rgba(30, 41, 59, 0.85);
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      position: relative;
+      user-select: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    th .header-inner {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    th .header-label {
+      pointer-events: none;
+    }
+
+    th .sort-indicator {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      opacity: 0.4;
+      min-width: 10px;
+      text-align: center;
+    }
+
+    th.sorted-asc,
+    th.sorted-desc {
+      color: var(--accent);
+    }
+
+    th.sorted-asc .sort-indicator,
+    th.sorted-desc .sort-indicator {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.96);
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(15, 23, 42, 0.99);
+    }
+
+    tbody tr:hover {
+      background: var(--cell-hover);
+    }
+
+    td {
+      color: var(--text);
+    }
+
+    .cell {
+      min-width: 80px;
+      outline: none;
+      border-radius: 6px;
+      padding: 4px 6px;
+      margin: -4px -6px;
+      display: inline-block;
+      min-height: 18px;
+      cursor: text;
+    }
+
+    .cell:focus {
+      background: rgba(15, 23, 42, 0.9);
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.8);
+    }
+
+    .name-cell {
+      color: #38bdf8;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+
+    .name-cell:focus {
+      text-decoration: none;
+    }
+
+    .hint-bar {
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .hint-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px dashed rgba(148, 163, 184, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-header">
+      <div>
+        <div class="app-title">
+          Simple Data Table
+          <span class="badge">Netlify-ready</span>
+        </div>
+        <div class="app-subtitle">
+          Click cells to edit • Click headers to sort • Double-click headers to rename.
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="addRowBtn">
+        <span class="icon">➕</span>
+        Add Row
+      </button>
+      <button id="addColBtn">
+        <span class="icon">📊</span>
+        Add Column
+      </button>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th data-col-index="0">
+              <span class="header-inner">
+                <span class="header-label">Name</span>
+                <span class="sort-indicator">⇅</span>
+              </span>
+            </th>
+            <th data-col-index="1">
+              <span class="header-inner">
+                <span class="header-label">Rating</span>
+                <span class="sort-indicator">⇅</span>
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- rows will be created by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hint-bar">
+      <span class="hint-pill">
+        🔍 Anything typed in the <strong>Name</strong> column becomes a Google Images link.
+      </span>
+      <span>
+        Click the name text to open image results in a new tab.
+      </span>
+    </div>
+  </div>
+
+  <script>
+    const table = document.getElementById("dataTable");
+    const thead = table.querySelector("thead");
+    const tbody = table.querySelector("tbody");
+
+    const addRowBtn = document.getElementById("addRowBtn");
+    const addColBtn = document.getElementById("addColBtn");
+
+    // Track sort direction per column: "asc" or "desc"
+    const sortState = {};
+
+    function createCell(colIndex) {
+      const td = document.createElement("td");
+
+      if (colIndex === 0) {
+        // Name column: contenteditable link that opens Google Images
+        const link = document.createElement("a");
+        link.href = "#";
+        link.target = "_blank";
+        link.className = "cell name-cell";
+        link.setAttribute("contenteditable", "true");
+
+        // Update href whenever text changes
+        link.addEventListener("input", handleNameInput);
+
+        // If there's no text, don't navigate anywhere
+        link.addEventListener("click", (e) => {
+          const text = link.textContent.trim();
+          if (!text) {
+            e.preventDefault();
+          }
+        });
+
+        td.appendChild(link);
+      } else {
+        // Regular editable text cell
+        const div = document.createElement("div");
+        div.className = "cell";
+        div.setAttribute("contenteditable", "true");
+        td.appendChild(div);
+      }
+
+      return td;
+    }
+
+    function handleNameInput(event) {
+      const link = event.target;
+      const text = link.textContent.trim();
+
+      if (text) {
+        const url =
+          "https://www.google.com/search?tbm=isch&q=" +
+          encodeURIComponent(text);
+        link.href = url;
+      } else {
+        link.href = "#";
+      }
+    }
+
+    function addRow() {
+      const colCount = thead.querySelectorAll("th").length;
+      const tr = document.createElement("tr");
+
+      for (let i = 0; i < colCount; i++) {
+        tr.appendChild(createCell(i));
+      }
+
+      tbody.appendChild(tr);
+    }
+
+    function addColumn() {
+      const currentCols = thead.querySelectorAll("th").length;
+      const newIndex = currentCols;
+      const defaultName = "Column " + (newIndex + 1);
+      const headerName =
+        prompt("New column name:", defaultName) || defaultName;
+
+      // Create header cell
+      const th = document.createElement("th");
+      th.dataset.colIndex = newIndex;
+
+      const headerInner = document.createElement("span");
+      headerInner.className = "header-inner";
+
+      const label = document.createElement("span");
+      label.className = "header-label";
+      label.textContent = headerName;
+
+      const sortIndicator = document.createElement("span");
+      sortIndicator.className = "sort-indicator";
+      sortIndicator.textContent = "⇅";
+
+      headerInner.appendChild(label);
+      headerInner.appendChild(sortIndicator);
+      th.appendChild(headerInner);
+
+      attachHeaderEvents(th);
+
+      thead.querySelector("tr").appendChild(th);
+
+      // Add cells for each existing row
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        row.appendChild(createCell(newIndex));
+      });
+    }
+
+    function attachHeaderEvents(th) {
+      th.addEventListener("click", (e) => {
+        // Ignore clicks if user is selecting text (simple heuristic)
+        if (window.getSelection().toString().length > 0) return;
+
+        const colIndex = parseInt(th.dataset.colIndex, 10);
+        sortTable(colIndex);
+      });
+
+      th.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        const label = th.querySelector(".header-label");
+        const currentName = (label?.textContent || "").trim();
+        const newName = prompt("Rename column:", currentName) || currentName;
+        if (label && newName.trim()) {
+          label.textContent = newName.trim();
+        }
+      });
+    }
+
+    function sortTable(colIndex) {
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      if (rows.length === 0) return;
+
+      const currentDirection = sortState[colIndex] || "desc";
+      const newDirection = currentDirection === "asc" ? "desc" : "asc";
+      sortState[colIndex] = newDirection;
+
+      rows.sort((rowA, rowB) => {
+        const cellA = rowA.children[colIndex];
+        const cellB = rowB.children[colIndex];
+
+        if (!cellA || !cellB) return 0;
+
+        const textA = cellA.textContent.trim();
+        const textB = cellB.textContent.trim();
+
+        const numA = parseFloat(textA);
+        const numB = parseFloat(textB);
+
+        let cmp;
+        if (!isNaN(numA) && !isNaN(numB) && textA !== "" && textB !== "") {
+          // Numeric comparison if both cells look like numbers
+          cmp = numA - numB;
+        } else {
+          // String comparison (case-insensitive, numeric-aware)
+          cmp = textA.localeCompare(textB, undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
+        }
+
+        return newDirection === "asc" ? cmp : -cmp;
+      });
+
+      // Clear tbody and re-append in new order
+      tbody.innerHTML = "";
+      rows.forEach((row) => tbody.appendChild(row));
+
+      // Update header sort indicators
+      updateSortIndicators(colIndex, newDirection);
+    }
+
+    function updateSortIndicators(activeIndex, direction) {
+      const headers = thead.querySelectorAll("th");
+      headers.forEach((th) => {
+        const idx = parseInt(th.dataset.colIndex, 10);
+        const indicator = th.querySelector(".sort-indicator");
+        th.classList.remove("sorted-asc", "sorted-desc");
+
+        if (!indicator) return;
+
+        if (idx === activeIndex) {
+          if (direction === "asc") {
+            indicator.textContent = "▲";
+            th.classList.add("sorted-asc");
+          } else {
+            indicator.textContent = "▼";
+            th.classList.add("sorted-desc");
+          }
+        } else {
+          indicator.textContent = "⇅";
+        }
+      });
+    }
+
+    // Initial header event wiring
+    thead.querySelectorAll("th").forEach((th, index) => {
+      th.dataset.colIndex = index;
+      attachHeaderEvents(th);
+    });
+
+    // Initial 10 rows
+    for (let i = 0; i < 10; i++) {
+      addRow();
+    }
+
+    // Button wiring
+    addRowBtn.addEventListener("click", addRow);
+    addColBtn.addEventListener("click", addColumn);
+  </script>
+</body>
+</html>
