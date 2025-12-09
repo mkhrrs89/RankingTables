@@ -330,6 +330,15 @@
         <span class="icon">📊</span>
         Add Column
       </button>
+      <button id="exportBtn">
+        <span class="icon">⬇️</span>
+        Export Data
+      </button>
+      <button id="importBtn">
+        <span class="icon">⬆️</span>
+        Import Data
+      </button>
+      <input type="file" id="importFileInput" accept="application/json" hidden />
     </div>
 
     <div class="table-wrapper">
@@ -381,6 +390,9 @@
 
     const addRowBtn = document.getElementById("addRowBtn");
     const addColBtn = document.getElementById("addColBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const importBtn = document.getElementById("importBtn");
+    const importFileInput = document.getElementById("importFileInput");
 
     // Track sort direction per column: "asc" or "desc"
     const sortState = {};
@@ -611,20 +623,7 @@
     }
 
     function saveTableState() {
-      const headers = Array.from(thead.querySelectorAll("th")).map((th) => {
-        const label = th.querySelector(".header-label");
-        return label ? label.textContent.trim() : "";
-      });
-
-      const rows = Array.from(tbody.querySelectorAll("tr")).map((tr) => {
-        return Array.from(tr.children).map((td, idx) => {
-          if (idx === 0) return ""; // icon column
-          const cell = td.querySelector(".cell, .name-cell");
-          return cell ? cell.textContent : "";
-        });
-      });
-
-      const state = { headers, rows };
+      const state = collectTableState();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
@@ -654,47 +653,74 @@
       return th;
     }
 
+    function collectTableState() {
+      const headers = Array.from(thead.querySelectorAll("th")).map((th) => {
+        const label = th.querySelector(".header-label");
+        return label ? label.textContent.trim() : "";
+      });
+
+      const rows = Array.from(tbody.querySelectorAll("tr")).map((tr) => {
+        return Array.from(tr.children).map((td, idx) => {
+          if (idx === 0) return ""; // icon column
+          const cell = td.querySelector(".cell, .name-cell");
+          return cell ? cell.textContent : "";
+        });
+      });
+
+      return { headers, rows };
+    }
+
+    function resetSortState() {
+      Object.keys(sortState).forEach((key) => delete sortState[key]);
+      updateSortIndicators(-1, null);
+    }
+
+    function applyState(state) {
+      if (!state || !Array.isArray(state.headers) || !Array.isArray(state.rows)) {
+        return false;
+      }
+
+      const headerRow = thead.querySelector("tr");
+      headerRow.innerHTML = "";
+      state.headers.forEach((label, idx) => {
+        const th = buildHeader(label || "Column " + (idx + 1), idx);
+        headerRow.appendChild(th);
+      });
+
+      tbody.innerHTML = "";
+      state.rows.forEach((rowData) => {
+        const tr = document.createElement("tr");
+        state.headers.forEach((_, idx) => {
+          const td = createCell(idx);
+          const val = rowData[idx] || "";
+          if (idx > 0) {
+            const cellEl = td.querySelector(".name-cell, .cell");
+            if (cellEl) {
+              cellEl.textContent = val;
+              if (idx === 1) {
+                handleNameInput({ target: cellEl });
+              }
+            }
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      initHeaders();
+      resetSortState();
+      return true;
+    }
+
     function loadTableState() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return false;
 
       try {
         const state = JSON.parse(saved);
-        if (!state || !Array.isArray(state.headers) || !Array.isArray(state.rows)) {
+        if (!applyState(state)) {
           return false;
         }
-
-        // Rebuild headers
-        const headerRow = thead.querySelector("tr");
-        headerRow.innerHTML = "";
-        state.headers.forEach((label, idx) => {
-          const th = buildHeader(label || "Column " + (idx + 1), idx);
-          headerRow.appendChild(th);
-        });
-
-        // Rebuild rows
-        tbody.innerHTML = "";
-        state.rows.forEach((rowData) => {
-          const tr = document.createElement("tr");
-          state.headers.forEach((_, idx) => {
-            const td = createCell(idx);
-            const val = rowData[idx] || "";
-            if (idx > 0) {
-              const cellEl = td.querySelector(".name-cell, .cell");
-              if (cellEl) {
-                cellEl.textContent = val;
-                if (idx === 1) {
-                  handleNameInput({ target: cellEl });
-                }
-              }
-            }
-            tr.appendChild(td);
-          });
-          tbody.appendChild(tr);
-        });
-
-        // Reapply index references
-        initHeaders();
         return true;
       } catch (err) {
         console.warn("Failed to load saved table state", err);
@@ -713,11 +739,53 @@
       }
     }
 
+    function exportData() {
+      const state = collectTableState();
+      const json = JSON.stringify(state, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const today = new Date().toISOString().split("T")[0];
+      link.href = url;
+      link.download = `table-data-${today}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function handleImportFile(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target?.result);
+          const applied = applyState(parsed);
+          if (!applied) {
+            alert("Import failed: file is missing headers or rows.");
+            return;
+          }
+          saveTableState();
+        } catch (err) {
+          console.error("Import failed", err);
+          alert("Import failed: invalid JSON file.");
+        } finally {
+          importFileInput.value = "";
+        }
+      };
+      reader.readAsText(file);
+    }
+
     bootstrap();
 
     // Button wiring
     addRowBtn.addEventListener("click", addRow);
     addColBtn.addEventListener("click", addColumn);
+    exportBtn.addEventListener("click", exportData);
+    importBtn.addEventListener("click", () => importFileInput.click());
+    importFileInput.addEventListener("change", handleImportFile);
   </script>
 </body>
 </html>
