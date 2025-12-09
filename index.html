@@ -245,13 +245,49 @@
 
     .name-cell {
       color: #38bdf8;
-      text-decoration: underline;
-      text-decoration-thickness: 1px;
-      text-underline-offset: 2px;
+      font-weight: 600;
     }
 
-    .name-cell:focus {
+    .icon-cell {
+      width: 44px;
+      text-align: center;
+      padding-right: 6px;
+    }
+
+    .image-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #e5e7eb;
       text-decoration: none;
+      transition: background 0.15s ease, transform 0.08s ease,
+        border-color 0.15s ease, box-shadow 0.15s ease;
+      font-size: 0.95rem;
+    }
+
+    .image-link:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .image-link:active {
+      transform: translateY(0);
+    }
+
+    .image-link.disabled,
+    .image-link.disabled:hover {
+      border-color: rgba(148, 163, 184, 0.3);
+      background: rgba(148, 163, 184, 0.12);
+      box-shadow: none;
+      transform: none;
+      cursor: not-allowed;
     }
 
     .hint-bar {
@@ -300,13 +336,19 @@
       <table id="dataTable">
         <thead>
           <tr>
-            <th data-col-index="0">
+            <th data-col-index="0" class="icon-cell">
+              <span class="header-inner">
+                <span class="header-label">Images</span>
+                <span class="sort-indicator">⇅</span>
+              </span>
+            </th>
+            <th data-col-index="1">
               <span class="header-inner">
                 <span class="header-label">Name</span>
                 <span class="sort-indicator">⇅</span>
               </span>
             </th>
-            <th data-col-index="1">
+            <th data-col-index="2">
               <span class="header-inner">
                 <span class="header-label">Rating</span>
                 <span class="sort-indicator">⇅</span>
@@ -325,7 +367,7 @@
         🔍 Anything typed in the <strong>Name</strong> column becomes a Google Images link.
       </span>
       <span>
-        Click the name text to open image results in a new tab.
+        Use the new image icon in each row to open Google Images for that name.
       </span>
     </div>
   </div>
@@ -335,40 +377,57 @@
     const thead = table.querySelector("thead");
     const tbody = table.querySelector("tbody");
 
+    const STORAGE_KEY = "simple-data-table-state";
+
     const addRowBtn = document.getElementById("addRowBtn");
     const addColBtn = document.getElementById("addColBtn");
 
     // Track sort direction per column: "asc" or "desc"
     const sortState = {};
 
+    function buildImageSearchUrl(query) {
+      return "https://www.google.com/search?tbm=isch&q=" +
+        encodeURIComponent(query);
+    }
+
     function createCell(colIndex) {
       const td = document.createElement("td");
 
       if (colIndex === 0) {
-        // Name column: contenteditable link that opens Google Images
+        td.className = "icon-cell";
+
         const link = document.createElement("a");
         link.href = "#";
         link.target = "_blank";
-        link.className = "cell name-cell";
-        link.setAttribute("contenteditable", "true");
+        link.className = "image-link disabled";
+        link.title = "Open Google Images for this name";
 
-        // Update href whenever text changes
-        link.addEventListener("input", handleNameInput);
-
-        // If there's no text, don't navigate anywhere
         link.addEventListener("click", (e) => {
-          const text = link.textContent.trim();
-          if (!text) {
+          if (link.classList.contains("disabled")) {
             e.preventDefault();
           }
         });
 
+        link.textContent = "🖼️";
         td.appendChild(link);
+      } else if (colIndex === 1) {
+        // Name column: editable text
+        const div = document.createElement("div");
+        div.className = "cell name-cell";
+        div.setAttribute("contenteditable", "true");
+        div.dataset.role = "name";
+
+        // Update icon link whenever text changes
+        div.addEventListener("input", handleNameInput);
+        div.addEventListener("input", handleCellChange);
+
+        td.appendChild(div);
       } else {
         // Regular editable text cell
         const div = document.createElement("div");
         div.className = "cell";
         div.setAttribute("contenteditable", "true");
+        div.addEventListener("input", handleCellChange);
         td.appendChild(div);
       }
 
@@ -376,17 +435,32 @@
     }
 
     function handleNameInput(event) {
-      const link = event.target;
-      const text = link.textContent.trim();
+      const nameCell = event.target;
+      const text = nameCell.textContent.trim();
+      const row = nameCell.closest("tr");
+      const imageLink = row?.querySelector(".image-link");
+
+      if (!imageLink) return;
 
       if (text) {
-        const url =
-          "https://www.google.com/search?tbm=isch&q=" +
-          encodeURIComponent(text);
-        link.href = url;
+        imageLink.href = buildImageSearchUrl(text);
+        imageLink.classList.remove("disabled");
+        imageLink.setAttribute(
+          "aria-label",
+          `Open Google Images for ${text}`
+        );
       } else {
-        link.href = "#";
+        imageLink.href = "#";
+        imageLink.classList.add("disabled");
+        imageLink.setAttribute(
+          "aria-label",
+          "Google Images (enter a name first)"
+        );
       }
+    }
+
+    function handleCellChange() {
+      saveTableState();
     }
 
     function addRow() {
@@ -398,6 +472,7 @@
       }
 
       tbody.appendChild(tr);
+      saveTableState();
     }
 
     function addColumn() {
@@ -434,6 +509,8 @@
       Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
         row.appendChild(createCell(newIndex));
       });
+
+      saveTableState();
     }
 
     function attachHeaderEvents(th) {
@@ -452,6 +529,7 @@
         const newName = prompt("Rename column:", currentName) || currentName;
         if (label && newName.trim()) {
           label.textContent = newName.trim();
+          saveTableState();
         }
       });
     }
@@ -497,6 +575,8 @@
 
       // Update header sort indicators
       updateSortIndicators(colIndex, newDirection);
+
+      saveTableState();
     }
 
     function updateSortIndicators(activeIndex, direction) {
@@ -523,15 +603,117 @@
     }
 
     // Initial header event wiring
-    thead.querySelectorAll("th").forEach((th, index) => {
-      th.dataset.colIndex = index;
-      attachHeaderEvents(th);
-    });
-
-    // Initial 10 rows
-    for (let i = 0; i < 10; i++) {
-      addRow();
+    function initHeaders() {
+      thead.querySelectorAll("th").forEach((th, index) => {
+        th.dataset.colIndex = index;
+        attachHeaderEvents(th);
+      });
     }
+
+    function saveTableState() {
+      const headers = Array.from(thead.querySelectorAll("th")).map((th) => {
+        const label = th.querySelector(".header-label");
+        return label ? label.textContent.trim() : "";
+      });
+
+      const rows = Array.from(tbody.querySelectorAll("tr")).map((tr) => {
+        return Array.from(tr.children).map((td, idx) => {
+          if (idx === 0) return ""; // icon column
+          const cell = td.querySelector(".cell, .name-cell");
+          return cell ? cell.textContent : "";
+        });
+      });
+
+      const state = { headers, rows };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function buildHeader(label, index) {
+      const th = document.createElement("th");
+      th.dataset.colIndex = index;
+      if (index === 0) {
+        th.classList.add("icon-cell");
+      }
+
+      const headerInner = document.createElement("span");
+      headerInner.className = "header-inner";
+
+      const lbl = document.createElement("span");
+      lbl.className = "header-label";
+      lbl.textContent = label;
+
+      const sortIndicator = document.createElement("span");
+      sortIndicator.className = "sort-indicator";
+      sortIndicator.textContent = "⇅";
+
+      headerInner.appendChild(lbl);
+      headerInner.appendChild(sortIndicator);
+      th.appendChild(headerInner);
+
+      attachHeaderEvents(th);
+      return th;
+    }
+
+    function loadTableState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return false;
+
+      try {
+        const state = JSON.parse(saved);
+        if (!state || !Array.isArray(state.headers) || !Array.isArray(state.rows)) {
+          return false;
+        }
+
+        // Rebuild headers
+        const headerRow = thead.querySelector("tr");
+        headerRow.innerHTML = "";
+        state.headers.forEach((label, idx) => {
+          const th = buildHeader(label || "Column " + (idx + 1), idx);
+          headerRow.appendChild(th);
+        });
+
+        // Rebuild rows
+        tbody.innerHTML = "";
+        state.rows.forEach((rowData) => {
+          const tr = document.createElement("tr");
+          state.headers.forEach((_, idx) => {
+            const td = createCell(idx);
+            const val = rowData[idx] || "";
+            if (idx > 0) {
+              const cellEl = td.querySelector(".name-cell, .cell");
+              if (cellEl) {
+                cellEl.textContent = val;
+                if (idx === 1) {
+                  handleNameInput({ target: cellEl });
+                }
+              }
+            }
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+
+        // Reapply index references
+        initHeaders();
+        return true;
+      } catch (err) {
+        console.warn("Failed to load saved table state", err);
+        return false;
+      }
+    }
+
+    function bootstrap() {
+      const restored = loadTableState();
+      if (!restored) {
+        initHeaders();
+        for (let i = 0; i < 10; i++) {
+          addRow();
+        }
+        saveTableState();
+      }
+    }
+
+    bootstrap();
 
     // Button wiring
     addRowBtn.addEventListener("click", addRow);
