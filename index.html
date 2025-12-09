@@ -697,13 +697,18 @@
             const cellEl = td.querySelector(".name-cell, .cell");
             if (cellEl) {
               cellEl.textContent = val;
-              if (idx === 1) {
-                handleNameInput({ target: cellEl });
-              }
             }
           }
           tr.appendChild(td);
         });
+
+        // After the row is assembled and attached, wire the image icon to the
+        // saved name so image links work immediately on page load.
+        const nameCell = tr.querySelector(".name-cell");
+        if (nameCell) {
+          handleNameInput({ target: nameCell });
+        }
+
         tbody.appendChild(tr);
       });
 
