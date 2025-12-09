@@ -744,6 +744,14 @@
       }
     }
 
+    // Capture any last-minute edits when the tab is about to close or hide.
+    window.addEventListener("beforeunload", saveTableState);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        saveTableState();
+      }
+    });
+
     function exportData() {
       const state = collectTableState();
       const json = JSON.stringify(state, null, 2);
