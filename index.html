@@ -352,6 +352,23 @@
       border-radius: 999px;
       border: 1px dashed rgba(148, 163, 184, 0.4);
     }
+
+    .column-letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      margin-right: 6px;
+      border-radius: 6px;
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      min-width: 28px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -474,6 +491,17 @@
         index = index * 26 + (upper.charCodeAt(i) - 64);
       }
       return index - 1;
+    }
+
+    function indexToColumnLabel(index) {
+      let n = index + 1;
+      let label = "";
+      while (n > 0) {
+        const remainder = (n - 1) % 26;
+        label = String.fromCharCode(65 + remainder) + label;
+        n = Math.floor((n - 1) / 26);
+      }
+      return label;
     }
 
     function buildImageSearchUrl(query) {
@@ -927,6 +955,7 @@
     function refreshColumnIndices() {
       thead.querySelectorAll("th").forEach((th, idx) => {
         th.dataset.colIndex = idx;
+        ensureColumnLetter(th, idx);
       });
     }
 
@@ -941,6 +970,8 @@
               ? COLUMN_TYPES.NAME
               : COLUMN_TYPES.TEXT;
         }
+
+        ensureColumnLetter(th, index);
 
         const headerInner = th.querySelector(".header-inner");
         if (headerInner && !headerInner.querySelector(".drag-handle")) {
@@ -991,6 +1022,11 @@
       dragHandle.textContent = "↕";
       dragHandle.setAttribute("aria-hidden", "true");
       headerInner.appendChild(dragHandle);
+
+      const letterBadge = document.createElement("span");
+      letterBadge.className = "column-letter";
+      letterBadge.textContent = indexToColumnLabel(index);
+      headerInner.appendChild(letterBadge);
 
       const lbl = document.createElement("span");
       lbl.className = "header-label";
@@ -1045,6 +1081,21 @@
           width: Number.isFinite(width) ? width : undefined,
         };
       });
+    }
+
+    function ensureColumnLetter(th, index) {
+      const headerInner = th.querySelector(".header-inner");
+      if (!headerInner) return;
+      let letterBadge = headerInner.querySelector(".column-letter");
+      if (!letterBadge) {
+        letterBadge = document.createElement("span");
+        letterBadge.className = "column-letter";
+        headerInner.insertBefore(
+          letterBadge,
+          headerInner.querySelector(".header-label") || headerInner.lastChild
+        );
+      }
+      letterBadge.textContent = indexToColumnLabel(index);
     }
 
     function getNumericCellValue(row, colIndex) {
@@ -1126,8 +1177,8 @@
       try {
         const result = Function("\"use strict\"; return " + expression)();
         if (Number.isFinite(result)) {
-          const rounded = Math.round(result * 10000) / 10000;
-          return String(rounded);
+          const rounded = Math.round(result * 100) / 100;
+          return rounded.toFixed(2);
         }
         return "";
       } catch (err) {
