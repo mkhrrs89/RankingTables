@@ -259,6 +259,16 @@
       font-weight: 600;
     }
 
+    .formula-cell {
+      color: var(--accent);
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px dashed rgba(34, 197, 94, 0.4);
+      border-radius: 6px;
+      padding: 4px 6px;
+      margin: -4px -6px;
+      cursor: default;
+    }
+
     .icon-cell {
       width: 44px;
       text-align: center;
@@ -327,8 +337,8 @@
           <span class="badge">Netlify-ready</span>
         </div>
         <div class="app-subtitle">
-          Click cells to edit • Click headers to sort • Double-click headers to rename.
-          Drag headers to rearrange columns.
+          Click cells to edit • Click headers to sort • Double-click headers to rename
+          or set formulas. Drag headers to rearrange columns.
         </div>
       </div>
     </div>
@@ -395,6 +405,10 @@
       <span>
         Use the new image icon in each row to open Google Images for that name.
       </span>
+      <span class="hint-pill">
+        🧮 Double-click a column header to add a formula. Use column letters like
+        <strong>=AVERAGE(D:H)</strong>.
+      </span>
     </div>
   </div>
 
@@ -423,12 +437,22 @@
     let isDraggingColumn = false;
     let dragSourceIndex = null;
 
+    function columnLabelToIndex(label) {
+      if (!/^[A-Za-z]+$/.test(label)) return null;
+      const upper = label.toUpperCase();
+      let index = 0;
+      for (let i = 0; i < upper.length; i++) {
+        index = index * 26 + (upper.charCodeAt(i) - 64);
+      }
+      return index - 1;
+    }
+
     function buildImageSearchUrl(query) {
       return "https://www.google.com/search?tbm=isch&q=" +
         encodeURIComponent(query);
     }
 
-    function createCell(columnType) {
+    function createCell(columnType, { formula } = {}) {
       const td = document.createElement("td");
 
       if (columnType === COLUMN_TYPES.ICON) {
@@ -452,20 +476,30 @@
         // Name column: editable text
         const div = document.createElement("div");
         div.className = "cell name-cell";
-        div.setAttribute("contenteditable", "true");
+        if (!formula) {
+          div.setAttribute("contenteditable", "true");
+        } else {
+          div.classList.add("formula-cell");
+        }
         div.dataset.role = "name";
 
         // Update icon link whenever text changes
-        div.addEventListener("input", handleNameInput);
-        div.addEventListener("input", handleCellChange);
+        if (!formula) {
+          div.addEventListener("input", handleNameInput);
+          div.addEventListener("input", handleCellChange);
+        }
 
         td.appendChild(div);
       } else {
         // Regular editable text cell
         const div = document.createElement("div");
         div.className = "cell";
-        div.setAttribute("contenteditable", "true");
-        div.addEventListener("input", handleCellChange);
+        if (!formula) {
+          div.setAttribute("contenteditable", "true");
+          div.addEventListener("input", handleCellChange);
+        } else {
+          div.classList.add("formula-cell");
+        }
         td.appendChild(div);
       }
 
@@ -498,6 +532,7 @@
     }
 
     function handleCellChange() {
+      recalculateFormulas();
       saveTableState();
     }
 
@@ -506,10 +541,11 @@
       const tr = document.createElement("tr");
 
       columnDefinitions.forEach((col) => {
-        tr.appendChild(createCell(col.type));
+        tr.appendChild(createCell(col.type, { formula: col.formula }));
       });
 
       tbody.appendChild(tr);
+      recalculateFormulas();
       saveTableState();
     }
 
@@ -530,6 +566,7 @@
         row.appendChild(createCell(COLUMN_TYPES.TEXT));
       });
 
+      recalculateFormulas();
       saveTableState();
     }
 
@@ -563,6 +600,29 @@
         if (label && newName.trim()) {
           label.textContent = newName.trim();
           saveTableState();
+        }
+
+        if (th.dataset.type !== COLUMN_TYPES.ICON) {
+          const existingFormula = th.dataset.formula || "";
+          const formulaInput = prompt(
+            "Set formula for this column (use column letters, e.g. =AVERAGE(D:H)). Leave blank to clear.",
+            existingFormula
+          );
+
+          if (formulaInput !== null) {
+            const sanitized = (formulaInput || "").trim();
+            if (sanitized) {
+              th.dataset.formula = sanitized.startsWith("=")
+                ? sanitized
+                : "=" + sanitized;
+            } else {
+              delete th.dataset.formula;
+            }
+
+            syncFormulaColumnCells();
+            recalculateFormulas();
+            saveTableState();
+          }
         }
       });
 
@@ -644,6 +704,8 @@
 
       refreshColumnIndices();
       resetSortState();
+      syncFormulaColumnCells();
+      recalculateFormulas();
     }
 
     function sortTable(colIndex) {
@@ -749,10 +811,13 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function buildHeader(label, index, type = COLUMN_TYPES.TEXT) {
+    function buildHeader(label, index, type = COLUMN_TYPES.TEXT, formula = "") {
       const th = document.createElement("th");
       th.dataset.colIndex = index;
       th.dataset.type = type;
+      if (formula) {
+        th.dataset.formula = formula;
+      }
       if (type === COLUMN_TYPES.ICON) {
         th.classList.add("icon-cell");
       }
@@ -792,8 +857,154 @@
             : idx === 1
             ? COLUMN_TYPES.NAME
             : COLUMN_TYPES.TEXT);
+        const formula = th.dataset.formula || "";
 
-        return { label, type };
+        return { label, type, formula };
+      });
+    }
+
+    function getNumericCellValue(row, colIndex) {
+      const cell = row.children[colIndex]?.querySelector(".cell, .name-cell");
+      if (!cell) return 0;
+      const text = cell.textContent.trim();
+      const num = parseFloat(text);
+      return Number.isFinite(num) ? num : 0;
+    }
+
+    function getRangeValues(row, range) {
+      const [startLabel, endLabel] = range.split(":").map((part) => part.trim());
+      const startIndex = columnLabelToIndex(startLabel);
+      const endIndex = columnLabelToIndex(endLabel);
+      if (startIndex === null || endIndex === null) return [];
+
+      const from = Math.min(startIndex, endIndex);
+      const to = Math.max(startIndex, endIndex);
+      const values = [];
+      for (let i = from; i <= to; i++) {
+        values.push(getNumericCellValue(row, i));
+      }
+      return values;
+    }
+
+    function evaluateFormula(formula, row) {
+      if (!formula) return "";
+      const normalized = formula.trim().replace(/^=/, "");
+      if (!normalized) return "";
+
+      const resolveArguments = (argsStr) =>
+        argsStr
+          .split(",")
+          .flatMap((part) => {
+            const trimmed = part.trim();
+            if (!trimmed) return [];
+            if (trimmed.includes(":")) return getRangeValues(row, trimmed);
+
+            const idx = columnLabelToIndex(trimmed);
+            if (idx !== null) return [getNumericCellValue(row, idx)];
+
+            const direct = parseFloat(trimmed);
+            return Number.isFinite(direct) ? [direct] : [];
+          })
+          .filter((n) => Number.isFinite(n));
+
+      let expression = normalized.replace(
+        /\b(SUM|AVERAGE|AVG|MIN|MAX)\s*\(([^()]*)\)/gi,
+        (match, fn, args) => {
+          const values = resolveArguments(args);
+          if (!values.length) return "0";
+
+          switch (fn.toUpperCase()) {
+            case "SUM":
+              return values.reduce((a, b) => a + b, 0);
+            case "AVERAGE":
+            case "AVG":
+              return values.reduce((a, b) => a + b, 0) / values.length;
+            case "MIN":
+              return Math.min(...values);
+            case "MAX":
+              return Math.max(...values);
+            default:
+              return "0";
+          }
+        }
+      );
+
+      expression = expression.replace(/\b([A-Z]{1,3})\b/g, (match, label) => {
+        const idx = columnLabelToIndex(label);
+        if (idx === null) return "0";
+        return getNumericCellValue(row, idx);
+      });
+
+      if (!/^[0-9+\-*/().\s]+$/.test(expression)) {
+        return "ERR";
+      }
+
+      try {
+        const result = Function("\"use strict\"; return " + expression)();
+        if (Number.isFinite(result)) {
+          const rounded = Math.round(result * 10000) / 10000;
+          return String(rounded);
+        }
+        return "";
+      } catch (err) {
+        return "ERR";
+      }
+    }
+
+    function makeCellFormula(cell) {
+      cell.removeAttribute("contenteditable");
+      cell.classList.add("formula-cell");
+    }
+
+    function ensureEditableCell(cell, columnType) {
+      cell.classList.remove("formula-cell");
+      cell.setAttribute("contenteditable", "true");
+      if (columnType === COLUMN_TYPES.NAME) {
+        if (!cell.dataset.nameListenerAttached) {
+          cell.addEventListener("input", handleNameInput);
+          cell.addEventListener("input", handleCellChange);
+          cell.dataset.nameListenerAttached = "true";
+        }
+      } else {
+        if (!cell.dataset.textListenerAttached) {
+          cell.addEventListener("input", handleCellChange);
+          cell.dataset.textListenerAttached = "true";
+        }
+      }
+    }
+
+    function syncFormulaColumnCells() {
+      const columns = getColumnDefinitions();
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        columns.forEach((col, idx) => {
+          if (col.type === COLUMN_TYPES.ICON) return;
+          const cell = row.children[idx]?.querySelector(".cell, .name-cell");
+          if (!cell) return;
+
+          if (col.formula) {
+            makeCellFormula(cell);
+          } else {
+            ensureEditableCell(cell, col.type);
+          }
+        });
+      });
+    }
+
+    function recalculateFormulas() {
+      const columns = getColumnDefinitions();
+      const formulaColumns = columns
+        .map((col, idx) => ({ idx, formula: col.formula }))
+        .filter((entry) => entry.formula && entry.formula.trim());
+
+      if (!formulaColumns.length) return;
+
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        formulaColumns.forEach(({ idx, formula }) => {
+          const cell = row.children[idx]?.querySelector(".cell, .name-cell");
+          if (!cell) return;
+          const value = evaluateFormula(formula, row);
+          cell.textContent = value;
+        });
       });
     }
 
@@ -828,6 +1039,7 @@
               : idx === 1
               ? COLUMN_TYPES.NAME
               : COLUMN_TYPES.TEXT,
+          formula: "",
         }));
       }
 
@@ -840,6 +1052,7 @@
             : idx === 1
             ? COLUMN_TYPES.NAME
             : COLUMN_TYPES.TEXT),
+        formula: header?.formula || "",
       }));
     }
 
@@ -852,7 +1065,12 @@
       const headerRow = thead.querySelector("tr");
       headerRow.innerHTML = "";
       normalizedHeaders.forEach((header, idx) => {
-        const th = buildHeader(header.label || "Column " + (idx + 1), idx, header.type);
+        const th = buildHeader(
+          header.label || "Column " + (idx + 1),
+          idx,
+          header.type,
+          header.formula
+        );
         headerRow.appendChild(th);
       });
 
@@ -860,7 +1078,7 @@
       state.rows.forEach((rowData) => {
         const tr = document.createElement("tr");
         normalizedHeaders.forEach((col, idx) => {
-          const td = createCell(col.type);
+          const td = createCell(col.type, { formula: col.formula });
           const val = rowData[idx] || "";
           if (col.type !== COLUMN_TYPES.ICON) {
             const cellEl = td.querySelector(".name-cell, .cell");
@@ -884,6 +1102,8 @@
       initHeaders();
       refreshColumnIndices();
       resetSortState();
+      syncFormulaColumnCells();
+      recalculateFormulas();
       return true;
     }
 
@@ -983,6 +1203,7 @@
       const dataHeaders = headerRow.map((label, idx) => ({
         label: label || `Column ${idx + 1}`,
         type: idx === 0 ? COLUMN_TYPES.NAME : COLUMN_TYPES.TEXT,
+        formula: "",
       }));
 
       const headers = [
