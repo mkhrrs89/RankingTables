@@ -350,7 +350,12 @@
         <span class="icon">⬆️</span>
         Import Data
       </button>
-      <input type="file" id="importFileInput" accept="application/json" hidden />
+      <input
+        type="file"
+        id="importFileInput"
+        accept="application/json,.json,.xlsx,.xls,.csv"
+        hidden
+      />
     </div>
 
     <div class="table-wrapper">
@@ -393,6 +398,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     const table = document.getElementById("dataTable");
     const thead = table.querySelector("thead");
@@ -935,24 +941,98 @@
       const file = event.target.files?.[0];
       if (!file) return;
 
+      const fileName = file.name.toLowerCase();
+
+      if (fileName.endsWith(".json")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const parsed = JSON.parse(e.target?.result);
+            const applied = applyState(parsed);
+            if (!applied) {
+              alert("Import failed: file is missing headers or rows.");
+              return;
+            }
+            saveTableState();
+          } catch (err) {
+            console.error("Import failed", err);
+            alert("Import failed: invalid JSON file.");
+          } finally {
+            importFileInput.value = "";
+          }
+        };
+        reader.readAsText(file);
+      } else if (
+        fileName.endsWith(".xlsx") ||
+        fileName.endsWith(".xls") ||
+        fileName.endsWith(".csv")
+      ) {
+        parseExcelFile(file);
+      } else {
+        alert("Unsupported file type. Please upload a JSON or Excel file.");
+        importFileInput.value = "";
+      }
+    }
+
+    function buildStateFromMatrix(matrix) {
+      if (!Array.isArray(matrix) || matrix.length === 0) return null;
+
+      const [headerRow, ...rows] = matrix;
+      if (!headerRow || headerRow.length === 0) return null;
+
+      const dataHeaders = headerRow.map((label, idx) => ({
+        label: label || `Column ${idx + 1}`,
+        type: idx === 0 ? COLUMN_TYPES.NAME : COLUMN_TYPES.TEXT,
+      }));
+
+      const headers = [
+        { label: "Images", type: COLUMN_TYPES.ICON },
+        ...dataHeaders,
+      ];
+
+      const normalizedRows = rows.map((row) => {
+        const cells = new Array(headers.length).fill("");
+        row.forEach((value, idx) => {
+          cells[idx + 1] = value ?? "";
+        });
+        return cells;
+      });
+
+      return { headers, rows: normalizedRows };
+    }
+
+    function parseExcelFile(file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const parsed = JSON.parse(e.target?.result);
-          const applied = applyState(parsed);
-          if (!applied) {
-            alert("Import failed: file is missing headers or rows.");
+          const data = new Uint8Array(e.target?.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const firstSheet = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheet];
+
+          if (!worksheet) {
+            alert("Import failed: the Excel file has no sheets.");
             return;
           }
+
+          const matrix = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          const state = buildStateFromMatrix(matrix);
+
+          if (!state || !applyState(state)) {
+            alert("Import failed: Excel file is missing header or row data.");
+            return;
+          }
+
           saveTableState();
         } catch (err) {
           console.error("Import failed", err);
-          alert("Import failed: invalid JSON file.");
+          alert("Import failed: unable to read the Excel file.");
         } finally {
           importFileInput.value = "";
         }
       };
-      reader.readAsText(file);
+
+      reader.readAsArrayBuffer(file);
     }
 
     bootstrap();
