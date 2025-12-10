@@ -149,6 +149,7 @@
       width: 100%;
       border-collapse: collapse;
       min-width: 450px;
+      table-layout: fixed;
     }
 
     thead {
@@ -180,6 +181,31 @@
       user-select: none;
       cursor: pointer;
       white-space: nowrap;
+    }
+
+    .column-resizer {
+      position: absolute;
+      top: 0;
+      right: -3px;
+      width: 8px;
+      height: 100%;
+      cursor: col-resize;
+      user-select: none;
+      touch-action: none;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+    }
+
+    th:hover .column-resizer,
+    th:focus-within .column-resizer,
+    .column-resizer.active {
+      opacity: 1;
+    }
+
+    body.resizing-column,
+    body.resizing-column * {
+      cursor: col-resize !important;
+      user-select: none !important;
     }
 
     th .header-inner {
@@ -432,6 +458,9 @@
       TEXT: "text",
     };
 
+    const MIN_COLUMN_WIDTH = 70;
+    const MIN_ICON_WIDTH = 50;
+
     // Track sort direction per column: "asc" or "desc"
     const sortState = {};
     let isDraggingColumn = false;
@@ -545,8 +574,22 @@
       });
 
       tbody.appendChild(tr);
+      applyColumnWidthsToRow(tr);
       recalculateFormulas();
       saveTableState();
+    }
+
+    function applyColumnWidthsToRow(tr) {
+      const headers = Array.from(thead.querySelectorAll("th"));
+      headers.forEach((th, idx) => {
+        const width = getColumnWidth(th);
+        if (Number.isFinite(width)) {
+          const cell = tr.children[idx];
+          if (cell) {
+            cell.style.width = `${width}px`;
+          }
+        }
+      });
     }
 
     function addColumn() {
@@ -566,12 +609,114 @@
         row.appendChild(createCell(COLUMN_TYPES.TEXT));
       });
 
+      setColumnWidth(newIndex, 140);
+
       recalculateFormulas();
       saveTableState();
     }
 
     function getHeaderIndex(th) {
       return Array.from(thead.querySelectorAll("th")).indexOf(th);
+    }
+
+    const columnResizeState = {
+      active: false,
+      startX: 0,
+      startWidth: 0,
+      colIndex: null,
+    };
+
+    function getColumnWidth(th) {
+      const datasetWidth = parseFloat(th.dataset.width);
+      if (Number.isFinite(datasetWidth)) return datasetWidth;
+
+      const styleWidth = parseFloat(th.style.width);
+      if (Number.isFinite(styleWidth)) return styleWidth;
+
+      return null;
+    }
+
+    function applyWidthToCells(colIndex, width) {
+      const pxWidth = `${width}px`;
+      const header = thead.querySelectorAll("th")[colIndex];
+      if (header) {
+        header.style.width = pxWidth;
+        header.dataset.width = width;
+      }
+
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        const cell = row.children[colIndex];
+        if (cell) {
+          cell.style.width = pxWidth;
+        }
+      });
+    }
+
+    function setColumnWidth(colIndex, rawWidth) {
+      const headers = thead.querySelectorAll("th");
+      const header = headers[colIndex];
+      if (!header) return;
+
+      const minWidth =
+        header.dataset.type === COLUMN_TYPES.ICON ? MIN_ICON_WIDTH : MIN_COLUMN_WIDTH;
+      const width = Math.max(minWidth, rawWidth);
+      applyWidthToCells(colIndex, width);
+    }
+
+    function applySavedColumnWidths() {
+      const headers = Array.from(thead.querySelectorAll("th"));
+      headers.forEach((th, idx) => {
+        const width = getColumnWidth(th);
+        if (Number.isFinite(width)) {
+          applyWidthToCells(idx, width);
+        }
+      });
+    }
+
+    function startColumnResize(th, event) {
+      const colIndex = getHeaderIndex(th);
+      columnResizeState.active = true;
+      columnResizeState.startX = event.clientX;
+      columnResizeState.startWidth = th.getBoundingClientRect().width;
+      columnResizeState.colIndex = colIndex;
+      document.body.classList.add("resizing-column");
+
+      const resizer = th.querySelector(".column-resizer");
+      if (resizer) {
+        resizer.classList.add("active");
+      }
+
+      document.addEventListener("mousemove", handleColumnResizeMove);
+      document.addEventListener("mouseup", stopColumnResize);
+    }
+
+    function handleColumnResizeMove(event) {
+      if (!columnResizeState.active) return;
+      const delta = event.clientX - columnResizeState.startX;
+      const newWidth = columnResizeState.startWidth + delta;
+      setColumnWidth(columnResizeState.colIndex, newWidth);
+    }
+
+    function stopColumnResize() {
+      if (!columnResizeState.active) return;
+      const colIndex = columnResizeState.colIndex;
+      columnResizeState.active = false;
+      columnResizeState.startX = 0;
+      columnResizeState.startWidth = 0;
+      columnResizeState.colIndex = null;
+
+      const header = thead.querySelectorAll("th")[colIndex];
+      if (header) {
+        const resizer = header.querySelector(".column-resizer");
+        if (resizer) {
+          resizer.classList.remove("active");
+        }
+      }
+
+      document.body.classList.remove("resizing-column");
+      document.removeEventListener("mousemove", handleColumnResizeMove);
+      document.removeEventListener("mouseup", stopColumnResize);
+      saveTableState();
     }
 
     function clearHeaderDragState() {
@@ -802,6 +947,8 @@
           headerInner.insertBefore(dragHandle, headerInner.firstChild);
         }
 
+        ensureColumnResizer(th);
+
         attachHeaderEvents(th);
       });
     }
@@ -811,12 +958,22 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function buildHeader(label, index, type = COLUMN_TYPES.TEXT, formula = "") {
+    function buildHeader(
+      label,
+      index,
+      type = COLUMN_TYPES.TEXT,
+      formula = "",
+      width
+    ) {
       const th = document.createElement("th");
       th.dataset.colIndex = index;
       th.dataset.type = type;
       if (formula) {
         th.dataset.formula = formula;
+      }
+      if (Number.isFinite(width)) {
+        th.dataset.width = width;
+        th.style.width = `${width}px`;
       }
       if (type === COLUMN_TYPES.ICON) {
         th.classList.add("icon-cell");
@@ -843,8 +1000,25 @@
       headerInner.appendChild(sortIndicator);
       th.appendChild(headerInner);
 
+      ensureColumnResizer(th);
+
       attachHeaderEvents(th);
       return th;
+    }
+
+    function ensureColumnResizer(th) {
+      if (th.querySelector(".column-resizer")) return;
+
+      const resizer = document.createElement("span");
+      resizer.className = "column-resizer";
+      resizer.title = "Drag to resize column";
+      resizer.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startColumnResize(th, e);
+      });
+
+      th.appendChild(resizer);
     }
 
     function getColumnDefinitions() {
@@ -858,8 +1032,14 @@
             ? COLUMN_TYPES.NAME
             : COLUMN_TYPES.TEXT);
         const formula = th.dataset.formula || "";
+        const width = getColumnWidth(th);
 
-        return { label, type, formula };
+        return {
+          label,
+          type,
+          formula,
+          width: Number.isFinite(width) ? width : undefined,
+        };
       });
     }
 
@@ -1040,6 +1220,7 @@
               ? COLUMN_TYPES.NAME
               : COLUMN_TYPES.TEXT,
           formula: "",
+          width: undefined,
         }));
       }
 
@@ -1053,6 +1234,9 @@
             ? COLUMN_TYPES.NAME
             : COLUMN_TYPES.TEXT),
         formula: header?.formula || "",
+        width: Number.isFinite(Number(header?.width))
+          ? Number(header.width)
+          : undefined,
       }));
     }
 
@@ -1069,7 +1253,8 @@
           header.label || "Column " + (idx + 1),
           idx,
           header.type,
-          header.formula
+          header.formula,
+          header.width
         );
         headerRow.appendChild(th);
       });
@@ -1099,6 +1284,7 @@
         tbody.appendChild(tr);
       });
 
+      applySavedColumnWidths();
       initHeaders();
       refreshColumnIndices();
       resetSortState();
