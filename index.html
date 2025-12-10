@@ -188,6 +188,17 @@
       gap: 6px;
     }
 
+    th .drag-handle {
+      opacity: 0.4;
+      font-size: 0.85rem;
+      cursor: grab;
+    }
+
+    th.drag-over {
+      outline: 1px dashed rgba(34, 197, 94, 0.55);
+      outline-offset: 4px;
+    }
+
     th .header-label {
       pointer-events: none;
     }
@@ -317,6 +328,7 @@
         </div>
         <div class="app-subtitle">
           Click cells to edit • Click headers to sort • Double-click headers to rename.
+          Drag headers to rearrange columns.
         </div>
       </div>
     </div>
@@ -394,18 +406,26 @@
     const importBtn = document.getElementById("importBtn");
     const importFileInput = document.getElementById("importFileInput");
 
+    const COLUMN_TYPES = {
+      ICON: "icon",
+      NAME: "name",
+      TEXT: "text",
+    };
+
     // Track sort direction per column: "asc" or "desc"
     const sortState = {};
+    let isDraggingColumn = false;
+    let dragSourceIndex = null;
 
     function buildImageSearchUrl(query) {
       return "https://www.google.com/search?tbm=isch&q=" +
         encodeURIComponent(query);
     }
 
-    function createCell(colIndex) {
+    function createCell(columnType) {
       const td = document.createElement("td");
 
-      if (colIndex === 0) {
+      if (columnType === COLUMN_TYPES.ICON) {
         td.className = "icon-cell";
 
         const link = document.createElement("a");
@@ -422,7 +442,7 @@
 
         link.textContent = "🖼️";
         td.appendChild(link);
-      } else if (colIndex === 1) {
+      } else if (columnType === COLUMN_TYPES.NAME) {
         // Name column: editable text
         const div = document.createElement("div");
         div.className = "cell name-cell";
@@ -476,12 +496,12 @@
     }
 
     function addRow() {
-      const colCount = thead.querySelectorAll("th").length;
+      const columnDefinitions = getColumnDefinitions();
       const tr = document.createElement("tr");
 
-      for (let i = 0; i < colCount; i++) {
-        tr.appendChild(createCell(i));
-      }
+      columnDefinitions.forEach((col) => {
+        tr.appendChild(createCell(col.type));
+      });
 
       tbody.appendChild(tr);
       saveTableState();
@@ -495,42 +515,37 @@
         prompt("New column name:", defaultName) || defaultName;
 
       // Create header cell
-      const th = document.createElement("th");
-      th.dataset.colIndex = newIndex;
-
-      const headerInner = document.createElement("span");
-      headerInner.className = "header-inner";
-
-      const label = document.createElement("span");
-      label.className = "header-label";
-      label.textContent = headerName;
-
-      const sortIndicator = document.createElement("span");
-      sortIndicator.className = "sort-indicator";
-      sortIndicator.textContent = "⇅";
-
-      headerInner.appendChild(label);
-      headerInner.appendChild(sortIndicator);
-      th.appendChild(headerInner);
-
-      attachHeaderEvents(th);
-
+      const th = buildHeader(headerName, newIndex, COLUMN_TYPES.TEXT);
       thead.querySelector("tr").appendChild(th);
+      refreshColumnIndices();
 
       // Add cells for each existing row
       Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
-        row.appendChild(createCell(newIndex));
+        row.appendChild(createCell(COLUMN_TYPES.TEXT));
       });
 
       saveTableState();
     }
 
+    function getHeaderIndex(th) {
+      return Array.from(thead.querySelectorAll("th")).indexOf(th);
+    }
+
+    function clearHeaderDragState() {
+      thead.querySelectorAll("th").forEach((header) => {
+        header.classList.remove("drag-over", "dragging");
+      });
+    }
+
     function attachHeaderEvents(th) {
+      th.draggable = true;
+
       th.addEventListener("click", (e) => {
         // Ignore clicks if user is selecting text (simple heuristic)
         if (window.getSelection().toString().length > 0) return;
+        if (isDraggingColumn) return;
 
-        const colIndex = parseInt(th.dataset.colIndex, 10);
+        const colIndex = getHeaderIndex(th);
         sortTable(colIndex);
       });
 
@@ -544,6 +559,85 @@
           saveTableState();
         }
       });
+
+      th.addEventListener("dragstart", (e) => {
+        dragSourceIndex = getHeaderIndex(th);
+        isDraggingColumn = true;
+        th.classList.add("dragging");
+        e.dataTransfer.setData("text/plain", String(dragSourceIndex));
+        e.dataTransfer.effectAllowed = "move";
+      });
+
+      th.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        th.classList.add("drag-over");
+      });
+
+      th.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        th.classList.add("drag-over");
+        e.dataTransfer.dropEffect = "move";
+      });
+
+      th.addEventListener("dragleave", () => {
+        th.classList.remove("drag-over");
+      });
+
+      th.addEventListener("dragend", () => {
+        isDraggingColumn = false;
+        clearHeaderDragState();
+      });
+
+      th.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const targetIndex = getHeaderIndex(th);
+        clearHeaderDragState();
+
+        if (dragSourceIndex === null || dragSourceIndex === targetIndex) {
+          isDraggingColumn = false;
+          dragSourceIndex = null;
+          return;
+        }
+
+        reorderColumns(dragSourceIndex, targetIndex);
+        isDraggingColumn = false;
+        dragSourceIndex = null;
+        saveTableState();
+      });
+    }
+
+    function reorderColumns(fromIndex, toIndex) {
+      if (fromIndex === toIndex) return;
+
+      const headerRow = thead.querySelector("tr");
+      const headers = Array.from(headerRow.children);
+      const movingHeader = headers[fromIndex];
+      if (!movingHeader) return;
+
+      const headersWithoutMoving = headers.filter((_, idx) => idx !== fromIndex);
+      const insertBeforeHeader =
+        toIndex > fromIndex
+          ? headersWithoutMoving[toIndex]
+          : headersWithoutMoving[toIndex] || null;
+
+      headerRow.insertBefore(movingHeader, insertBeforeHeader);
+
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        const cells = Array.from(row.children);
+        const movingCell = cells[fromIndex];
+        if (!movingCell) return;
+
+        const cellsWithoutMoving = cells.filter((_, idx) => idx !== fromIndex);
+        const insertBeforeCell =
+          toIndex > fromIndex
+            ? cellsWithoutMoving[toIndex]
+            : cellsWithoutMoving[toIndex] || null;
+
+        row.insertBefore(movingCell, insertBeforeCell);
+      });
+
+      refreshColumnIndices();
+      resetSortState();
     }
 
     function sortTable(colIndex) {
@@ -593,8 +687,7 @@
 
     function updateSortIndicators(activeIndex, direction) {
       const headers = thead.querySelectorAll("th");
-      headers.forEach((th) => {
-        const idx = parseInt(th.dataset.colIndex, 10);
+      headers.forEach((th, idx) => {
         const indicator = th.querySelector(".sort-indicator");
         th.classList.remove("sorted-asc", "sorted-desc");
 
@@ -614,10 +707,33 @@
       });
     }
 
-    // Initial header event wiring
+    function refreshColumnIndices() {
+      thead.querySelectorAll("th").forEach((th, idx) => {
+        th.dataset.colIndex = idx;
+      });
+    }
+
     function initHeaders() {
       thead.querySelectorAll("th").forEach((th, index) => {
         th.dataset.colIndex = index;
+        if (!th.dataset.type) {
+          th.dataset.type =
+            index === 0
+              ? COLUMN_TYPES.ICON
+              : index === 1
+              ? COLUMN_TYPES.NAME
+              : COLUMN_TYPES.TEXT;
+        }
+
+        const headerInner = th.querySelector(".header-inner");
+        if (headerInner && !headerInner.querySelector(".drag-handle")) {
+          const dragHandle = document.createElement("span");
+          dragHandle.className = "drag-handle";
+          dragHandle.textContent = "↕";
+          dragHandle.setAttribute("aria-hidden", "true");
+          headerInner.insertBefore(dragHandle, headerInner.firstChild);
+        }
+
         attachHeaderEvents(th);
       });
     }
@@ -627,15 +743,22 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function buildHeader(label, index) {
+    function buildHeader(label, index, type = COLUMN_TYPES.TEXT) {
       const th = document.createElement("th");
       th.dataset.colIndex = index;
-      if (index === 0) {
+      th.dataset.type = type;
+      if (type === COLUMN_TYPES.ICON) {
         th.classList.add("icon-cell");
       }
 
       const headerInner = document.createElement("span");
       headerInner.className = "header-inner";
+
+      const dragHandle = document.createElement("span");
+      dragHandle.className = "drag-handle";
+      dragHandle.textContent = "↕";
+      dragHandle.setAttribute("aria-hidden", "true");
+      headerInner.appendChild(dragHandle);
 
       const lbl = document.createElement("span");
       lbl.className = "header-label";
@@ -653,16 +776,28 @@
       return th;
     }
 
-    function collectTableState() {
-      const headers = Array.from(thead.querySelectorAll("th")).map((th) => {
-        const label = th.querySelector(".header-label");
-        return label ? label.textContent.trim() : "";
+    function getColumnDefinitions() {
+      return Array.from(thead.querySelectorAll("th")).map((th, idx) => {
+        const label = th.querySelector(".header-label")?.textContent?.trim() ||
+          "Column " + (idx + 1);
+        const type = th.dataset.type ||
+          (idx === 0
+            ? COLUMN_TYPES.ICON
+            : idx === 1
+            ? COLUMN_TYPES.NAME
+            : COLUMN_TYPES.TEXT);
+
+        return { label, type };
       });
+    }
+
+    function collectTableState() {
+      const headers = getColumnDefinitions();
 
       const rows = Array.from(tbody.querySelectorAll("tr")).map((tr) => {
-        return Array.from(tr.children).map((td, idx) => {
-          if (idx === 0) return ""; // icon column
-          const cell = td.querySelector(".cell, .name-cell");
+        return headers.map((col, idx) => {
+          if (col.type === COLUMN_TYPES.ICON) return "";
+          const cell = tr.children[idx]?.querySelector(".cell, .name-cell");
           return cell ? cell.textContent : "";
         });
       });
@@ -675,25 +810,53 @@
       updateSortIndicators(-1, null);
     }
 
+    function normalizeHeaders(headers) {
+      if (!Array.isArray(headers)) return [];
+
+      if (headers.length && typeof headers[0] === "string") {
+        return headers.map((label, idx) => ({
+          label: label || "Column " + (idx + 1),
+          type:
+            idx === 0
+              ? COLUMN_TYPES.ICON
+              : idx === 1
+              ? COLUMN_TYPES.NAME
+              : COLUMN_TYPES.TEXT,
+        }));
+      }
+
+      return headers.map((header, idx) => ({
+        label: header?.label || header || "Column " + (idx + 1),
+        type:
+          header?.type ||
+          (idx === 0
+            ? COLUMN_TYPES.ICON
+            : idx === 1
+            ? COLUMN_TYPES.NAME
+            : COLUMN_TYPES.TEXT),
+      }));
+    }
+
     function applyState(state) {
       if (!state || !Array.isArray(state.headers) || !Array.isArray(state.rows)) {
         return false;
       }
 
+      const normalizedHeaders = normalizeHeaders(state.headers);
       const headerRow = thead.querySelector("tr");
       headerRow.innerHTML = "";
-      state.headers.forEach((label, idx) => {
-        const th = buildHeader(label || "Column " + (idx + 1), idx);
+      normalizedHeaders.forEach((header, idx) => {
+        const th = buildHeader(header.label || "Column " + (idx + 1), idx, header.type);
         headerRow.appendChild(th);
       });
 
       tbody.innerHTML = "";
       state.rows.forEach((rowData) => {
         const tr = document.createElement("tr");
-        state.headers.forEach((_, idx) => {
-          const td = createCell(idx);
+        normalizedHeaders.forEach((col, idx) => {
+          const td = createCell(col.type);
           const val = rowData[idx] || "";
-          if (idx > 0) {
+          if (col.type !== COLUMN_TYPES.ICON) {
             const cellEl = td.querySelector(".name-cell, .cell");
             if (cellEl) {
               cellEl.textContent = val;
@@ -713,6 +876,7 @@
       });
 
       initHeaders();
+      refreshColumnIndices();
       resetSortState();
       return true;
     }
