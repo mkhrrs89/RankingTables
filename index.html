@@ -726,6 +726,8 @@
     }
 
     function attachHeaderEvents(th) {
+      if (th.dataset.eventsAttached === "true") return;
+
       th.draggable = true;
 
       th.addEventListener("click", (e) => {
@@ -815,6 +817,8 @@
         dragSourceIndex = null;
         saveTableState();
       });
+
+      th.dataset.eventsAttached = "true";
     }
 
     function reorderColumns(fromIndex, toIndex) {
