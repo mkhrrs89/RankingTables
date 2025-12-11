@@ -250,6 +250,14 @@
       opacity: 1;
     }
 
+    th.resizing-hover {
+      cursor: col-resize;
+    }
+
+    th.resizing-hover .column-resizer {
+      opacity: 1;
+    }
+
     body.resizing-column,
     body.resizing-column * {
       cursor: col-resize !important;
@@ -897,12 +905,20 @@
         if (resizer) {
           resizer.classList.remove("active");
         }
+        header.classList.remove("resizing-hover");
       }
 
       document.body.classList.remove("resizing-column");
       document.removeEventListener("mousemove", handleColumnResizeMove);
       document.removeEventListener("mouseup", stopColumnResize);
       saveTableState();
+    }
+
+    const RESIZE_EDGE_THRESHOLD = 8;
+
+    function isNearRightEdge(event, th) {
+      const rect = th.getBoundingClientRect();
+      return rect.right - event.clientX <= RESIZE_EDGE_THRESHOLD;
     }
 
     function clearHeaderDragState() {
@@ -915,6 +931,27 @@
       if (th.dataset.eventsAttached === "true") return;
 
       th.draggable = true;
+
+      th.addEventListener("mousemove", (e) => {
+        if (columnResizeState.active) return;
+        const nearEdge = isNearRightEdge(e, th);
+        th.classList.toggle("resizing-hover", nearEdge);
+      });
+
+      th.addEventListener("mouseleave", () => {
+        if (!columnResizeState.active) {
+          th.classList.remove("resizing-hover");
+        }
+      });
+
+      th.addEventListener("mousedown", (e) => {
+        if (isNearRightEdge(e, th)) {
+          e.preventDefault();
+          e.stopPropagation();
+          startColumnResize(th, e);
+          return;
+        }
+      });
 
       th.addEventListener("click", (e) => {
         // Ignore clicks if user is selecting text (simple heuristic)
