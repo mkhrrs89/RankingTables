@@ -776,7 +776,26 @@
       const styleWidth = parseFloat(th.style.width);
       if (Number.isFinite(styleWidth)) return styleWidth;
 
+      const measuredWidth = Math.round(th.getBoundingClientRect().width);
+      if (Number.isFinite(measuredWidth) && measuredWidth > 0) {
+        return measuredWidth;
+      }
+
       return null;
+    }
+
+    function syncColumnLetterWidths() {
+      const headers = getHeaderCells();
+      const letters = getLetterCells();
+
+      headers.forEach((th, idx) => {
+        const width = getColumnWidth(th);
+        const letter = letters[idx];
+
+        if (letter && Number.isFinite(width)) {
+          letter.style.width = `${width}px`;
+        }
+      });
     }
 
     function applyWidthToCells(colIndex, width) {
@@ -798,6 +817,8 @@
           cell.style.width = pxWidth;
         }
       });
+
+      syncColumnLetterWidths();
     }
 
     function setColumnWidth(colIndex, rawWidth) {
@@ -1461,6 +1482,7 @@
       });
 
       applySavedColumnWidths();
+      syncColumnLetterWidths();
       initHeaders();
       refreshColumnIndices();
       resetSortState();
