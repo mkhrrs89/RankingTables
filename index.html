@@ -459,6 +459,14 @@
         <span class="icon">📊</span>
         Add Column
       </button>
+      <button id="deleteRowBtn" class="danger">
+        <span class="icon">➖</span>
+        Delete Row
+      </button>
+      <button id="deleteColBtn" class="danger">
+        <span class="icon">🧹</span>
+        Delete Column
+      </button>
       <button id="exportBtn">
         <span class="icon">⬇️</span>
         Export Data
@@ -575,6 +583,8 @@
 
     const addRowBtn = document.getElementById("addRowBtn");
     const addColBtn = document.getElementById("addColBtn");
+    const deleteRowBtn = document.getElementById("deleteRowBtn");
+    const deleteColBtn = document.getElementById("deleteColBtn");
     const exportBtn = document.getElementById("exportBtn");
     const importBtn = document.getElementById("importBtn");
     const clearBtn = document.getElementById("clearBtn");
@@ -862,6 +872,16 @@
       saveTableState();
     }
 
+    function deleteRow() {
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      if (!rows.length) return;
+
+      const rowToRemove = rows[rows.length - 1];
+      rowToRemove.remove();
+
+      saveTableState();
+    }
+
     function applyColumnWidthsToRow(tr) {
       const headers = getHeaderCells();
       headers.forEach((th, idx) => {
@@ -895,6 +915,29 @@
 
       setColumnWidth(newIndex, 140);
 
+      recalculateFormulas();
+      saveTableState();
+    }
+
+    function deleteColumn() {
+      const headers = getHeaderCells();
+      if (headers.length <= 1) {
+        alert("At least one column must remain in the table.");
+        return;
+      }
+
+      const targetIndex = headers.length - 1;
+      headers[targetIndex]?.remove();
+      getLetterCells()[targetIndex]?.remove();
+
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        row.children[targetIndex]?.remove();
+      });
+
+      refreshColumnIndices();
+      resetSortState();
+      syncColumnLetterWidths();
+      syncFormulaColumnCells();
       recalculateFormulas();
       saveTableState();
     }
@@ -1917,6 +1960,8 @@
     // Button wiring
     addRowBtn.addEventListener("click", addRow);
     addColBtn.addEventListener("click", addColumn);
+    deleteRowBtn.addEventListener("click", deleteRow);
+    deleteColBtn.addEventListener("click", deleteColumn);
     exportBtn.addEventListener("click", exportData);
     importBtn.addEventListener("click", () => importFileInput.click());
     clearBtn.addEventListener("click", clearData);
