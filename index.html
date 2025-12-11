@@ -589,6 +589,19 @@
     const getHeaderCells = () => Array.from(headerRow.querySelectorAll("th"));
     const getLetterCells = () => Array.from(letterRow.querySelectorAll("th"));
 
+    const AGE_LABEL = "age";
+    const NAME_LABEL = "name";
+
+    const LOCAL_BIRTHDAY_DB = {
+      "ada lovelace": { birth: "1815-12-10", death: "1852-11-27" },
+      "alan turing": { birth: "1912-06-23", death: "1954-06-07" },
+      "grace hopper": { birth: "1906-12-09", death: "1992-01-01" },
+      "katherine johnson": { birth: "1918-08-26", death: "2020-02-24" },
+      "elon musk": { birth: "1971-06-28", death: null },
+    };
+
+    const birthdayCache = new Map();
+
     function ensureLetterCells(count) {
       while (letterRow.children.length < count) {
         const index = letterRow.children.length;
@@ -702,6 +715,108 @@
       return td;
     }
 
+    function normalizePersonName(name) {
+      return name?.trim().toLowerCase() || "";
+    }
+
+    function computeAgeFromDates(birthDateString, referenceDateString) {
+      const birth = new Date(birthDateString);
+      const reference = referenceDateString
+        ? new Date(referenceDateString)
+        : new Date();
+
+      if (Number.isNaN(birth.getTime()) || Number.isNaN(reference.getTime())) {
+        return null;
+      }
+
+      let age = reference.getFullYear() - birth.getFullYear();
+      const hasNotHadBirthdayYet =
+        reference.getMonth() < birth.getMonth() ||
+        (reference.getMonth() === birth.getMonth() &&
+          reference.getDate() < birth.getDate());
+
+      if (hasNotHadBirthdayYet) {
+        age -= 1;
+      }
+
+      return age >= 0 ? age : null;
+    }
+
+    function extractWikidataDate(claim) {
+      const timeValue = claim?.mainsnak?.datavalue?.value?.time;
+      if (!timeValue || typeof timeValue !== "string") return null;
+
+      // Wikidata times can include a leading + and time portion; strip them.
+      const normalized = timeValue.replace(/^\+/, "").split("T")[0];
+      return normalized;
+    }
+
+    async function fetchBirthdayFromWikidata(name) {
+      const searchParams = new URLSearchParams({
+        action: "query",
+        list: "search",
+        srsearch: name,
+        format: "json",
+        origin: "*",
+      });
+
+      const searchUrl =
+        "https://api.wikidata.org/w/api.php?" + searchParams.toString();
+
+      const searchResponse = await fetch(searchUrl);
+      if (!searchResponse.ok) return null;
+      const searchJson = await searchResponse.json();
+      const topResult = searchJson?.query?.search?.[0];
+      const title = topResult?.title;
+      if (!title) return null;
+
+      const entityUrl =
+        "https://www.wikidata.org/wiki/Special:EntityData/" + title + ".json";
+
+      const entityResponse = await fetch(entityUrl);
+      if (!entityResponse.ok) return null;
+      const entityJson = await entityResponse.json();
+      const entity = entityJson?.entities?.[title];
+      if (!entity) return null;
+
+      const birthClaim = entity?.claims?.P569?.[0];
+      const deathClaim = entity?.claims?.P570?.[0];
+
+      const birth = extractWikidataDate(birthClaim);
+      const death = extractWikidataDate(deathClaim);
+
+      if (!birth) return null;
+
+      return { birth, death: death || null };
+    }
+
+    async function resolvePersonDates(rawName) {
+      const normalized = normalizePersonName(rawName);
+      if (!normalized) return null;
+
+      if (birthdayCache.has(normalized)) {
+        return birthdayCache.get(normalized);
+      }
+
+      const localRecord = LOCAL_BIRTHDAY_DB[normalized];
+      if (localRecord) {
+        birthdayCache.set(normalized, localRecord);
+        return localRecord;
+      }
+
+      const fetchPromise = (async () => {
+        try {
+          return await fetchBirthdayFromWikidata(rawName);
+        } catch (err) {
+          console.warn("Failed to fetch birth data for", rawName, err);
+          return null;
+        }
+      })();
+
+      birthdayCache.set(normalized, fetchPromise);
+      return fetchPromise;
+    }
+
     function handleNameInput(event) {
       const nameCell = event.target;
       const text = nameCell.textContent.trim();
@@ -742,6 +857,7 @@
 
       tbody.appendChild(tr);
       applyColumnWidthsToRow(tr);
+      syncFormulaColumnCells();
       recalculateFormulas();
       saveTableState();
     }
@@ -1416,7 +1532,11 @@
           const cell = row.children[idx]?.querySelector(".cell, .name-cell");
           if (!cell) return;
 
-          if (col.formula) {
+          const isAgeColumn =
+            typeof col.label === "string" &&
+            col.label.trim().toLowerCase() === AGE_LABEL;
+
+          if (col.formula || isAgeColumn) {
             makeCellFormula(cell);
           } else {
             ensureEditableCell(cell, col.type);
@@ -1431,14 +1551,90 @@
         .map((col, idx) => ({ idx, formula: col.formula }))
         .filter((entry) => entry.formula && entry.formula.trim());
 
-      if (!formulaColumns.length) return;
+      if (formulaColumns.length) {
+        Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+          formulaColumns.forEach(({ idx, formula }) => {
+            const cell = row.children[idx]?.querySelector(".cell, .name-cell");
+            if (!cell) return;
+            const value = evaluateFormula(formula, row);
+            cell.textContent = value;
+          });
+        });
+      }
 
-      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
-        formulaColumns.forEach(({ idx, formula }) => {
-          const cell = row.children[idx]?.querySelector(".cell, .name-cell");
-          if (!cell) return;
-          const value = evaluateFormula(formula, row);
-          cell.textContent = value;
+      updateAgeColumns(columns);
+    }
+
+    function findColumnIndexByLabel(columns, targetLabel) {
+      return columns.findIndex((col) => {
+        const labelText = col.label || "";
+        return (
+          typeof labelText === "string" &&
+          labelText.trim().toLowerCase() === targetLabel
+        );
+      });
+    }
+
+    function getAgeColumnIndices(columns) {
+      return columns
+        .map((col, idx) => ({ col, idx }))
+        .filter(({ col }) => {
+          const labelText = col.label || "";
+          return (
+            typeof labelText === "string" &&
+            labelText.trim().toLowerCase() === AGE_LABEL
+          );
+        })
+        .map(({ idx }) => idx);
+    }
+
+    const ageRequestTokens = new WeakMap();
+
+    function updateAgeColumns(columns = getColumnDefinitions()) {
+      const nameColumnIndex = findColumnIndexByLabel(columns, NAME_LABEL);
+      const ageColumnIndices = getAgeColumnIndices(columns);
+
+      if (nameColumnIndex === -1 || ageColumnIndices.length === 0) return;
+
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      rows.forEach((row) => {
+        const nameCell = row.children[nameColumnIndex]?.querySelector(
+          ".cell, .name-cell"
+        );
+        const personName = nameCell?.textContent.trim();
+
+        ageColumnIndices.forEach((ageIdx) => {
+          const ageCell = row.children[ageIdx]?.querySelector(
+            ".cell, .name-cell"
+          );
+          if (!ageCell) return;
+
+          const requestToken = Symbol("ageRequest");
+          ageRequestTokens.set(ageCell, requestToken);
+
+          if (!personName) {
+            ageCell.textContent = "";
+            return;
+          }
+
+          ageCell.textContent = "…";
+
+          resolvePersonDates(personName).then((record) => {
+            if (ageRequestTokens.get(ageCell) !== requestToken) return;
+
+            if (!record || !record.birth) {
+              ageCell.textContent = "";
+              return;
+            }
+
+            if (record.death) {
+              ageCell.textContent = "dead";
+              return;
+            }
+
+            const age = computeAgeFromDates(record.birth);
+            ageCell.textContent = Number.isFinite(age) ? age : "";
+          });
         });
       });
     }
