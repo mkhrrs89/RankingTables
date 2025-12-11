@@ -396,12 +396,17 @@
       border: 1px dashed rgba(148, 163, 184, 0.4);
     }
 
+    .column-letter-row th {
+      border-bottom: 1px solid rgba(30, 41, 59, 0.85);
+      padding: 6px 10px;
+      text-align: center;
+    }
+
     .column-letter {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       padding: 2px 6px;
-      margin-right: 6px;
       border-radius: 6px;
       background: rgba(148, 163, 184, 0.12);
       border: 1px solid rgba(148, 163, 184, 0.35);
@@ -461,7 +466,12 @@
     <div class="table-wrapper">
       <table id="dataTable">
         <thead>
-          <tr>
+          <tr class="column-letter-row">
+            <th data-col-index="0" class="column-letter">A</th>
+            <th data-col-index="1" class="column-letter">B</th>
+            <th data-col-index="2" class="column-letter">C</th>
+          </tr>
+          <tr class="header-row">
             <th data-col-index="0" class="icon-cell">
               <span class="header-inner">
                 <span class="header-label">Images</span>
@@ -506,6 +516,8 @@
   <script>
     const table = document.getElementById("dataTable");
     const thead = table.querySelector("thead");
+    const headerRow = thead.querySelector(".header-row");
+    const letterRow = thead.querySelector(".column-letter-row");
     const tbody = table.querySelector("tbody");
 
     const STORAGE_KEY = "simple-data-table-state";
@@ -522,6 +534,24 @@
       NAME: "name",
       TEXT: "text",
     };
+
+    const getHeaderCells = () => Array.from(headerRow.querySelectorAll("th"));
+    const getLetterCells = () => Array.from(letterRow.querySelectorAll("th"));
+
+    function ensureLetterCells(count) {
+      while (letterRow.children.length < count) {
+        const index = letterRow.children.length;
+        const letterCell = document.createElement("th");
+        letterCell.className = "column-letter";
+        letterCell.dataset.colIndex = index;
+        letterCell.textContent = indexToColumnLabel(index);
+        letterRow.appendChild(letterCell);
+      }
+
+      while (letterRow.children.length > count) {
+        letterRow.removeChild(letterRow.lastChild);
+      }
+    }
 
     const DEFAULT_ROW_COUNT = 10;
     const DEFAULT_HEADERS = [
@@ -663,7 +693,7 @@
     }
 
     function applyColumnWidthsToRow(tr) {
-      const headers = Array.from(thead.querySelectorAll("th"));
+      const headers = getHeaderCells();
       headers.forEach((th, idx) => {
         const width = getColumnWidth(th);
         if (Number.isFinite(width)) {
@@ -676,7 +706,7 @@
     }
 
     function addColumn() {
-      const currentCols = thead.querySelectorAll("th").length;
+      const currentCols = getHeaderCells().length;
       const newIndex = currentCols;
       const defaultName = "Column " + (newIndex + 1);
       const headerName =
@@ -684,7 +714,8 @@
 
       // Create header cell
       const th = buildHeader(headerName, newIndex, COLUMN_TYPES.TEXT);
-      thead.querySelector("tr").appendChild(th);
+      headerRow.appendChild(th);
+      ensureLetterCells(headerRow.children.length);
       refreshColumnIndices();
 
       // Add cells for each existing row
@@ -699,7 +730,7 @@
     }
 
     function getHeaderIndex(th) {
-      return Array.from(thead.querySelectorAll("th")).indexOf(th);
+      return getHeaderCells().indexOf(th);
     }
 
     const columnResizeState = {
@@ -721,10 +752,15 @@
 
     function applyWidthToCells(colIndex, width) {
       const pxWidth = `${width}px`;
-      const header = thead.querySelectorAll("th")[colIndex];
+      const header = getHeaderCells()[colIndex];
+      const letterHeader = getLetterCells()[colIndex];
       if (header) {
         header.style.width = pxWidth;
         header.dataset.width = width;
+      }
+
+      if (letterHeader) {
+        letterHeader.style.width = pxWidth;
       }
 
       Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
@@ -736,7 +772,7 @@
     }
 
     function setColumnWidth(colIndex, rawWidth) {
-      const headers = thead.querySelectorAll("th");
+      const headers = getHeaderCells();
       const header = headers[colIndex];
       if (!header) return;
 
@@ -747,7 +783,7 @@
     }
 
     function applySavedColumnWidths() {
-      const headers = Array.from(thead.querySelectorAll("th"));
+      const headers = getHeaderCells();
       headers.forEach((th, idx) => {
         const width = getColumnWidth(th);
         if (Number.isFinite(width)) {
@@ -788,7 +824,7 @@
       columnResizeState.startWidth = 0;
       columnResizeState.colIndex = null;
 
-      const header = thead.querySelectorAll("th")[colIndex];
+      const header = getHeaderCells()[colIndex];
       if (header) {
         const resizer = header.querySelector(".column-resizer");
         if (resizer) {
@@ -803,7 +839,7 @@
     }
 
     function clearHeaderDragState() {
-      thead.querySelectorAll("th").forEach((header) => {
+      getHeaderCells().forEach((header) => {
         header.classList.remove("drag-over", "dragging");
       });
     }
@@ -907,7 +943,6 @@
     function reorderColumns(fromIndex, toIndex) {
       if (fromIndex === toIndex) return;
 
-      const headerRow = thead.querySelector("tr");
       const headers = Array.from(headerRow.children);
       const movingHeader = headers[fromIndex];
       if (!movingHeader) return;
@@ -919,6 +954,16 @@
           : headersWithoutMoving[toIndex] || null;
 
       headerRow.insertBefore(movingHeader, insertBeforeHeader);
+
+      const letterCells = Array.from(letterRow.children);
+      const movingLetter = letterCells[fromIndex];
+      const lettersWithoutMoving = letterCells.filter((_, idx) => idx !== fromIndex);
+      const insertBeforeLetter =
+        toIndex > fromIndex
+          ? lettersWithoutMoving[toIndex]
+          : lettersWithoutMoving[toIndex] || null;
+
+      letterRow.insertBefore(movingLetter, insertBeforeLetter);
 
       Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
         const cells = Array.from(row.children);
@@ -986,7 +1031,7 @@
     }
 
     function updateSortIndicators(activeIndex, direction) {
-      const headers = thead.querySelectorAll("th");
+      const headers = getHeaderCells();
       headers.forEach((th, idx) => {
         const indicator = th.querySelector(".sort-indicator");
         th.classList.remove("sorted-asc", "sorted-desc");
@@ -1008,14 +1053,18 @@
     }
 
     function refreshColumnIndices() {
-      thead.querySelectorAll("th").forEach((th, idx) => {
+      const headers = getHeaderCells();
+      ensureLetterCells(headers.length);
+      headers.forEach((th, idx) => {
         th.dataset.colIndex = idx;
         ensureColumnLetter(th, idx);
       });
     }
 
     function initHeaders() {
-      thead.querySelectorAll("th").forEach((th, index) => {
+      const headers = getHeaderCells();
+      ensureLetterCells(headers.length);
+      headers.forEach((th, index) => {
         th.dataset.colIndex = index;
         if (!th.dataset.type) {
           th.dataset.type =
@@ -1078,11 +1127,6 @@
       dragHandle.setAttribute("aria-hidden", "true");
       headerInner.appendChild(dragHandle);
 
-      const letterBadge = document.createElement("span");
-      letterBadge.className = "column-letter";
-      letterBadge.textContent = indexToColumnLabel(index);
-      headerInner.appendChild(letterBadge);
-
       const lbl = document.createElement("span");
       lbl.className = "header-label";
       lbl.textContent = label;
@@ -1117,7 +1161,7 @@
     }
 
     function getColumnDefinitions() {
-      return Array.from(thead.querySelectorAll("th")).map((th, idx) => {
+      return getHeaderCells().map((th, idx) => {
         const label = th.querySelector(".header-label")?.textContent?.trim() ||
           "Column " + (idx + 1);
         const type = th.dataset.type ||
@@ -1138,19 +1182,11 @@
       });
     }
 
-    function ensureColumnLetter(th, index) {
-      const headerInner = th.querySelector(".header-inner");
-      if (!headerInner) return;
-      let letterBadge = headerInner.querySelector(".column-letter");
-      if (!letterBadge) {
-        letterBadge = document.createElement("span");
-        letterBadge.className = "column-letter";
-        headerInner.insertBefore(
-          letterBadge,
-          headerInner.querySelector(".header-label") || headerInner.lastChild
-        );
-      }
-      letterBadge.textContent = indexToColumnLabel(index);
+    function ensureColumnLetter(_th, index) {
+      const letterCell = getLetterCells()[index];
+      if (!letterCell) return;
+      letterCell.dataset.colIndex = index;
+      letterCell.textContent = indexToColumnLabel(index);
     }
 
     function getNumericCellValue(row, colIndex) {
@@ -1356,8 +1392,8 @@
       }
 
       const normalizedHeaders = normalizeHeaders(state.headers);
-      const headerRow = thead.querySelector("tr");
       headerRow.innerHTML = "";
+      letterRow.innerHTML = "";
       normalizedHeaders.forEach((header, idx) => {
         const th = buildHeader(
           header.label || "Column " + (idx + 1),
@@ -1367,6 +1403,7 @@
           header.width
         );
         headerRow.appendChild(th);
+        ensureLetterCells(idx + 1);
       });
 
       tbody.innerHTML = "";
