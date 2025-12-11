@@ -152,6 +152,29 @@
       table-layout: fixed;
     }
 
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+
+      .app {
+        padding: 16px;
+      }
+
+      .table-wrapper {
+        margin: 0 -6px;
+      }
+
+      table {
+        min-width: 0;
+      }
+
+      th,
+      td {
+        padding: 8px 6px;
+      }
+    }
+
     thead {
       position: sticky;
       top: 0;
