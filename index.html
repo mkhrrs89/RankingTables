@@ -137,6 +137,26 @@
       box-shadow: 0 0 0 rgba(34, 197, 94, 0.0);
     }
 
+    button.danger {
+      background: radial-gradient(
+        circle at top left,
+        rgba(239, 68, 68, 0.12),
+        rgba(15, 23, 42, 0.95)
+      );
+      border-color: rgba(239, 68, 68, 0.65);
+      box-shadow: 0 0 0 rgba(239, 68, 68, 0.0);
+    }
+
+    button.danger:hover {
+      background: radial-gradient(
+        circle at top left,
+        rgba(239, 68, 68, 0.22),
+        rgba(15, 23, 42, 0.98)
+      );
+      border-color: var(--danger);
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.35);
+    }
+
     .table-wrapper {
       border-radius: 14px;
       border: 1px solid rgba(51, 65, 85, 0.8);
@@ -403,6 +423,10 @@
         <span class="icon">⬆️</span>
         Import Data
       </button>
+      <button id="clearBtn" class="danger">
+        <span class="icon">🗑️</span>
+        Clear All Data
+      </button>
       <input
         type="file"
         id="importFileInput"
@@ -467,6 +491,7 @@
     const addColBtn = document.getElementById("addColBtn");
     const exportBtn = document.getElementById("exportBtn");
     const importBtn = document.getElementById("importBtn");
+    const clearBtn = document.getElementById("clearBtn");
     const importFileInput = document.getElementById("importFileInput");
 
     const COLUMN_TYPES = {
@@ -474,6 +499,13 @@
       NAME: "name",
       TEXT: "text",
     };
+
+    const DEFAULT_ROW_COUNT = 10;
+    const DEFAULT_HEADERS = [
+      { label: "Images", type: COLUMN_TYPES.ICON },
+      { label: "Name", type: COLUMN_TYPES.NAME },
+      { label: "Rating", type: COLUMN_TYPES.TEXT },
+    ];
 
     const MIN_COLUMN_WIDTH = 70;
     const MIN_ICON_WIDTH = 50;
@@ -1348,6 +1380,14 @@
       return true;
     }
 
+    function buildDefaultState() {
+      const rows = Array.from({ length: DEFAULT_ROW_COUNT }, () =>
+        DEFAULT_HEADERS.map(() => "")
+      );
+
+      return { headers: DEFAULT_HEADERS, rows };
+    }
+
     function loadTableState() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return false;
@@ -1367,10 +1407,7 @@
     function bootstrap() {
       const restored = loadTableState();
       if (!restored) {
-        initHeaders();
-        for (let i = 0; i < 10; i++) {
-          addRow();
-        }
+        applyState(buildDefaultState());
         saveTableState();
       }
     }
@@ -1497,6 +1534,18 @@
       reader.readAsArrayBuffer(file);
     }
 
+    function clearData() {
+      const confirmed = confirm(
+        "This will remove all rows and reset the table to its default state. Continue?"
+      );
+
+      if (!confirmed) return;
+
+      localStorage.removeItem(STORAGE_KEY);
+      applyState(buildDefaultState());
+      saveTableState();
+    }
+
     bootstrap();
 
     // Button wiring
@@ -1504,6 +1553,7 @@
     addColBtn.addEventListener("click", addColumn);
     exportBtn.addEventListener("click", exportData);
     importBtn.addEventListener("click", () => importFileInput.click());
+    clearBtn.addEventListener("click", clearData);
     importFileInput.addEventListener("change", handleImportFile);
   </script>
 </body>
