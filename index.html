@@ -522,6 +522,35 @@
 
     const STORAGE_KEY = "simple-data-table-state";
 
+    const storage = (() => {
+      try {
+        const testKey = "__storage_test__";
+        localStorage.setItem(testKey, "ok");
+        localStorage.removeItem(testKey);
+
+        return {
+          getItem: (key) => localStorage.getItem(key),
+          setItem: (key, value) => localStorage.setItem(key, value),
+          removeItem: (key) => localStorage.removeItem(key),
+          available: true,
+        };
+      } catch (err) {
+        console.warn("Local storage unavailable, using in-memory fallback.", err);
+        const memoryStore = {};
+
+        return {
+          getItem: (key) => memoryStore[key] || null,
+          setItem: (key, value) => {
+            memoryStore[key] = value;
+          },
+          removeItem: (key) => {
+            delete memoryStore[key];
+          },
+          available: false,
+        };
+      }
+    })();
+
     const addRowBtn = document.getElementById("addRowBtn");
     const addColBtn = document.getElementById("addColBtn");
     const exportBtn = document.getElementById("exportBtn");
@@ -1094,7 +1123,7 @@
 
     function saveTableState() {
       const state = collectTableState();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      storage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
     function buildHeader(
@@ -1449,7 +1478,7 @@
     }
 
     function loadTableState() {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = storage.getItem(STORAGE_KEY);
       if (!saved) return false;
 
       try {
@@ -1601,7 +1630,7 @@
 
       if (!confirmed) return;
 
-      localStorage.removeItem(STORAGE_KEY);
+      storage.removeItem(STORAGE_KEY);
       applyState(buildDefaultState());
       saveTableState();
     }
