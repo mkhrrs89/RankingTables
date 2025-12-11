@@ -214,6 +214,11 @@
       text-align: left;
     }
 
+    th:not(:last-child),
+    td:not(:last-child) {
+      border-right: 1px solid rgba(30, 41, 59, 0.6);
+    }
+
     th {
       font-weight: 500;
       text-transform: uppercase;
@@ -398,15 +403,18 @@
 
     .column-letter-row th {
       border-bottom: 1px solid rgba(30, 41, 59, 0.85);
-      padding: 6px 10px;
-      text-align: center;
+      padding: 0;
+      text-align: left;
     }
 
     .column-letter {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2px 6px;
+      padding: 0;
+    }
+
+    .column-letter-pill {
+      display: block;
+      width: 100%;
+      padding: 8px 10px;
       border-radius: 6px;
       background: rgba(148, 163, 184, 0.12);
       border: 1px solid rgba(148, 163, 184, 0.35);
@@ -467,9 +475,15 @@
       <table id="dataTable">
         <thead>
           <tr class="column-letter-row">
-            <th data-col-index="0" class="column-letter">A</th>
-            <th data-col-index="1" class="column-letter">B</th>
-            <th data-col-index="2" class="column-letter">C</th>
+            <th data-col-index="0" class="column-letter">
+              <span class="column-letter-pill">A</span>
+            </th>
+            <th data-col-index="1" class="column-letter">
+              <span class="column-letter-pill">B</span>
+            </th>
+            <th data-col-index="2" class="column-letter">
+              <span class="column-letter-pill">C</span>
+            </th>
           </tr>
           <tr class="header-row">
             <th data-col-index="0" class="icon-cell">
@@ -573,7 +587,10 @@
         const letterCell = document.createElement("th");
         letterCell.className = "column-letter";
         letterCell.dataset.colIndex = index;
-        letterCell.textContent = indexToColumnLabel(index);
+        const pill = document.createElement("span");
+        pill.className = "column-letter-pill";
+        pill.textContent = indexToColumnLabel(index);
+        letterCell.appendChild(pill);
         letterRow.appendChild(letterCell);
       }
 
@@ -1236,7 +1253,12 @@
       const letterCell = getLetterCells()[index];
       if (!letterCell) return;
       letterCell.dataset.colIndex = index;
-      letterCell.textContent = indexToColumnLabel(index);
+      const pill = letterCell.querySelector(".column-letter-pill");
+      if (pill) {
+        pill.textContent = indexToColumnLabel(index);
+      } else {
+        letterCell.textContent = indexToColumnLabel(index);
+      }
     }
 
     function getNumericCellValue(row, colIndex) {
