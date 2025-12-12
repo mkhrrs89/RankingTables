@@ -1894,6 +1894,12 @@
       ensureLetterCells(headers.length);
       headers.forEach((th, idx) => {
         th.dataset.colIndex = idx;
+        const isLocked = isLockedColumnIndex(idx);
+        th.draggable = !isLocked;
+        const dragHandle = th.querySelector(".drag-handle");
+        if (dragHandle) {
+          dragHandle.style.display = isLocked ? "none" : "";
+        }
         ensureColumnLetter(th, idx);
       });
       applyStickyColumns();
