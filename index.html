@@ -367,6 +367,36 @@
       cursor: default;
     }
 
+    .suggestion-dropdown {
+      position: absolute;
+      background: var(--panel);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      border-radius: 10px;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+      padding: 6px 0;
+      z-index: 20;
+      min-width: 140px;
+      overflow: hidden;
+    }
+
+    .suggestion-dropdown.hidden {
+      display: none;
+    }
+
+    .suggestion-item {
+      padding: 7px 14px;
+      cursor: pointer;
+      color: var(--text);
+      white-space: nowrap;
+      font-size: 0.85rem;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+
+    .suggestion-item:hover {
+      background: var(--cell-hover);
+      color: var(--accent);
+    }
+
     .icon-cell {
       width: 44px;
       text-align: center;
@@ -661,6 +691,14 @@
     let isDraggingColumn = false;
     let dragSourceIndex = null;
 
+    const NUMERIC_VALUE_PATTERN = /^-?\d+(?:\.\d+)?$/;
+    const columnSuggestions = new Map();
+    let activeSuggestionCell = null;
+
+    const suggestionDropdown = document.createElement("div");
+    suggestionDropdown.className = "suggestion-dropdown hidden";
+    document.body.appendChild(suggestionDropdown);
+
     function columnLabelToIndex(label) {
       if (!/^[A-Za-z]+$/.test(label)) return null;
       const upper = label.toUpperCase();
@@ -714,6 +752,7 @@
         if (!formula) {
           div.setAttribute("contenteditable", "true");
           div.addEventListener("keydown", handleCellKeyDown);
+          attachSuggestionEvents(div);
         } else {
           div.classList.add("formula-cell");
         }
@@ -734,6 +773,7 @@
           div.setAttribute("contenteditable", "true");
           div.addEventListener("input", handleCellChange);
           div.addEventListener("keydown", handleCellKeyDown);
+          attachSuggestionEvents(div);
         } else {
           div.classList.add("formula-cell");
         }
@@ -910,9 +950,129 @@
       }
     }
 
-    function handleCellChange() {
+    function handleCellChange(event) {
+      if (event?.target) {
+        const cell = event.target;
+        const td = cell.closest("td");
+        const colIndex = td?.cellIndex;
+        const header = Number.isInteger(colIndex)
+          ? getHeaderCells()[colIndex]
+          : null;
+
+        if (header?.dataset.type !== COLUMN_TYPES.ICON) {
+          rememberColumnSuggestion(colIndex, cell.textContent || "");
+        }
+      }
+
       recalculateFormulas();
       saveTableState();
+    }
+
+    function shouldStoreSuggestion(value) {
+      const trimmed = value.trim();
+      if (!trimmed) return false;
+      if (NUMERIC_VALUE_PATTERN.test(trimmed)) return false;
+      return /[a-zA-Z]/.test(trimmed) || trimmed.includes(" ");
+    }
+
+    function rememberColumnSuggestion(colIndex, value) {
+      if (!Number.isInteger(colIndex) || !shouldStoreSuggestion(value)) return;
+      if (!columnSuggestions.has(colIndex)) {
+        columnSuggestions.set(colIndex, new Set());
+      }
+
+      columnSuggestions.get(colIndex).add(value.trim());
+    }
+
+    function rebuildColumnSuggestionsFromTable() {
+      columnSuggestions.clear();
+      const headers = getColumnDefinitions();
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        headers.forEach((col, idx) => {
+          if (col.type === COLUMN_TYPES.ICON) return;
+          const cell = row.children[idx]?.querySelector(".cell, .name-cell");
+          if (!cell) return;
+          rememberColumnSuggestion(idx, cell.textContent || "");
+        });
+      });
+    }
+
+    function getSuggestionsForColumn(colIndex, currentValue = "") {
+      const suggestions = columnSuggestions.get(colIndex);
+      if (!suggestions) return [];
+      const normalizedCurrent = currentValue.trim();
+      return Array.from(suggestions).filter((entry) => entry !== normalizedCurrent);
+    }
+
+    function hideSuggestionDropdown() {
+      suggestionDropdown.classList.add("hidden");
+      suggestionDropdown.innerHTML = "";
+      activeSuggestionCell = null;
+    }
+
+    function positionSuggestionDropdown(cell) {
+      const rect = cell.getBoundingClientRect();
+      suggestionDropdown.style.minWidth = `${rect.width}px`;
+      suggestionDropdown.style.left = `${window.scrollX + rect.left}px`;
+      suggestionDropdown.style.top = `${window.scrollY + rect.bottom + 6}px`;
+    }
+
+    function applySuggestion(cell, value) {
+      cell.textContent = value;
+      placeCursorAtEnd(cell);
+      cell.focus();
+      handleCellChange({ target: cell });
+      hideSuggestionDropdown();
+    }
+
+    function showSuggestionsForCell(cell) {
+      const td = cell.closest("td");
+      const colIndex = td?.cellIndex;
+      if (!Number.isInteger(colIndex)) return;
+
+      const options = getSuggestionsForColumn(colIndex, cell.textContent || "");
+      if (!options.length) {
+        hideSuggestionDropdown();
+        return;
+      }
+
+      suggestionDropdown.innerHTML = "";
+
+      options.forEach((option) => {
+        const item = document.createElement("div");
+        item.className = "suggestion-item";
+        item.textContent = option;
+        item.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          applySuggestion(cell, option);
+        });
+        suggestionDropdown.appendChild(item);
+      });
+
+      activeSuggestionCell = cell;
+      positionSuggestionDropdown(cell);
+      suggestionDropdown.classList.remove("hidden");
+    }
+
+    function attachSuggestionEvents(cell) {
+      if (cell.dataset.suggestionAttached === "true") return;
+
+      cell.addEventListener("focus", () => showSuggestionsForCell(cell));
+      cell.addEventListener("input", () => {
+        if (activeSuggestionCell === cell) {
+          showSuggestionsForCell(cell);
+        }
+      });
+
+      cell.addEventListener("blur", () => {
+        setTimeout(() => {
+          if (!suggestionDropdown.matches(":hover")) {
+            hideSuggestionDropdown();
+          }
+        }, 120);
+      });
+
+      cell.dataset.suggestionAttached = "true";
     }
 
     function addRow() {
@@ -1497,6 +1657,7 @@
     }
 
     function saveTableState() {
+      rebuildColumnSuggestionsFromTable();
       const state = collectTableState();
       storage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
@@ -1711,6 +1872,8 @@
         cell.addEventListener("keydown", handleCellKeyDown);
         cell.dataset.keyboardListenerAttached = "true";
       }
+
+      attachSuggestionEvents(cell);
     }
 
     function syncFormulaColumnCells() {
@@ -1932,6 +2095,7 @@
       resetSortState();
       syncFormulaColumnCells();
       recalculateFormulas();
+      rebuildColumnSuggestionsFromTable();
       return true;
     }
 
@@ -2088,6 +2252,16 @@
 
       reader.readAsArrayBuffer(file);
     }
+
+    document.addEventListener("click", (event) => {
+      if (suggestionDropdown.classList.contains("hidden")) return;
+      if (suggestionDropdown.contains(event.target)) return;
+      if (activeSuggestionCell && activeSuggestionCell.contains(event.target)) {
+        return;
+      }
+
+      hideSuggestionDropdown();
+    });
 
     function clearData() {
       const confirmed = confirm(
