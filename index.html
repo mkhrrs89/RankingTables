@@ -726,6 +726,22 @@
     suggestionDropdown.className = "suggestion-dropdown hidden";
     document.body.appendChild(suggestionDropdown);
 
+    document.addEventListener("focusin", (event) => {
+      if (!activeSuggestionCell) return;
+      const targetCell = event.target.closest?.(".cell, .name-cell");
+      if (targetCell === activeSuggestionCell) return;
+      if (suggestionDropdown.contains(event.target)) return;
+      hideSuggestionDropdown();
+    });
+
+    document.addEventListener("mousedown", (event) => {
+      if (!activeSuggestionCell) return;
+      if (suggestionDropdown.contains(event.target)) return;
+      const targetCell = event.target.closest?.(".cell, .name-cell");
+      if (targetCell === activeSuggestionCell) return;
+      hideSuggestionDropdown();
+    });
+
     let isSyncingScroll = false;
 
     function refreshScrollbars() {
@@ -778,6 +794,41 @@
         n = Math.floor((n - 1) / 26);
       }
       return label;
+    }
+
+    function normalizeHeaderLabel(label) {
+      return (label || "").trim().toLowerCase();
+    }
+
+    function escapeRegExp(str) {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function getColumnLabelLookup(columns = getColumnDefinitions()) {
+      const lookup = new Map();
+      columns.forEach((col, idx) => {
+        const normalized = normalizeHeaderLabel(col.label);
+        if (normalized && !lookup.has(normalized)) {
+          lookup.set(normalized, { index: idx, label: col.label });
+        }
+      });
+      return lookup;
+    }
+
+    function getColumnIndexByLabel(lookup, rawLabel) {
+      const normalized = normalizeHeaderLabel(rawLabel);
+      const entry = lookup.get(normalized);
+      if (entry) return entry.index;
+      const fallback = columnLabelToIndex(rawLabel);
+      return fallback;
+    }
+
+    function buildColumnLabelPattern(lookup) {
+      const labels = Array.from(lookup.values())
+        .map(({ label }) => escapeRegExp(label || ""))
+        .filter(Boolean);
+      if (!labels.length) return null;
+      return new RegExp(`\\b(${labels.join("|")})\\b`, "gi");
     }
 
     function buildImageSearchUrl(query) {
@@ -955,22 +1006,33 @@
       selection.addRange(range);
     }
 
-    function moveToCellBelow(cellElement) {
-      const currentTd = cellElement.closest("td");
+    function moveFocusByOffset(currentCell, { rowOffset = 0, colOffset = 0 }) {
+      const currentTd = currentCell.closest("td");
       const currentRow = currentTd?.parentElement;
       if (!currentTd || !currentRow) return;
 
-      const currentIndex = Array.from(currentRow.children).indexOf(currentTd);
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const currentRowIndex = rows.indexOf(currentRow);
+      const currentColIndex = Array.from(currentRow.children).indexOf(currentTd);
 
-      let nextRow = currentRow.nextElementSibling;
-      if (!nextRow) {
+      if (currentColIndex < 0 || currentRowIndex < 0) return;
+
+      let targetRowIndex = currentRowIndex + rowOffset;
+      const targetColIndex = currentColIndex + colOffset;
+
+      if (targetColIndex < 0 || targetColIndex >= getHeaderCells().length) return;
+
+      if (targetRowIndex < 0) targetRowIndex = 0;
+
+      if (targetRowIndex >= rows.length) {
         addRow();
-        nextRow = tbody.lastElementChild;
+        targetRowIndex = tbody.querySelectorAll("tr").length - 1;
       }
 
-      const nextCell = nextRow?.children
-        ? nextRow.children[currentIndex]?.querySelector(".cell, .name-cell")
-        : null;
+      const targetRow = tbody.querySelectorAll("tr")[targetRowIndex];
+      const nextCell = targetRow?.children?.[targetColIndex]?.querySelector(
+        ".cell, .name-cell"
+      );
 
       if (nextCell) {
         nextCell.focus();
@@ -979,9 +1041,38 @@
     }
 
     function handleCellKeyDown(event) {
+      const cell = event.currentTarget;
+      const selection = window.getSelection();
+      const isInCell = selection && cell.contains(selection.anchorNode);
+      const isCollapsed = Boolean(selection?.isCollapsed);
+      const caretOffset = isInCell && isCollapsed ? selection.anchorOffset : null;
+      const cellLength = cell.textContent?.length || 0;
+      const atStart = caretOffset === 0;
+      const atEnd = caretOffset === cellLength;
+
       if (event.key === "Enter") {
         event.preventDefault();
-        moveToCellBelow(event.currentTarget);
+        moveFocusByOffset(cell, { rowOffset: 1, colOffset: 0 });
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        moveFocusByOffset(cell, { rowOffset: 1, colOffset: 0 });
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        moveFocusByOffset(cell, { rowOffset: -1, colOffset: 0 });
+      }
+
+      if (event.key === "ArrowLeft" && (atStart || cellLength === 0)) {
+        event.preventDefault();
+        moveFocusByOffset(cell, { rowOffset: 0, colOffset: -1 });
+      }
+
+      if (event.key === "ArrowRight" && (atEnd || cellLength === 0)) {
+        event.preventDefault();
+        moveFocusByOffset(cell, { rowOffset: 0, colOffset: 1 });
       }
     }
 
@@ -1122,14 +1213,6 @@
         if (activeSuggestionCell === cell) {
           showSuggestionsForCell(cell);
         }
-      });
-
-      cell.addEventListener("blur", () => {
-        setTimeout(() => {
-          if (!suggestionDropdown.matches(":hover")) {
-            hideSuggestionDropdown();
-          }
-        }, 120);
       });
 
       cell.dataset.suggestionAttached = "true";
@@ -1487,18 +1570,18 @@
 
       th.addEventListener("dblclick", (e) => {
         e.stopPropagation();
-        const label = th.querySelector(".header-label");
-        const currentName = (label?.textContent || "").trim();
-        const newName = prompt("Rename column:", currentName) || currentName;
-        if (label && newName.trim()) {
-          label.textContent = newName.trim();
-          saveTableState();
-        }
+          const label = th.querySelector(".header-label");
+          const currentName = (label?.textContent || "").trim();
+          const newName = prompt("Rename column:", currentName) || currentName;
+          if (label && newName.trim()) {
+            label.textContent = newName.trim();
+            saveTableState();
+          }
 
-        if (th.dataset.type !== COLUMN_TYPES.ICON) {
-          const existingFormula = th.dataset.formula || "";
-          const formulaInput = prompt(
-            "Set formula for this column (use column letters, e.g. =AVERAGE(D:H)). Leave blank to clear.",
+          if (th.dataset.type !== COLUMN_TYPES.ICON) {
+            const existingFormula = th.dataset.formula || "";
+            const formulaInput = prompt(
+            "Set formula for this column (use column headers, e.g. =AVERAGE(Rating:Score)). Leave blank to clear.",
             existingFormula
           );
 
@@ -1831,10 +1914,10 @@
       return Number.isFinite(num) ? num : 0;
     }
 
-    function getRangeValues(row, range) {
+    function getRangeValues(row, range, labelLookup) {
       const [startLabel, endLabel] = range.split(":").map((part) => part.trim());
-      const startIndex = columnLabelToIndex(startLabel);
-      const endIndex = columnLabelToIndex(endLabel);
+      const startIndex = getColumnIndexByLabel(labelLookup, startLabel);
+      const endIndex = getColumnIndexByLabel(labelLookup, endLabel);
       if (startIndex === null || endIndex === null) return [];
 
       const from = Math.min(startIndex, endIndex);
@@ -1851,15 +1934,19 @@
       const normalized = formula.trim().replace(/^=/, "");
       if (!normalized) return "";
 
+      const labelLookup = getColumnLabelLookup();
+      const labelPattern = buildColumnLabelPattern(labelLookup);
+
       const resolveArguments = (argsStr) =>
         argsStr
           .split(",")
           .flatMap((part) => {
             const trimmed = part.trim();
             if (!trimmed) return [];
-            if (trimmed.includes(":")) return getRangeValues(row, trimmed);
+            if (trimmed.includes(":"))
+              return getRangeValues(row, trimmed, labelLookup);
 
-            const idx = columnLabelToIndex(trimmed);
+            const idx = getColumnIndexByLabel(labelLookup, trimmed);
             if (idx !== null) return [getNumericCellValue(row, idx)];
 
             const direct = parseFloat(trimmed);
@@ -1889,11 +1976,13 @@
         }
       );
 
-      expression = expression.replace(/\b([A-Z]{1,3})\b/g, (match, label) => {
-        const idx = columnLabelToIndex(label);
-        if (idx === null) return "0";
-        return getNumericCellValue(row, idx);
-      });
+      if (labelPattern) {
+        expression = expression.replace(labelPattern, (match) => {
+          const idx = getColumnIndexByLabel(labelLookup, match);
+          if (idx === null) return "0";
+          return getNumericCellValue(row, idx);
+        });
+      }
 
       if (!/^[0-9+\-*/().\s]+$/.test(expression)) {
         return "ERR";
