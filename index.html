@@ -987,6 +987,18 @@
       if (!entity) return null;
 
       const birthClaim = entity?.claims?.P569?.[0];
+      if (!birthClaim) return null;
+
+      const instanceClaims = entity?.claims?.P31 || [];
+      const isHuman =
+        instanceClaims.length === 0 ||
+        instanceClaims.some((claim) => {
+          const id = claim?.mainsnak?.datavalue?.value?.id;
+          return typeof id === "string" && id.toUpperCase() === "Q5";
+        });
+
+      if (!isHuman) return null;
+
       const deathClaim = entity?.claims?.P570?.[0];
 
       const birth = extractWikidataDate(birthClaim);
@@ -1130,10 +1142,14 @@
     }
 
     function handleCellChange(event) {
+      let colIndex = null;
+      let row = null;
+
       if (event?.target) {
         const cell = event.target;
         const td = cell.closest("td");
-        const colIndex = td?.cellIndex;
+        colIndex = td?.cellIndex;
+        row = td?.parentElement || null;
         const header = Number.isInteger(colIndex)
           ? getHeaderCells()[colIndex]
           : null;
@@ -1143,7 +1159,35 @@
         }
       }
 
-      recalculateFormulas();
+      const columns = getColumnDefinitions();
+      const ageColumnIndices = getAgeColumnIndices(columns);
+      const hasAgeColumns = ageColumnIndices.length > 0;
+      const nameColumnIndex = findColumnIndexByLabel(columns, NAME_LABEL);
+      const isNameEdit =
+        hasAgeColumns &&
+        Number.isInteger(colIndex) &&
+        colIndex === nameColumnIndex;
+
+      recalculateFormulas({ skipAgeUpdate: hasAgeColumns });
+
+      if (hasAgeColumns) {
+        if (isNameEdit && row) {
+          const existingTimer = ageUpdateDebounceTimers.get(row);
+          if (existingTimer) {
+            clearTimeout(existingTimer);
+          }
+
+          const timeoutId = window.setTimeout(() => {
+            ageUpdateDebounceTimers.delete(row);
+            updateAgeColumns(columns);
+          }, 500);
+
+          ageUpdateDebounceTimers.set(row, timeoutId);
+        } else {
+          updateAgeColumns(columns);
+        }
+      }
+
       saveTableState();
     }
 
@@ -2141,7 +2185,7 @@
       });
     }
 
-    function recalculateFormulas() {
+    function recalculateFormulas({ skipAgeUpdate = false } = {}) {
       const columns = getColumnDefinitions();
       const formulaColumns = columns
         .map((col, idx) => ({ idx, formula: col.formula }))
@@ -2158,7 +2202,9 @@
         });
       }
 
-      updateAgeColumns(columns);
+      if (!skipAgeUpdate) {
+        updateAgeColumns(columns);
+      }
     }
 
     function findColumnIndexByLabel(columns, targetLabel) {
@@ -2185,6 +2231,7 @@
     }
 
     const ageRequestTokens = new WeakMap();
+    const ageUpdateDebounceTimers = new WeakMap();
 
     function updateAgeColumns(columns = getColumnDefinitions()) {
       const nameColumnIndex = findColumnIndexByLabel(columns, NAME_LABEL);
