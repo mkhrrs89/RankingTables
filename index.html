@@ -697,6 +697,7 @@
         div.className = "cell name-cell";
         if (!formula) {
           div.setAttribute("contenteditable", "true");
+          div.addEventListener("keydown", handleCellKeyDown);
         } else {
           div.classList.add("formula-cell");
         }
@@ -716,6 +717,7 @@
         if (!formula) {
           div.setAttribute("contenteditable", "true");
           div.addEventListener("input", handleCellChange);
+          div.addEventListener("keydown", handleCellKeyDown);
         } else {
           div.classList.add("formula-cell");
         }
@@ -827,6 +829,46 @@
       return fetchPromise;
     }
 
+    function placeCursorAtEnd(element) {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      range.collapse(false);
+
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    function moveToCellBelow(cellElement) {
+      const currentTd = cellElement.closest("td");
+      const currentRow = currentTd?.parentElement;
+      if (!currentTd || !currentRow) return;
+
+      const currentIndex = Array.from(currentRow.children).indexOf(currentTd);
+
+      let nextRow = currentRow.nextElementSibling;
+      if (!nextRow) {
+        addRow();
+        nextRow = tbody.lastElementChild;
+      }
+
+      const nextCell = nextRow?.children
+        ? nextRow.children[currentIndex]?.querySelector(".cell, .name-cell")
+        : null;
+
+      if (nextCell) {
+        nextCell.focus();
+        placeCursorAtEnd(nextCell);
+      }
+    }
+
+    function handleCellKeyDown(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        moveToCellBelow(event.currentTarget);
+      }
+    }
+
     function handleNameInput(event) {
       const nameCell = event.target;
       const text = nameCell.textContent.trim();
@@ -870,6 +912,8 @@
       syncFormulaColumnCells();
       recalculateFormulas();
       saveTableState();
+
+      return tr;
     }
 
     function parseIndexList(input, { max }) {
@@ -1645,6 +1689,11 @@
           cell.addEventListener("input", handleCellChange);
           cell.dataset.textListenerAttached = "true";
         }
+      }
+
+      if (!cell.dataset.keyboardListenerAttached) {
+        cell.addEventListener("keydown", handleCellKeyDown);
+        cell.dataset.keyboardListenerAttached = "true";
       }
     }
 
