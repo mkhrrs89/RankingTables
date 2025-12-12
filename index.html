@@ -872,12 +872,45 @@
       saveTableState();
     }
 
+    function parseIndexList(input, { max }) {
+      const parts = input
+        .split(/[\s,]+/)
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+      const indices = parts
+        .map((part) => Number.parseInt(part, 10))
+        .filter((num) => Number.isFinite(num) && num >= 1 && num <= max);
+
+      return Array.from(new Set(indices));
+    }
+
     function deleteRow() {
       const rows = Array.from(tbody.querySelectorAll("tr"));
-      if (!rows.length) return;
+      if (!rows.length) {
+        alert("There are no rows to delete.");
+        return;
+      }
 
-      const rowToRemove = rows[rows.length - 1];
-      rowToRemove.remove();
+      const input = prompt(
+        `Enter row numbers to delete (1-${rows.length}), separated by commas:`,
+        String(rows.length)
+      );
+
+      if (input === null || input.trim() === "") return;
+
+      const indicesToDelete = parseIndexList(input, { max: rows.length });
+
+      if (!indicesToDelete.length) {
+        alert("No valid row numbers were provided.");
+        return;
+      }
+
+      indicesToDelete
+        .sort((a, b) => b - a)
+        .forEach((rowNumber) => {
+          rows[rowNumber - 1]?.remove();
+        });
 
       saveTableState();
     }
@@ -919,6 +952,28 @@
       saveTableState();
     }
 
+    function parseColumnSelection(input, max) {
+      const parts = input
+        .split(/[\s,]+/)
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+      const indices = parts
+        .map((part) => {
+          const letterIndex = columnLabelToIndex(part);
+          if (letterIndex !== null) return letterIndex;
+
+          const numeric = Number.parseInt(part, 10);
+          if (Number.isFinite(numeric)) return numeric - 1;
+
+          return null;
+        })
+        .filter((idx) => Number.isInteger(idx) && idx >= 0)
+        .filter((idx) => idx < max);
+
+      return Array.from(new Set(indices));
+    }
+
     function deleteColumn() {
       const headers = getHeaderCells();
       if (headers.length <= 1) {
@@ -926,13 +981,39 @@
         return;
       }
 
-      const targetIndex = headers.length - 1;
-      headers[targetIndex]?.remove();
-      getLetterCells()[targetIndex]?.remove();
+      const availableLabels = headers
+        .map((_, idx) => indexToColumnLabel(idx))
+        .join(", ");
 
-      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
-        row.children[targetIndex]?.remove();
-      });
+      const input = prompt(
+        `Enter column letters or numbers to delete (e.g., B or 2). Separate multiple with commas. Available: ${availableLabels}`,
+        indexToColumnLabel(headers.length - 1)
+      );
+
+      if (input === null || input.trim() === "") return;
+
+      const indicesToDelete = parseColumnSelection(input, headers.length);
+
+      if (!indicesToDelete.length) {
+        alert("No valid column identifiers were provided.");
+        return;
+      }
+
+      if (headers.length - indicesToDelete.length < 1) {
+        alert("At least one column must remain in the table.");
+        return;
+      }
+
+      indicesToDelete
+        .sort((a, b) => b - a)
+        .forEach((colIndex) => {
+          headers[colIndex]?.remove();
+          getLetterCells()[colIndex]?.remove();
+
+          Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+            row.children[colIndex]?.remove();
+          });
+        });
 
       refreshColumnIndices();
       resetSortState();
