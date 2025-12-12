@@ -157,28 +157,46 @@
       box-shadow: 0 0 18px rgba(239, 68, 68, 0.35);
     }
 
+    .table-scrollbar,
     .table-wrapper {
       border-radius: 14px;
       border: 1px solid rgba(51, 65, 85, 0.8);
       background: rgba(15, 23, 42, 0.95);
-      overflow-x: auto;
       scrollbar-width: thin;
       scrollbar-color: rgba(56, 189, 248, 0.7) rgba(30, 41, 59, 0.85);
     }
 
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .table-scrollbar {
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: 12px;
+      margin-bottom: 10px;
+    }
+
+    .table-scrollbar::-webkit-scrollbar,
     .table-wrapper::-webkit-scrollbar {
       height: 8px;
     }
 
+    .table-scrollbar::-webkit-scrollbar-track,
     .table-wrapper::-webkit-scrollbar-track {
       background: rgba(30, 41, 59, 0.85);
       border-radius: 999px;
     }
 
+    .table-scrollbar::-webkit-scrollbar-thumb,
     .table-wrapper::-webkit-scrollbar-thumb {
       background: linear-gradient(90deg, #38bdf8, #0ea5e9);
       border-radius: 999px;
       border: 1px solid rgba(14, 165, 233, 0.5);
+    }
+
+    .table-scrollbar-inner {
+      height: 1px;
     }
 
     table {
@@ -197,7 +215,8 @@
         padding: 16px;
       }
 
-      .table-wrapper {
+      .table-wrapper,
+      .table-scrollbar {
         margin: 0 -6px;
       }
 
@@ -533,7 +552,11 @@
       />
     </div>
 
-    <div class="table-wrapper">
+    <div class="table-scrollbar" id="tableScrollTop">
+      <div class="table-scrollbar-inner" id="tableScrollTopInner"></div>
+    </div>
+
+    <div class="table-wrapper" id="tableWrapper">
       <table id="dataTable">
         <thead>
           <tr class="column-letter-row">
@@ -591,6 +614,9 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     const table = document.getElementById("dataTable");
+    const tableWrapper = document.getElementById("tableWrapper");
+    const topScrollbar = document.getElementById("tableScrollTop");
+    const topScrollbarInner = document.getElementById("tableScrollTopInner");
     const thead = table.querySelector("thead");
     const headerRow = thead.querySelector(".header-row");
     const letterRow = thead.querySelector(".column-letter-row");
@@ -698,6 +724,39 @@
     const suggestionDropdown = document.createElement("div");
     suggestionDropdown.className = "suggestion-dropdown hidden";
     document.body.appendChild(suggestionDropdown);
+
+    let isSyncingScroll = false;
+
+    function refreshScrollbars() {
+      if (!table || !topScrollbarInner || !tableWrapper) return;
+
+      requestAnimationFrame(() => {
+        topScrollbarInner.style.width = `${table.scrollWidth}px`;
+        if (topScrollbar) {
+          topScrollbar.scrollLeft = tableWrapper.scrollLeft;
+        }
+      });
+    }
+
+    function mirrorScrollPosition(source, target) {
+      if (!target) return;
+      if (isSyncingScroll) return;
+      isSyncingScroll = true;
+      target.scrollLeft = source.scrollLeft;
+      isSyncingScroll = false;
+    }
+
+    if (tableWrapper && topScrollbar) {
+      tableWrapper.addEventListener("scroll", () =>
+        mirrorScrollPosition(tableWrapper, topScrollbar)
+      );
+
+      topScrollbar.addEventListener("scroll", () =>
+        mirrorScrollPosition(topScrollbar, tableWrapper)
+      );
+    }
+
+    window.addEventListener("resize", refreshScrollbars);
 
     function columnLabelToIndex(label) {
       if (!/^[A-Za-z]+$/.test(label)) return null;
@@ -1167,6 +1226,7 @@
       });
 
       setColumnWidth(newIndex, 140);
+      refreshScrollbars();
 
       recalculateFormulas();
       saveTableState();
@@ -1239,6 +1299,7 @@
       resetSortState();
       syncColumnLetterWidths();
       syncFormulaColumnCells();
+      refreshScrollbars();
       recalculateFormulas();
       saveTableState();
     }
@@ -1315,6 +1376,7 @@
         header.dataset.type === COLUMN_TYPES.ICON ? MIN_ICON_WIDTH : MIN_COLUMN_WIDTH;
       const width = Math.max(minWidth, rawWidth);
       applyWidthToCells(colIndex, width);
+      refreshScrollbars();
     }
 
     function applySavedColumnWidths() {
@@ -1546,6 +1608,7 @@
       refreshColumnIndices();
       resetSortState();
       syncFormulaColumnCells();
+      refreshScrollbars();
       recalculateFormulas();
     }
 
@@ -2096,6 +2159,7 @@
       syncFormulaColumnCells();
       recalculateFormulas();
       rebuildColumnSuggestionsFromTable();
+      refreshScrollbars();
       return true;
     }
 
