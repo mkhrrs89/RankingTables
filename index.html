@@ -247,6 +247,7 @@
       padding: 8px 10px;
       font-size: 0.85rem;
       text-align: left;
+      vertical-align: middle;
     }
 
     th:not(:last-child),
@@ -311,6 +312,10 @@
       cursor: grab;
     }
 
+    .locked-column .drag-handle {
+      display: none;
+    }
+
     th.drag-over {
       outline: 1px dashed rgba(34, 197, 94, 0.55);
       outline-offset: 4px;
@@ -362,9 +367,13 @@
       border-radius: 6px;
       padding: 4px 6px;
       margin: -4px -6px;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       min-height: 18px;
       cursor: text;
+      width: 100%;
+      text-align: center;
     }
 
     .cell:focus {
@@ -421,6 +430,24 @@
       width: 44px;
       text-align: center;
       padding-right: 6px;
+    }
+
+    .sticky-col {
+      position: sticky;
+      left: var(--sticky-left, 0);
+      background: rgba(15, 23, 42, 0.99);
+    }
+
+    thead .sticky-col {
+      z-index: 7;
+    }
+
+    .column-letter-row .sticky-col {
+      z-index: 8;
+    }
+
+    tbody .sticky-col {
+      z-index: 3;
     }
 
     .image-link {
@@ -712,6 +739,7 @@
 
     const MIN_COLUMN_WIDTH = 70;
     const MIN_ICON_WIDTH = 50;
+    const LOCKED_COLUMN_COUNT = 2;
 
     // Track sort direction per column: "asc" or "desc"
     const sortState = {};
@@ -1228,6 +1256,7 @@
 
       tbody.appendChild(tr);
       applyColumnWidthsToRow(tr);
+      applyStickyColumns();
       syncFormulaColumnCells();
       recalculateFormulas();
       saveTableState();
@@ -1449,6 +1478,7 @@
       });
 
       syncColumnLetterWidths();
+      applyStickyColumns();
     }
 
     function setColumnWidth(colIndex, rawWidth) {
@@ -1469,6 +1499,53 @@
         const width = getColumnWidth(th);
         if (Number.isFinite(width)) {
           applyWidthToCells(idx, width);
+        }
+      });
+    }
+
+    function isLockedColumnIndex(index) {
+      return Number.isInteger(index) && index < LOCKED_COLUMN_COUNT;
+    }
+
+    function applyStickyColumns() {
+      const headers = getHeaderCells();
+      const letters = getLetterCells();
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+
+      let offset = 0;
+
+      headers.forEach((th, idx) => {
+        const isLocked = isLockedColumnIndex(idx);
+        const rawWidth = getColumnWidth(th);
+        const fallbackWidth =
+          th.dataset.type === COLUMN_TYPES.ICON ? MIN_ICON_WIDTH : MIN_COLUMN_WIDTH;
+        const width = rawWidth || fallbackWidth;
+        const leftValue = isLocked ? offset : null;
+
+        [th, letters[idx]].forEach((cell) => {
+          if (!cell) return;
+          cell.classList.toggle("sticky-col", isLocked);
+          cell.classList.toggle("locked-column", isLocked);
+          if (isLocked && leftValue !== null) {
+            cell.style.setProperty("--sticky-left", `${leftValue}px`);
+          } else {
+            cell.style.removeProperty("--sticky-left");
+          }
+        });
+
+        rows.forEach((row) => {
+          const td = row.children[idx];
+          if (!td) return;
+          td.classList.toggle("sticky-col", isLocked);
+          if (isLocked && leftValue !== null) {
+            td.style.setProperty("--sticky-left", `${leftValue}px`);
+          } else {
+            td.style.removeProperty("--sticky-left");
+          }
+        });
+
+        if (isLocked) {
+          offset += width;
         }
       });
     }
@@ -1536,7 +1613,9 @@
     function attachHeaderEvents(th) {
       if (th.dataset.eventsAttached === "true") return;
 
-      th.draggable = true;
+      const initialIndex = getHeaderIndex(th);
+      const isLocked = isLockedColumnIndex(initialIndex);
+      th.draggable = !isLocked;
 
       th.addEventListener("mousemove", (e) => {
         if (columnResizeState.active) return;
@@ -1602,56 +1681,59 @@
         }
       });
 
-      th.addEventListener("dragstart", (e) => {
-        dragSourceIndex = getHeaderIndex(th);
-        isDraggingColumn = true;
-        th.classList.add("dragging");
-        e.dataTransfer.setData("text/plain", String(dragSourceIndex));
-        e.dataTransfer.effectAllowed = "move";
-      });
+      if (!isLocked) {
+        th.addEventListener("dragstart", (e) => {
+          dragSourceIndex = getHeaderIndex(th);
+          isDraggingColumn = true;
+          th.classList.add("dragging");
+          e.dataTransfer.setData("text/plain", String(dragSourceIndex));
+          e.dataTransfer.effectAllowed = "move";
+        });
 
-      th.addEventListener("dragenter", (e) => {
-        e.preventDefault();
-        th.classList.add("drag-over");
-      });
+        th.addEventListener("dragenter", (e) => {
+          e.preventDefault();
+          th.classList.add("drag-over");
+        });
 
-      th.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        th.classList.add("drag-over");
-        e.dataTransfer.dropEffect = "move";
-      });
+        th.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          th.classList.add("drag-over");
+          e.dataTransfer.dropEffect = "move";
+        });
 
-      th.addEventListener("dragleave", () => {
-        th.classList.remove("drag-over");
-      });
+        th.addEventListener("dragleave", () => {
+          th.classList.remove("drag-over");
+        });
 
-      th.addEventListener("dragend", () => {
-        isDraggingColumn = false;
-        clearHeaderDragState();
-      });
+        th.addEventListener("dragend", () => {
+          isDraggingColumn = false;
+          clearHeaderDragState();
+        });
 
-      th.addEventListener("drop", (e) => {
-        e.preventDefault();
-        const targetIndex = getHeaderIndex(th);
-        clearHeaderDragState();
+        th.addEventListener("drop", (e) => {
+          e.preventDefault();
+          const targetIndex = getHeaderIndex(th);
+          clearHeaderDragState();
 
-        if (dragSourceIndex === null || dragSourceIndex === targetIndex) {
+          if (dragSourceIndex === null || dragSourceIndex === targetIndex) {
+            isDraggingColumn = false;
+            dragSourceIndex = null;
+            return;
+          }
+
+          reorderColumns(dragSourceIndex, targetIndex);
           isDraggingColumn = false;
           dragSourceIndex = null;
-          return;
-        }
-
-        reorderColumns(dragSourceIndex, targetIndex);
-        isDraggingColumn = false;
-        dragSourceIndex = null;
-        saveTableState();
-      });
+          saveTableState();
+        });
+      }
 
       th.dataset.eventsAttached = "true";
     }
 
     function reorderColumns(fromIndex, toIndex) {
       if (fromIndex === toIndex) return;
+      if (isLockedColumnIndex(fromIndex) || isLockedColumnIndex(toIndex)) return;
 
       const headers = Array.from(headerRow.children);
       const movingHeader = headers[fromIndex];
@@ -1770,6 +1852,7 @@
         th.dataset.colIndex = idx;
         ensureColumnLetter(th, idx);
       });
+      applyStickyColumns();
     }
 
     function initHeaders() {
@@ -1789,7 +1872,11 @@
         ensureColumnLetter(th, index);
 
         const headerInner = th.querySelector(".header-inner");
-        if (headerInner && !headerInner.querySelector(".drag-handle")) {
+        if (
+          headerInner &&
+          !headerInner.querySelector(".drag-handle") &&
+          !isLockedColumnIndex(index)
+        ) {
           const dragHandle = document.createElement("span");
           dragHandle.className = "drag-handle";
           dragHandle.textContent = "↕";
@@ -1801,6 +1888,8 @@
 
         attachHeaderEvents(th);
       });
+
+      applyStickyColumns();
     }
 
     function saveTableState() {
@@ -1833,11 +1922,13 @@
       const headerInner = document.createElement("span");
       headerInner.className = "header-inner";
 
-      const dragHandle = document.createElement("span");
-      dragHandle.className = "drag-handle";
-      dragHandle.textContent = "↕";
-      dragHandle.setAttribute("aria-hidden", "true");
-      headerInner.appendChild(dragHandle);
+      if (!isLockedColumnIndex(index)) {
+        const dragHandle = document.createElement("span");
+        dragHandle.className = "drag-handle";
+        dragHandle.textContent = "↕";
+        dragHandle.setAttribute("aria-hidden", "true");
+        headerInner.appendChild(dragHandle);
+      }
 
       const lbl = document.createElement("span");
       lbl.className = "header-label";
