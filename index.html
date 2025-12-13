@@ -164,6 +164,9 @@
       background: rgba(15, 23, 42, 0.95);
       scrollbar-width: thin;
       scrollbar-color: rgba(56, 189, 248, 0.7) rgba(30, 41, 59, 0.85);
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+      overscroll-behavior-x: contain;
     }
 
     .table-wrapper {
@@ -826,6 +829,8 @@
     });
 
     let isSyncingScroll = false;
+    let pendingScrollFrame = null;
+    let pendingScrollLeft = null;
 
     function refreshScrollbars() {
       if (!table || !topScrollbarInner || !tableWrapper) return;
@@ -839,20 +844,33 @@
     }
 
     function mirrorScrollPosition(source, target) {
-      if (!target) return;
-      if (isSyncingScroll) return;
-      isSyncingScroll = true;
-      target.scrollLeft = source.scrollLeft;
-      isSyncingScroll = false;
+      if (!target || isSyncingScroll) return;
+      pendingScrollLeft = source.scrollLeft;
+
+      if (pendingScrollFrame) {
+        return;
+      }
+
+      pendingScrollFrame = requestAnimationFrame(() => {
+        isSyncingScroll = true;
+        target.scrollLeft = pendingScrollLeft;
+        isSyncingScroll = false;
+        pendingScrollFrame = null;
+        pendingScrollLeft = null;
+      });
     }
 
     if (tableWrapper && topScrollbar) {
-      tableWrapper.addEventListener("scroll", () =>
-        mirrorScrollPosition(tableWrapper, topScrollbar)
+      tableWrapper.addEventListener(
+        "scroll",
+        () => mirrorScrollPosition(tableWrapper, topScrollbar),
+        { passive: true }
       );
 
-      topScrollbar.addEventListener("scroll", () =>
-        mirrorScrollPosition(topScrollbar, tableWrapper)
+      topScrollbar.addEventListener(
+        "scroll",
+        () => mirrorScrollPosition(topScrollbar, tableWrapper),
+        { passive: true }
       );
     }
 
