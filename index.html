@@ -1097,7 +1097,7 @@
       if (!normalized) return null;
 
       if (birthdayCache.has(normalized)) {
-        return birthdayCache.get(normalized);
+        return await Promise.resolve(birthdayCache.get(normalized));
       }
 
       const localRecord = LOCAL_BIRTHDAY_DB[normalized];
