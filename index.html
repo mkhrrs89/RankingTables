@@ -384,12 +384,31 @@
     }
 
     th .sort-indicator {
-      display: none;
-      font-size: 0.7rem;
-      color: var(--text-muted);
+      display: inline-flex;
+      position: relative;
+      width: 12px;
+      height: 12px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    th .sort-indicator::before,
+    th .sort-indicator::after {
+      content: "";
+      position: absolute;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
       opacity: 0.4;
-      min-width: 10px;
-      text-align: center;
+    }
+
+    th .sort-indicator::before {
+      border-bottom: 5px solid var(--text-muted);
+      top: 1px;
+    }
+
+    th .sort-indicator::after {
+      border-top: 5px solid var(--text-muted);
+      bottom: 1px;
     }
 
     th.sorted-asc,
@@ -397,10 +416,22 @@
       color: var(--accent);
     }
 
-    th.sorted-asc .sort-indicator,
-    th.sorted-desc .sort-indicator {
+    th.sorted-asc .sort-indicator::before {
+      border-bottom-color: var(--accent);
       opacity: 1;
-      color: var(--accent);
+    }
+
+    th.sorted-asc .sort-indicator::after {
+      opacity: 0.2;
+    }
+
+    th.sorted-desc .sort-indicator::after {
+      border-top-color: var(--accent);
+      opacity: 1;
+    }
+
+    th.sorted-desc .sort-indicator::before {
+      opacity: 0.2;
     }
 
     tbody tr:nth-child(even) {
@@ -670,19 +701,19 @@
             <th data-col-index="0" class="icon-cell">
               <span class="header-inner">
                 <span class="header-label">Images</span>
-                <span class="sort-indicator">⇅</span>
+                <span class="sort-indicator" aria-hidden="true"></span>
               </span>
             </th>
             <th data-col-index="1">
               <span class="header-inner">
                 <span class="header-label">Name</span>
-                <span class="sort-indicator">⇅</span>
+                <span class="sort-indicator" aria-hidden="true"></span>
               </span>
             </th>
             <th data-col-index="2">
               <span class="header-inner">
                 <span class="header-label">Rating</span>
-                <span class="sort-indicator">⇅</span>
+                <span class="sort-indicator" aria-hidden="true"></span>
               </span>
             </th>
           </tr>
@@ -1977,14 +2008,10 @@
 
         if (idx === activeIndex) {
           if (direction === "asc") {
-            indicator.textContent = "▲";
             th.classList.add("sorted-asc");
           } else {
-            indicator.textContent = "▼";
             th.classList.add("sorted-desc");
           }
-        } else {
-          indicator.textContent = "⇅";
         }
       });
     }
@@ -2086,7 +2113,7 @@
 
       const sortIndicator = document.createElement("span");
       sortIndicator.className = "sort-indicator";
-      sortIndicator.textContent = "⇅";
+      sortIndicator.setAttribute("aria-hidden", "true");
 
       headerInner.appendChild(lbl);
       headerInner.appendChild(sortIndicator);
