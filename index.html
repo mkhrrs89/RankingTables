@@ -434,6 +434,16 @@
       text-align: center;
     }
 
+    .numeric-cell {
+      text-align: center;
+      justify-content: center;
+    }
+
+    .high-number {
+      color: #ff4d4d;
+      font-weight: 700;
+    }
+
     .cell:focus {
       background: rgba(15, 23, 42, 0.9);
       box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.8);
@@ -1363,6 +1373,23 @@
       cell.dataset.suggestionAttached = "true";
     }
 
+    function applyNumericStyling(cell) {
+      if (!cell) return;
+      const raw = cell.textContent || "";
+      const numericValue = Number(raw.trim());
+      const isNumeric = raw.trim() !== "" && Number.isFinite(numericValue);
+      const isHighNumber = isNumeric && numericValue >= 90;
+
+      cell.classList.toggle("numeric-cell", isNumeric);
+      cell.classList.toggle("high-number", isHighNumber);
+    }
+
+    function refreshNumericStyling() {
+      Array.from(tbody.querySelectorAll(".cell, .name-cell")).forEach(
+        applyNumericStyling
+      );
+    }
+
     function addRow() {
       const columnDefinitions = getColumnDefinitions();
       const tr = document.createElement("tr");
@@ -2277,6 +2304,7 @@
             if (!cell) return;
             const value = evaluateFormula(formula, row);
             cell.textContent = value;
+            applyNumericStyling(cell);
           });
         });
       }
@@ -2284,6 +2312,8 @@
       if (!skipAgeUpdate) {
         updateAgeColumns(columns);
       }
+
+      refreshNumericStyling();
     }
 
     function findColumnIndexByLabel(columns, targetLabel) {
@@ -2336,26 +2366,31 @@
 
           if (!personName) {
             ageCell.textContent = "";
+            applyNumericStyling(ageCell);
             return;
           }
 
           ageCell.textContent = "…";
+          applyNumericStyling(ageCell);
 
           resolvePersonDates(personName).then((record) => {
             if (ageRequestTokens.get(ageCell) !== requestToken) return;
 
             if (!record || !record.birth) {
               ageCell.textContent = "";
+              applyNumericStyling(ageCell);
               return;
             }
 
             if (record.death) {
               ageCell.textContent = "dead";
+              applyNumericStyling(ageCell);
               return;
             }
 
             const age = computeAgeFromDates(record.birth);
             ageCell.textContent = Number.isFinite(age) ? age : "";
+            applyNumericStyling(ageCell);
           });
         });
       });
