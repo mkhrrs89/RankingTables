@@ -1,0 +1,106 @@
+name: Apply controls collapse
+
+on:
+  push:
+    paths:
+      - .github/workflows/apply-controls-collapse.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-controls-collapse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Make controls collapsible and collapsed by default
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+
+          old_css = '''    .controls {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+              margin-bottom: 14px;
+            }
+          '''
+          # Normalize indentation in the literal above to match the file exactly.
+          old_css = old_css.replace("              ", "      ").replace("            }", "    }")
+
+          new_css = '''    .controls-panel {
+              margin-bottom: 14px;
+            }
+
+            .controls-panel summary {
+              width: fit-content;
+              cursor: pointer;
+              color: var(--text-muted);
+              font-size: 0.85rem;
+              font-weight: 600;
+              user-select: none;
+            }
+
+            .controls-panel[open] summary {
+              margin-bottom: 8px;
+              color: var(--text);
+            }
+
+            .controls-panel .controls {
+              margin-bottom: 0;
+            }
+
+            .controls {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+              margin-bottom: 14px;
+            }
+          '''
+          new_css = new_css.replace("              ", "      ").replace("            }", "    }")
+
+          old_open = '    <div class="controls">\n'
+          new_open = '    <details class="controls-panel">\n      <summary>Controls</summary>\n      <div class="controls">\n'
+
+          old_close = '''      />
+            </div>
+
+            <div class="table-scrollbar"'''.replace("            </div>", "    </div>").replace("            <div", "    <div")
+          new_close = '''      />
+            </div>
+            </details>
+
+            <div class="table-scrollbar"'''.replace("            </div>", "      </div>", 1).replace("            </details>", "    </details>").replace("            <div", "    <div")
+
+          if text.count(old_css) != 1:
+              raise SystemExit(f"Expected one controls CSS block, found {text.count(old_css)}")
+          if text.count(old_open) != 1:
+              raise SystemExit(f"Expected one controls opening block, found {text.count(old_open)}")
+          if text.count(old_close) != 1:
+              raise SystemExit(f"Expected one controls closing block, found {text.count(old_close)}")
+
+          text = text.replace(old_css, new_css, 1)
+          text = text.replace(old_open, new_open, 1)
+          text = text.replace(old_close, new_close, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Commit controls change
+        shell: bash
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No index.html changes were produced."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Make top controls collapsible by default"
+          git push
