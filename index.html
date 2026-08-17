@@ -860,6 +860,8 @@
     const tbody = table.querySelector("tbody");
 
     const STORAGE_KEY = "simple-data-table-state";
+    const APP_EXPORT_FORMAT = "ranking-tables-app";
+    const APP_EXPORT_VERSION = 1;
 
     const storage = (() => {
       try {
@@ -913,6 +915,13 @@
       if (tabName === "main") {
         refreshScrollbars();
       }
+    }
+
+    function getActiveTabName() {
+      return (
+        tabButtons.find((button) => button.getAttribute("aria-selected") === "true")
+          ?.dataset.tab || "main"
+      );
     }
 
     tabButtons.forEach((button) => {
@@ -2705,14 +2714,25 @@
     });
 
     function exportData() {
-      const state = collectTableState();
-      const json = JSON.stringify(state, null, 2);
+      const backup = {
+        format: APP_EXPORT_FORMAT,
+        version: APP_EXPORT_VERSION,
+        exportedAt: new Date().toISOString(),
+        activeTab: getActiveTabName(),
+        tabs: {
+          main: collectTableState(),
+          face: null,
+          tits: null,
+          ass: null,
+        },
+      };
+      const json = JSON.stringify(backup, null, 2);
       const blob = new Blob([json], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       const today = new Date().toISOString().split("T")[0];
       link.href = url;
-      link.download = `table-data-${today}.json`;
+      link.download = `ranking-tables-backup-${today}.json`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -2730,12 +2750,26 @@
         reader.onload = (e) => {
           try {
             const parsed = JSON.parse(e.target?.result);
-            const applied = applyState(parsed);
+            const isAppBackup =
+              parsed?.format === APP_EXPORT_FORMAT &&
+              parsed?.tabs?.main;
+            const tableState = isAppBackup ? parsed.tabs.main : parsed;
+            const applied = applyState(tableState);
             if (!applied) {
-              alert("Import failed: file is missing headers or rows.");
+              alert("Import failed: file is missing valid table data.");
               return;
             }
             saveTableState();
+
+            if (isAppBackup) {
+              const availableTabs = new Set(
+                tabButtons.map((button) => button.dataset.tab)
+              );
+              const restoredTab = availableTabs.has(parsed.activeTab)
+                ? parsed.activeTab
+                : "main";
+              activateTab(restoredTab);
+            }
           } catch (err) {
             console.error("Import failed", err);
             alert("Import failed: invalid JSON file.");
