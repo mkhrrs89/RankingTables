@@ -89,6 +89,28 @@
       color: var(--text-muted);
     }
 
+    .controls-panel {
+      margin-bottom: 14px;
+    }
+
+    .controls-panel summary {
+      width: fit-content;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    .controls-panel[open] summary {
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .controls-panel .controls {
+      margin-bottom: 0;
+    }
+
     .controls {
       display: flex;
       flex-wrap: wrap;
@@ -642,42 +664,45 @@
       </div>
     </div>
 
-    <div class="controls">
-      <button id="addRowBtn">
-        <span class="icon">➕</span>
-        Add Row
-      </button>
-      <button id="addColBtn">
-        <span class="icon">📊</span>
-        Add Column
-      </button>
-      <button id="deleteRowBtn" class="danger">
-        <span class="icon">➖</span>
-        Delete Row
-      </button>
-      <button id="deleteColBtn" class="danger">
-        <span class="icon">🧹</span>
-        Delete Column
-      </button>
-      <button id="exportBtn">
-        <span class="icon">⬇️</span>
-        Export Data
-      </button>
-      <button id="importBtn">
-        <span class="icon">⬆️</span>
-        Import Data
-      </button>
-      <button id="clearBtn" class="danger">
-        <span class="icon">🗑️</span>
-        Clear All Data
-      </button>
-      <input
-        type="file"
-        id="importFileInput"
-        accept="application/json,.json,.xlsx,.xls,.csv"
-        hidden
-      />
-    </div>
+    <details class="controls-panel">
+      <summary>Controls</summary>
+      <div class="controls">
+        <button id="addRowBtn">
+          <span class="icon">➕</span>
+          Add Row
+        </button>
+        <button id="addColBtn">
+          <span class="icon">📊</span>
+          Add Column
+        </button>
+        <button id="deleteRowBtn" class="danger">
+          <span class="icon">➖</span>
+          Delete Row
+        </button>
+        <button id="deleteColBtn" class="danger">
+          <span class="icon">🧹</span>
+          Delete Column
+        </button>
+        <button id="exportBtn">
+          <span class="icon">⬇️</span>
+          Export Data
+        </button>
+        <button id="importBtn">
+          <span class="icon">⬆️</span>
+          Import Data
+        </button>
+        <button id="clearBtn" class="danger">
+          <span class="icon">🗑️</span>
+          Clear All Data
+        </button>
+        <input
+          type="file"
+          id="importFileInput"
+          accept="application/json,.json,.xlsx,.xls,.csv"
+          hidden
+        />
+      </div>
+    </details>
 
     <div class="table-scrollbar" id="tableScrollTop">
       <div class="table-scrollbar-inner" id="tableScrollTopInner"></div>
