@@ -130,6 +130,156 @@
       min-height: 180px;
     }
 
+    .rankings-panel {
+      min-height: 180px;
+    }
+
+    .rankings-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .rankings-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .rankings-subtitle {
+      margin-top: 3px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .ranking-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .ranking-card {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      min-height: 92px;
+      overflow: hidden;
+      border: 1px solid rgba(51, 65, 85, 0.9);
+      border-radius: 14px;
+      background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.98),
+        rgba(2, 6, 23, 0.96)
+      );
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+    }
+
+    .ranking-image-button {
+      width: 92px;
+      height: 92px;
+      min-width: 92px;
+      padding: 0;
+      border: 0;
+      border-right: 1px solid rgba(51, 65, 85, 0.9);
+      border-radius: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(30, 41, 59, 0.7);
+      box-shadow: none;
+    }
+
+    .ranking-image-button:hover,
+    .ranking-image-button:active {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(56, 189, 248, 0.55);
+      box-shadow: none;
+      transform: none;
+    }
+
+    .ranking-image-button img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .ranking-image-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: 8px;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .ranking-card-body {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 16px;
+    }
+
+    .ranking-copy {
+      min-width: 0;
+    }
+
+    .ranking-position {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .ranking-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .ranking-score {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .ranking-score strong {
+      color: var(--accent);
+      font-size: 1.45rem;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .ranking-empty {
+      padding: 22px 18px;
+      border: 1px dashed rgba(148, 163, 184, 0.35);
+      border-radius: 14px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
     .controls-panel {
       margin-bottom: 14px;
     }
@@ -334,6 +484,29 @@
 
       .tab-button {
         padding: 7px 12px;
+      }
+
+      .ranking-card {
+        grid-template-columns: 78px minmax(0, 1fr);
+        min-height: 78px;
+      }
+
+      .ranking-image-button {
+        width: 78px;
+        height: 78px;
+        min-width: 78px;
+      }
+
+      .ranking-card-body {
+        padding: 11px 12px;
+      }
+
+      .ranking-name {
+        font-size: 1rem;
+      }
+
+      .ranking-score strong {
+        font-size: 1.25rem;
       }
 
       .controls {
@@ -840,7 +1013,15 @@
       </div>
     </section>
 
-    <section class="tab-panel empty-tab" id="facePanel" role="tabpanel" aria-labelledby="faceTab" data-panel="face" hidden></section>
+    <section class="tab-panel rankings-panel" id="facePanel" role="tabpanel" aria-labelledby="faceTab" data-panel="face" hidden>
+      <div class="rankings-heading">
+        <div>
+          <div class="rankings-title">Face Power Rankings</div>
+          <div class="rankings-subtitle">Top 20 from Main, ranked automatically by the Face column.</div>
+        </div>
+      </div>
+      <div class="ranking-list" id="faceRankings" aria-live="polite"></div>
+    </section>
     <section class="tab-panel empty-tab" id="titsPanel" role="tabpanel" aria-labelledby="titsTab" data-panel="tits" hidden></section>
     <section class="tab-panel empty-tab" id="assPanel" role="tabpanel" aria-labelledby="assTab" data-panel="ass" hidden></section>
   </div>
@@ -849,6 +1030,7 @@
   <script>
     const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
     const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
+    const faceRankings = document.getElementById("faceRankings");
 
     const table = document.getElementById("dataTable");
     const tableWrapper = document.getElementById("tableWrapper");
@@ -861,7 +1043,13 @@
 
     const STORAGE_KEY = "simple-data-table-state";
     const APP_EXPORT_FORMAT = "ranking-tables-app";
-    const APP_EXPORT_VERSION = 1;
+    const APP_EXPORT_VERSION = 2;
+    const IMAGE_DB_NAME = "ranking-tables-media";
+    const IMAGE_DB_VERSION = 1;
+    const IMAGE_STORE_NAME = "images";
+    const RANKING_IMAGE_MAX_DIMENSION = 640;
+    const RANKING_IMAGE_QUALITY = 0.82;
+    const FACE_LABEL = "face";
 
     const storage = (() => {
       try {
@@ -901,6 +1089,11 @@
     const clearBtn = document.getElementById("clearBtn");
     const importFileInput = document.getElementById("importFileInput");
 
+    let imageDbPromise = null;
+    let faceRankingsRenderFrame = null;
+    let faceRankingsRenderToken = 0;
+    let faceRankingObjectUrls = [];
+
     function activateTab(tabName) {
       tabButtons.forEach((button) => {
         const isActive = button.dataset.tab === tabName;
@@ -914,6 +1107,8 @@
 
       if (tabName === "main") {
         refreshScrollbars();
+      } else if (tabName === "face") {
+        queueFaceRankingsRender();
       }
     }
 
@@ -1179,6 +1374,408 @@
 
     function normalizePersonName(name) {
       return name?.trim().toLowerCase() || "";
+    }
+
+    function imageKeyForName(name) {
+      const normalized = normalizePersonName(name);
+      return normalized ? `person:${normalized}` : "";
+    }
+
+    function openImageDb() {
+      if (!("indexedDB" in window)) {
+        return Promise.reject(new Error("IndexedDB is not available in this browser."));
+      }
+
+      if (!imageDbPromise) {
+        imageDbPromise = new Promise((resolve, reject) => {
+          const request = indexedDB.open(IMAGE_DB_NAME, IMAGE_DB_VERSION);
+
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(IMAGE_STORE_NAME)) {
+              db.createObjectStore(IMAGE_STORE_NAME, { keyPath: "key" });
+            }
+          };
+
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () =>
+            reject(request.error || new Error("Unable to open image storage."));
+          request.onblocked = () =>
+            console.warn("Image storage upgrade is blocked by another open tab.");
+        });
+      }
+
+      return imageDbPromise;
+    }
+
+    async function getStoredPersonImage(name) {
+      const key = imageKeyForName(name);
+      if (!key) return null;
+      const db = await openImageDb();
+
+      return await new Promise((resolve, reject) => {
+        const transaction = db.transaction(IMAGE_STORE_NAME, "readonly");
+        const request = transaction.objectStore(IMAGE_STORE_NAME).get(key);
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () =>
+          reject(request.error || new Error("Unable to read image storage."));
+      });
+    }
+
+    async function getAllStoredImages() {
+      const db = await openImageDb();
+      return await new Promise((resolve, reject) => {
+        const transaction = db.transaction(IMAGE_STORE_NAME, "readonly");
+        const request = transaction.objectStore(IMAGE_STORE_NAME).getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () =>
+          reject(request.error || new Error("Unable to read image storage."));
+      });
+    }
+
+    async function putStoredPersonImage(name, imageData) {
+      const key = imageKeyForName(name);
+      if (!key) return;
+      const db = await openImageDb();
+
+      await new Promise((resolve, reject) => {
+        const transaction = db.transaction(IMAGE_STORE_NAME, "readwrite");
+        transaction.objectStore(IMAGE_STORE_NAME).put({
+          key,
+          name,
+          blob: imageData.blob,
+          mimeType: imageData.blob.type || "image/webp",
+          width: imageData.width,
+          height: imageData.height,
+          size: imageData.blob.size,
+          updatedAt: new Date().toISOString(),
+        });
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () =>
+          reject(transaction.error || new Error("Unable to save image."));
+        transaction.onabort = () =>
+          reject(transaction.error || new Error("Image save was aborted."));
+      });
+    }
+
+    async function loadResizeSource(file) {
+      if (typeof createImageBitmap === "function") {
+        const bitmap = await createImageBitmap(file);
+        return {
+          source: bitmap,
+          width: bitmap.width,
+          height: bitmap.height,
+          cleanup: () => bitmap.close?.(),
+        };
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      return await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () =>
+          resolve({
+            source: image,
+            width: image.naturalWidth,
+            height: image.naturalHeight,
+            cleanup: () => URL.revokeObjectURL(objectUrl),
+          });
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("Unable to read the selected image."));
+        };
+        image.src = objectUrl;
+      });
+    }
+
+    async function resizeRankingImage(file) {
+      const image = await loadResizeSource(file);
+
+      try {
+        const longestSide = Math.max(image.width, image.height) || 1;
+        const scale = Math.min(1, RANKING_IMAGE_MAX_DIMENSION / longestSide);
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Image resizing is unavailable.");
+
+        context.drawImage(image.source, 0, 0, width, height);
+
+        let blob = await new Promise((resolve) =>
+          canvas.toBlob(resolve, "image/webp", RANKING_IMAGE_QUALITY)
+        );
+
+        if (!blob) {
+          blob = await new Promise((resolve) =>
+            canvas.toBlob(resolve, "image/jpeg", RANKING_IMAGE_QUALITY)
+          );
+        }
+
+        if (!blob) throw new Error("Unable to compress the selected image.");
+        return { blob, width, height };
+      } finally {
+        image.cleanup?.();
+      }
+    }
+
+    function blobToDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () =>
+          reject(reader.error || new Error("Unable to serialize an image."));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function dataUrlToBlob(dataUrl) {
+      const response = await fetch(dataUrl);
+      if (!response.ok) throw new Error("Unable to restore an image.");
+      return await response.blob();
+    }
+
+    async function serializeStoredImagesForExport() {
+      const records = await getAllStoredImages();
+      return await Promise.all(
+        records.map(async (record) => ({
+          key: record.key,
+          name: record.name,
+          mimeType: record.mimeType || record.blob?.type || "image/webp",
+          width: record.width,
+          height: record.height,
+          size: record.size || record.blob?.size || 0,
+          updatedAt: record.updatedAt || null,
+          data: await blobToDataUrl(record.blob),
+        }))
+      );
+    }
+
+    async function replaceStoredImagesFromExport(images) {
+      const restoredRecords = await Promise.all(
+        images
+          .filter((image) => image?.key && image?.data)
+          .map(async (image) => {
+            const blob = await dataUrlToBlob(image.data);
+            return {
+              key: image.key,
+              name: image.name || image.key.replace(/^person:/, ""),
+              blob,
+              mimeType: blob.type || image.mimeType || "image/webp",
+              width: image.width,
+              height: image.height,
+              size: blob.size,
+              updatedAt: image.updatedAt || new Date().toISOString(),
+            };
+          })
+      );
+
+      const db = await openImageDb();
+      await new Promise((resolve, reject) => {
+        const transaction = db.transaction(IMAGE_STORE_NAME, "readwrite");
+        const store = transaction.objectStore(IMAGE_STORE_NAME);
+        store.clear();
+        restoredRecords.forEach((record) => store.put(record));
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () =>
+          reject(transaction.error || new Error("Unable to restore images."));
+        transaction.onabort = () =>
+          reject(transaction.error || new Error("Image restore was aborted."));
+      });
+    }
+
+    function releaseFaceRankingObjectUrls() {
+      faceRankingObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+      faceRankingObjectUrls = [];
+    }
+
+    function getFaceRankingEntries() {
+      const columns = getColumnDefinitions();
+      const nameIndex = findColumnIndexByLabel(columns, NAME_LABEL);
+      const faceIndex = findColumnIndexByLabel(columns, FACE_LABEL);
+
+      if (nameIndex === -1) {
+        return { error: 'The Main table needs a column named "Name".' };
+      }
+
+      if (faceIndex === -1) {
+        return { error: 'The Main table needs a column named "Face".' };
+      }
+
+      const entries = Array.from(tbody.querySelectorAll("tr"))
+        .map((row, rowIndex) => {
+          const nameCell = row.children[nameIndex]?.querySelector(
+            ".cell, .name-cell"
+          );
+          const faceCell = row.children[faceIndex]?.querySelector(
+            ".cell, .name-cell"
+          );
+          const name = nameCell?.textContent.trim() || "";
+          const rawScore = faceCell?.textContent.trim() || "";
+          const score = Number.parseFloat(rawScore);
+
+          if (!name || !rawScore || !Number.isFinite(score)) return null;
+          return { name, score, rowIndex };
+        })
+        .filter(Boolean)
+        .sort(
+          (a, b) =>
+            b.score - a.score ||
+            a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+        )
+        .slice(0, 20);
+
+      return { entries };
+    }
+
+    function formatRankingScore(score) {
+      return Number.isInteger(score)
+        ? String(score)
+        : String(Math.round(score * 100) / 100);
+    }
+
+    async function hydrateFaceRankingImage(imageButton, name, renderToken) {
+      try {
+        const record = await getStoredPersonImage(name);
+        if (
+          renderToken !== faceRankingsRenderToken ||
+          !imageButton.isConnected ||
+          !record?.blob
+        ) {
+          return;
+        }
+
+        const objectUrl = URL.createObjectURL(record.blob);
+        if (renderToken !== faceRankingsRenderToken || !imageButton.isConnected) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+
+        faceRankingObjectUrls.push(objectUrl);
+        const image = document.createElement("img");
+        image.src = objectUrl;
+        image.alt = `${name} ranking image`;
+        imageButton.replaceChildren(image);
+      } catch (err) {
+        console.warn("Unable to load ranking image for", name, err);
+      }
+    }
+
+    function createFaceRankingCard(entry, position, renderToken) {
+      const card = document.createElement("article");
+      card.className = "ranking-card";
+
+      const imageButton = document.createElement("button");
+      imageButton.type = "button";
+      imageButton.className = "ranking-image-button";
+      imageButton.setAttribute(
+        "aria-label",
+        `Add or change ranking image for ${entry.name}`
+      );
+
+      const imagePlaceholder = document.createElement("span");
+      imagePlaceholder.className = "ranking-image-placeholder";
+      imagePlaceholder.textContent = "Add image";
+      imageButton.appendChild(imagePlaceholder);
+
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = "image/*";
+      fileInput.hidden = true;
+
+      imageButton.addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", async () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+
+        imageButton.disabled = true;
+        const savingLabel = document.createElement("span");
+        savingLabel.className = "ranking-image-placeholder";
+        savingLabel.textContent = "Saving…";
+        imageButton.replaceChildren(savingLabel);
+
+        try {
+          const resized = await resizeRankingImage(file);
+          await putStoredPersonImage(entry.name, resized);
+          queueFaceRankingsRender();
+        } catch (err) {
+          console.error("Unable to save ranking image", err);
+          alert("That image could not be saved. Please try another image.");
+          queueFaceRankingsRender();
+        } finally {
+          fileInput.value = "";
+          imageButton.disabled = false;
+        }
+      });
+
+      const body = document.createElement("div");
+      body.className = "ranking-card-body";
+
+      const copy = document.createElement("div");
+      copy.className = "ranking-copy";
+
+      const rank = document.createElement("div");
+      rank.className = "ranking-position";
+      rank.textContent = `#${position}`;
+
+      const name = document.createElement("div");
+      name.className = "ranking-name";
+      name.textContent = entry.name;
+
+      copy.append(rank, name);
+
+      const score = document.createElement("div");
+      score.className = "ranking-score";
+      const scoreLabel = document.createElement("span");
+      scoreLabel.textContent = "Face";
+      const scoreValue = document.createElement("strong");
+      scoreValue.textContent = formatRankingScore(entry.score);
+      score.append(scoreLabel, scoreValue);
+
+      body.append(copy, score);
+      card.append(imageButton, fileInput, body);
+      hydrateFaceRankingImage(imageButton, entry.name, renderToken);
+      return card;
+    }
+
+    function renderFaceRankings() {
+      if (!faceRankings) return;
+      const renderToken = ++faceRankingsRenderToken;
+      releaseFaceRankingObjectUrls();
+      faceRankings.innerHTML = "";
+
+      const result = getFaceRankingEntries();
+      if (result.error) {
+        const empty = document.createElement("div");
+        empty.className = "ranking-empty";
+        empty.textContent = result.error;
+        faceRankings.appendChild(empty);
+        return;
+      }
+
+      if (!result.entries.length) {
+        const empty = document.createElement("div");
+        empty.className = "ranking-empty";
+        empty.textContent =
+          "Add names and numeric Face scores in Main and the top 20 will appear here automatically.";
+        faceRankings.appendChild(empty);
+        return;
+      }
+
+      result.entries.forEach((entry, index) => {
+        faceRankings.appendChild(
+          createFaceRankingCard(entry, index + 1, renderToken)
+        );
+      });
+    }
+
+    function queueFaceRankingsRender() {
+      if (!faceRankings || faceRankingsRenderFrame !== null) return;
+      faceRankingsRenderFrame = requestAnimationFrame(() => {
+        faceRankingsRenderFrame = null;
+        renderFaceRankings();
+      });
     }
 
     function computeAgeFromDates(birthDateString, referenceDateString) {
@@ -2214,6 +2811,7 @@
       rebuildColumnSuggestionsFromTable();
       const state = collectTableState();
       storage.setItem(STORAGE_KEY, JSON.stringify(state));
+      queueFaceRankingsRender();
     }
 
     function buildHeader(
@@ -2670,6 +3268,7 @@
       recalculateFormulas();
       rebuildColumnSuggestionsFromTable();
       refreshScrollbars();
+      queueFaceRankingsRender();
       return true;
     }
 
@@ -2713,7 +3312,14 @@
       }
     });
 
-    function exportData() {
+    async function exportData() {
+      let images = null;
+      try {
+        images = await serializeStoredImagesForExport();
+      } catch (err) {
+        console.warn("Images could not be included in this backup.", err);
+      }
+
       const backup = {
         format: APP_EXPORT_FORMAT,
         version: APP_EXPORT_VERSION,
@@ -2725,6 +3331,7 @@
           tits: null,
           ass: null,
         },
+        images,
       };
       const json = JSON.stringify(backup, null, 2);
       const blob = new Blob([json], { type: "application/json" });
@@ -2747,7 +3354,7 @@
 
       if (fileName.endsWith(".json")) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
           try {
             const parsed = JSON.parse(e.target?.result);
             const isAppBackup =
@@ -2759,7 +3366,18 @@
               alert("Import failed: file is missing valid table data.");
               return;
             }
+
+            if (isAppBackup && Array.isArray(parsed.images)) {
+              try {
+                await replaceStoredImagesFromExport(parsed.images);
+              } catch (imageErr) {
+                console.error("Image restore failed", imageErr);
+                alert("The table imported, but some saved images could not be restored.");
+              }
+            }
+
             saveTableState();
+            queueFaceRankingsRender();
 
             if (isAppBackup) {
               const availableTabs = new Set(
@@ -2874,7 +3492,15 @@
       saveTableState();
     }
 
+    const rankingsObserver = new MutationObserver(queueFaceRankingsRender);
+    rankingsObserver.observe(table, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+    });
+
     bootstrap();
+    queueFaceRankingsRender();
 
     // Button wiring
     addRowBtn.addEventListener("click", addRow);
