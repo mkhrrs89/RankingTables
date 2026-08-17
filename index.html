@@ -89,6 +89,47 @@
       color: var(--text-muted);
     }
 
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .tab-button {
+      flex: 0 0 auto;
+      border-radius: 10px;
+      padding: 8px 14px;
+      background: rgba(15, 23, 42, 0.72);
+      border-color: rgba(148, 163, 184, 0.28);
+      color: var(--text-muted);
+      box-shadow: none;
+    }
+
+    .tab-button:hover {
+      background: rgba(30, 41, 59, 0.88);
+      border-color: rgba(148, 163, 184, 0.5);
+      box-shadow: none;
+    }
+
+    .tab-button[aria-selected="true"] {
+      color: var(--text);
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    .tab-panel[hidden] {
+      display: none;
+    }
+
+    .empty-tab {
+      min-height: 180px;
+    }
+
     .controls-panel {
       margin-bottom: 14px;
     }
@@ -192,7 +233,8 @@
     }
 
     .table-wrapper {
-      overflow-x: auto;
+      overflow: auto;
+      max-height: calc(100vh - 150px);
     }
 
     .table-scrollbar {
@@ -246,6 +288,10 @@
         margin: 0 -6px;
       }
 
+      .table-wrapper {
+        max-height: calc(100vh - 120px);
+      }
+
       table {
         min-width: 0;
       }
@@ -255,6 +301,11 @@
         position: static;
         left: auto !important;
         z-index: auto;
+      }
+
+      .header-row .sticky-col {
+        position: sticky;
+        top: 0;
       }
 
       .app-header {
@@ -275,6 +326,14 @@
 
       .app-subtitle {
         font-size: 0.8rem;
+      }
+
+      .tabs {
+        margin-bottom: 12px;
+      }
+
+      .tab-button {
+        padding: 7px 12px;
       }
 
       .controls {
@@ -311,14 +370,20 @@
     }
 
     thead {
-      position: sticky;
-      top: 0;
-      z-index: 5;
+      position: static;
       background: linear-gradient(
         to bottom,
         rgba(15, 23, 42, 1),
         rgba(15, 23, 42, 0.96)
       );
+    }
+
+    .header-row th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.99);
+      box-shadow: 0 1px 0 rgba(51, 65, 85, 0.95);
     }
 
     th,
@@ -563,6 +628,10 @@
       z-index: 7;
     }
 
+    .header-row .sticky-col {
+      z-index: 12;
+    }
+
     .column-letter-row .sticky-col {
       z-index: 8;
     }
@@ -664,107 +733,123 @@
       </div>
     </div>
 
-    <details class="controls-panel">
-      <summary>Controls</summary>
-      <div class="controls">
-        <button id="addRowBtn">
-          <span class="icon">➕</span>
-          Add Row
-        </button>
-        <button id="addColBtn">
-          <span class="icon">📊</span>
-          Add Column
-        </button>
-        <button id="deleteRowBtn" class="danger">
-          <span class="icon">➖</span>
-          Delete Row
-        </button>
-        <button id="deleteColBtn" class="danger">
-          <span class="icon">🧹</span>
-          Delete Column
-        </button>
-        <button id="exportBtn">
-          <span class="icon">⬇️</span>
-          Export Data
-        </button>
-        <button id="importBtn">
-          <span class="icon">⬆️</span>
-          Import Data
-        </button>
-        <button id="clearBtn" class="danger">
-          <span class="icon">🗑️</span>
-          Clear All Data
-        </button>
-        <input
-          type="file"
-          id="importFileInput"
-          accept="application/json,.json,.xlsx,.xls,.csv"
-          hidden
-        />
+    <div class="tabs" role="tablist" aria-label="Table sections">
+      <button class="tab-button" type="button" role="tab" id="mainTab" aria-selected="true" aria-controls="mainPanel" data-tab="main">Main</button>
+      <button class="tab-button" type="button" role="tab" id="faceTab" aria-selected="false" aria-controls="facePanel" data-tab="face">Face</button>
+      <button class="tab-button" type="button" role="tab" id="titsTab" aria-selected="false" aria-controls="titsPanel" data-tab="tits">Tits</button>
+      <button class="tab-button" type="button" role="tab" id="assTab" aria-selected="false" aria-controls="assPanel" data-tab="ass">Ass</button>
+    </div>
+
+    <section class="tab-panel" id="mainPanel" role="tabpanel" aria-labelledby="mainTab" data-panel="main">
+      <details class="controls-panel">
+        <summary>Controls</summary>
+        <div class="controls">
+          <button id="addRowBtn">
+            <span class="icon">➕</span>
+            Add Row
+          </button>
+          <button id="addColBtn">
+            <span class="icon">📊</span>
+            Add Column
+          </button>
+          <button id="deleteRowBtn" class="danger">
+            <span class="icon">➖</span>
+            Delete Row
+          </button>
+          <button id="deleteColBtn" class="danger">
+            <span class="icon">🧹</span>
+            Delete Column
+          </button>
+          <button id="exportBtn">
+            <span class="icon">⬇️</span>
+            Export Data
+          </button>
+          <button id="importBtn">
+            <span class="icon">⬆️</span>
+            Import Data
+          </button>
+          <button id="clearBtn" class="danger">
+            <span class="icon">🗑️</span>
+            Clear All Data
+          </button>
+          <input
+            type="file"
+            id="importFileInput"
+            accept="application/json,.json,.xlsx,.xls,.csv"
+            hidden
+          />
+        </div>
+      </details>
+
+      <div class="table-scrollbar" id="tableScrollTop">
+        <div class="table-scrollbar-inner" id="tableScrollTopInner"></div>
       </div>
-    </details>
 
-    <div class="table-scrollbar" id="tableScrollTop">
-      <div class="table-scrollbar-inner" id="tableScrollTopInner"></div>
-    </div>
+      <div class="table-wrapper" id="tableWrapper">
+        <table id="dataTable">
+          <thead>
+            <tr class="column-letter-row">
+              <th data-col-index="0" class="column-letter">
+                <span class="column-letter-pill">A</span>
+              </th>
+              <th data-col-index="1" class="column-letter">
+                <span class="column-letter-pill">B</span>
+              </th>
+              <th data-col-index="2" class="column-letter">
+                <span class="column-letter-pill">C</span>
+              </th>
+            </tr>
+            <tr class="header-row">
+              <th data-col-index="0" class="icon-cell">
+                <span class="header-inner">
+                  <span class="header-label">Images</span>
+                  <span class="sort-indicator" aria-hidden="true"></span>
+                </span>
+              </th>
+              <th data-col-index="1">
+                <span class="header-inner">
+                  <span class="header-label">Name</span>
+                  <span class="sort-indicator" aria-hidden="true"></span>
+                </span>
+              </th>
+              <th data-col-index="2">
+                <span class="header-inner">
+                  <span class="header-label">Rating</span>
+                  <span class="sort-indicator" aria-hidden="true"></span>
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- rows will be created by JS -->
+          </tbody>
+        </table>
+      </div>
 
-    <div class="table-wrapper" id="tableWrapper">
-      <table id="dataTable">
-        <thead>
-          <tr class="column-letter-row">
-            <th data-col-index="0" class="column-letter">
-              <span class="column-letter-pill">A</span>
-            </th>
-            <th data-col-index="1" class="column-letter">
-              <span class="column-letter-pill">B</span>
-            </th>
-            <th data-col-index="2" class="column-letter">
-              <span class="column-letter-pill">C</span>
-            </th>
-          </tr>
-          <tr class="header-row">
-            <th data-col-index="0" class="icon-cell">
-              <span class="header-inner">
-                <span class="header-label">Images</span>
-                <span class="sort-indicator" aria-hidden="true"></span>
-              </span>
-            </th>
-            <th data-col-index="1">
-              <span class="header-inner">
-                <span class="header-label">Name</span>
-                <span class="sort-indicator" aria-hidden="true"></span>
-              </span>
-            </th>
-            <th data-col-index="2">
-              <span class="header-inner">
-                <span class="header-label">Rating</span>
-                <span class="sort-indicator" aria-hidden="true"></span>
-              </span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- rows will be created by JS -->
-        </tbody>
-      </table>
-    </div>
+      <div class="hint-bar">
+        <span class="hint-pill">
+          🔍 Anything typed in the <strong>Name</strong> column becomes a Google Images link.
+        </span>
+        <span>
+          Use the new image icon in each row to open Google Images for that name.
+        </span>
+        <span class="hint-pill">
+          🧮 Double-click a column header to add a formula. Use column letters like
+          <strong>=AVERAGE(D:H)</strong>.
+        </span>
+      </div>
+    </section>
 
-    <div class="hint-bar">
-      <span class="hint-pill">
-        🔍 Anything typed in the <strong>Name</strong> column becomes a Google Images link.
-      </span>
-      <span>
-        Use the new image icon in each row to open Google Images for that name.
-      </span>
-      <span class="hint-pill">
-        🧮 Double-click a column header to add a formula. Use column letters like
-        <strong>=AVERAGE(D:H)</strong>.
-      </span>
-    </div>
+    <section class="tab-panel empty-tab" id="facePanel" role="tabpanel" aria-labelledby="faceTab" data-panel="face" hidden></section>
+    <section class="tab-panel empty-tab" id="titsPanel" role="tabpanel" aria-labelledby="titsTab" data-panel="tits" hidden></section>
+    <section class="tab-panel empty-tab" id="assPanel" role="tabpanel" aria-labelledby="assTab" data-panel="ass" hidden></section>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
+    const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
+    const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
+
     const table = document.getElementById("dataTable");
     const tableWrapper = document.getElementById("tableWrapper");
     const topScrollbar = document.getElementById("tableScrollTop");
@@ -813,6 +898,28 @@
     const importBtn = document.getElementById("importBtn");
     const clearBtn = document.getElementById("clearBtn");
     const importFileInput = document.getElementById("importFileInput");
+
+    function activateTab(tabName) {
+      tabButtons.forEach((button) => {
+        const isActive = button.dataset.tab === tabName;
+        button.setAttribute("aria-selected", String(isActive));
+        button.tabIndex = isActive ? 0 : -1;
+      });
+
+      tabPanels.forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== tabName;
+      });
+
+      if (tabName === "main") {
+        refreshScrollbars();
+      }
+    }
+
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => activateTab(button.dataset.tab));
+    });
+
+    activateTab("main");
 
     const COLUMN_TYPES = {
       ICON: "icon",
