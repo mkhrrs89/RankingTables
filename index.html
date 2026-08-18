@@ -899,6 +899,24 @@
       min-width: 28px;
       text-align: center;
     }
+
+    /* Keep the editable focus box inside its table cell while preserving the
+       existing cell alignment and touch behavior. */
+    .cell {
+      min-width: 0;
+      max-width: 100%;
+      margin: 0;
+    }
+
+    .name-cell {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    /* Headers remain draggable; only the visual arrow glyph is hidden. */
+    th .drag-handle {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -3725,6 +3743,217 @@
       storage.removeItem(STORAGE_KEY);
       applyState(buildDefaultState());
       saveTableState();
+    }
+
+    /*
+      More reliable age lookup: use Wikidata's entity-search API, then inspect
+      the highest-ranked human candidates for a public date of birth. These
+      later declarations intentionally replace the older lookup helpers above.
+    */
+    function computeAgeFromDates(birthDateString, referenceDateString) {
+      function parseDateParts(value) {
+        const match = /^(-?\d{1,6})-(\d{2})-(\d{2})$/.exec(value || "");
+        if (!match) return null;
+
+        const year = Number(match[1]);
+        const month = Number(match[2]);
+        const day = Number(match[3]);
+        if (
+          !Number.isInteger(year) ||
+          !Number.isInteger(month) ||
+          !Number.isInteger(day) ||
+          month < 1 ||
+          month > 12 ||
+          day < 1 ||
+          day > 31
+        ) {
+          return null;
+        }
+
+        return { year, month, day };
+      }
+
+      const birth = parseDateParts(birthDateString);
+      if (!birth) return null;
+
+      let reference;
+      if (referenceDateString) {
+        reference = parseDateParts(referenceDateString);
+      } else {
+        const today = new Date();
+        reference = {
+          year: today.getFullYear(),
+          month: today.getMonth() + 1,
+          day: today.getDate(),
+        };
+      }
+
+      if (!reference) return null;
+
+      let age = reference.year - birth.year;
+      const hasNotHadBirthdayYet =
+        reference.month < birth.month ||
+        (reference.month === birth.month && reference.day < birth.day);
+
+      if (hasNotHadBirthdayYet) age -= 1;
+      return age >= 0 ? age : null;
+    }
+
+    function getBestDateClaim(claims) {
+      if (!Array.isArray(claims)) return null;
+      return (
+        claims.find((claim) => claim?.rank === "preferred") ||
+        claims.find((claim) => claim?.rank !== "deprecated") ||
+        null
+      );
+    }
+
+    async function fetchBirthdayFromWikidata(name) {
+      const searchParams = new URLSearchParams({
+        action: "wbsearchentities",
+        search: name,
+        language: "en",
+        uselang: "en",
+        type: "item",
+        limit: "10",
+        format: "json",
+        origin: "*",
+      });
+
+      const searchResponse = await fetch(
+        "https://www.wikidata.org/w/api.php?" + searchParams.toString()
+      );
+      if (!searchResponse.ok) return null;
+
+      const searchJson = await searchResponse.json();
+      const candidateIds = (searchJson?.search || [])
+        .map((result) => result?.id)
+        .filter((id) => typeof id === "string" && /^Q\d+$/i.test(id))
+        .slice(0, 10);
+
+      if (!candidateIds.length) return null;
+
+      const entityParams = new URLSearchParams({
+        action: "wbgetentities",
+        ids: candidateIds.join("|"),
+        props: "claims",
+        format: "json",
+        origin: "*",
+      });
+
+      const entityResponse = await fetch(
+        "https://www.wikidata.org/w/api.php?" + entityParams.toString()
+      );
+      if (!entityResponse.ok) return null;
+
+      const entityJson = await entityResponse.json();
+      const entities = entityJson?.entities || {};
+
+      for (const id of candidateIds) {
+        const entity = entities[id];
+        if (!entity || entity.missing !== undefined) continue;
+
+        const instanceClaims = entity?.claims?.P31 || [];
+        const isHuman = instanceClaims.some((claim) => {
+          const claimId = claim?.mainsnak?.datavalue?.value?.id;
+          return typeof claimId === "string" && claimId.toUpperCase() === "Q5";
+        });
+        if (!isHuman) continue;
+
+        const birthClaim = getBestDateClaim(entity?.claims?.P569);
+        const birth = extractWikidataDate(birthClaim);
+        if (!birth) continue;
+
+        const deathClaim = getBestDateClaim(entity?.claims?.P570);
+        const death = extractWikidataDate(deathClaim);
+        return { birth, death: death || null };
+      }
+
+      return null;
+    }
+
+    async function resolvePersonDates(rawName) {
+      const normalized = normalizePersonName(rawName);
+      if (!normalized) return null;
+
+      if (birthdayCache.has(normalized)) {
+        return await Promise.resolve(birthdayCache.get(normalized));
+      }
+
+      const localRecord = LOCAL_BIRTHDAY_DB[normalized];
+      if (localRecord) {
+        birthdayCache.set(normalized, localRecord);
+        return localRecord;
+      }
+
+      const fetchPromise = (async () => {
+        try {
+          return await fetchBirthdayFromWikidata(rawName);
+        } catch (err) {
+          console.warn("Failed to fetch birth data for", rawName, err);
+          return null;
+        }
+      })();
+
+      birthdayCache.set(normalized, fetchPromise);
+      const result = await fetchPromise;
+      if (result) {
+        birthdayCache.set(normalized, result);
+      } else {
+        birthdayCache.delete(normalized);
+      }
+      return result;
+    }
+
+    function updateAgeColumns(columns = getColumnDefinitions()) {
+      const nameColumnIndex = findColumnIndexByLabel(columns, NAME_LABEL);
+      const ageColumnIndices = getAgeColumnIndices(columns);
+
+      if (nameColumnIndex === -1 || ageColumnIndices.length === 0) return;
+
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      rows.forEach((row) => {
+        const nameCell = row.children[nameColumnIndex]?.querySelector(
+          ".cell, .name-cell"
+        );
+        const personName = nameCell?.textContent.trim();
+
+        ageColumnIndices.forEach((ageIdx) => {
+          const ageCell = row.children[ageIdx]?.querySelector(
+            ".cell, .name-cell"
+          );
+          if (!ageCell) return;
+
+          const requestToken = Symbol("ageRequest");
+          ageRequestTokens.set(ageCell, requestToken);
+
+          if (!personName) {
+            ageCell.textContent = "";
+            applyNumericStyling(ageCell);
+            return;
+          }
+
+          ageCell.textContent = "…";
+          applyNumericStyling(ageCell);
+
+          resolvePersonDates(personName).then((record) => {
+            if (ageRequestTokens.get(ageCell) !== requestToken) return;
+
+            if (!record?.birth) {
+              ageCell.textContent = "";
+              applyNumericStyling(ageCell);
+              return;
+            }
+
+            const age = computeAgeFromDates(
+              record.birth,
+              record.death || undefined
+            );
+            ageCell.textContent = Number.isFinite(age) ? String(age) : "";
+            applyNumericStyling(ageCell);
+          });
+        });
+      });
     }
 
     const rankingsObserver = new MutationObserver(queueAllRankingsRender);
