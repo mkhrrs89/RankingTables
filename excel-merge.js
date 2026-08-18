@@ -283,4 +283,91 @@
   }
 
   importFileInput.addEventListener("change", handleExcelMergeImport, true);
+
+  /*
+    Desktop reorder repair: headers rebuilt from saved state are wired before
+    they are inserted into headerRow, so getHeaderIndex() returns -1 during
+    attachHeaderEvents(). The original lock check treated -1 as locked and
+    skipped the native drag listeners. Require a real non-negative index for
+    locking, then add the missing drag listeners to the headers already loaded.
+  */
+  isLockedColumnIndex = function (index) {
+    return (
+      Number.isInteger(index) &&
+      index >= 0 &&
+      index < LOCKED_COLUMN_COUNT
+    );
+  };
+
+  function attachMissingDesktopDragEvents(th) {
+    const index = getHeaderIndex(th);
+    if (
+      isLockedColumnIndex(index) ||
+      th.dataset.desktopDragRepairAttached === "true"
+    ) {
+      return;
+    }
+
+    th.draggable = true;
+
+    th.addEventListener("dragstart", (event) => {
+      const sourceIndex = getHeaderIndex(th);
+      if (isLockedColumnIndex(sourceIndex)) {
+        event.preventDefault();
+        return;
+      }
+
+      dragSourceIndex = sourceIndex;
+      isDraggingColumn = true;
+      th.classList.add("dragging");
+      event.dataTransfer.setData("text/plain", String(sourceIndex));
+      event.dataTransfer.effectAllowed = "move";
+    });
+
+    th.addEventListener("dragenter", (event) => {
+      event.preventDefault();
+      th.classList.add("drag-over");
+    });
+
+    th.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      th.classList.add("drag-over");
+      event.dataTransfer.dropEffect = "move";
+    });
+
+    th.addEventListener("dragleave", () => {
+      th.classList.remove("drag-over");
+    });
+
+    th.addEventListener("dragend", () => {
+      isDraggingColumn = false;
+      dragSourceIndex = null;
+      clearHeaderDragState();
+    });
+
+    th.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const targetIndex = getHeaderIndex(th);
+      clearHeaderDragState();
+
+      if (
+        dragSourceIndex === null ||
+        dragSourceIndex === targetIndex ||
+        isLockedColumnIndex(targetIndex)
+      ) {
+        isDraggingColumn = false;
+        dragSourceIndex = null;
+        return;
+      }
+
+      reorderColumns(dragSourceIndex, targetIndex);
+      isDraggingColumn = false;
+      dragSourceIndex = null;
+      saveTableState();
+    });
+
+    th.dataset.desktopDragRepairAttached = "true";
+  }
+
+  getHeaderCells().forEach(attachMissingDesktopDragEvents);
 })();
