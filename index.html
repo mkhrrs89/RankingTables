@@ -21,13 +21,18 @@
       --danger: #ef4444;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    html { background: #020617; }
+    html {
+      background: #020617;
+    }
 
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
       background: radial-gradient(circle at top, #1f2937, #020617 55%);
       color: var(--text);
       min-height: 100vh;
@@ -41,7 +46,11 @@
     .app {
       width: 100%;
       max-width: 1100px;
-      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+      background: linear-gradient(
+        145deg,
+        rgba(15, 23, 42, 0.96),
+        rgba(15, 23, 42, 0.98)
+      );
       border-radius: 18px;
       border: 1px solid rgba(148, 163, 184, 0.25);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
@@ -50,7 +59,9 @@
     }
 
     @media (min-width: 768px) {
-      .app { padding: 24px 28px 28px; }
+      .app {
+        padding: 24px 28px 28px;
+      }
     }
 
     .app-header {
@@ -118,8 +129,17 @@
       box-shadow: inset 0 -2px 0 var(--accent);
     }
 
-    .tab-panel[hidden] { display: none; }
-    .empty-tab, .rankings-panel { min-height: 180px; }
+    .tab-panel[hidden] {
+      display: none;
+    }
+
+    .empty-tab {
+      min-height: 180px;
+    }
+
+    .rankings-panel {
+      min-height: 180px;
+    }
 
     .rankings-heading {
       display: flex;
@@ -141,7 +161,10 @@
       font-size: 0.8rem;
     }
 
-    .ranking-list { display: grid; gap: 10px; }
+    .ranking-list {
+      display: grid;
+      gap: 10px;
+    }
 
     .ranking-card {
       display: grid;
@@ -150,7 +173,11 @@
       overflow: hidden;
       border: 1px solid rgba(51, 65, 85, 0.9);
       border-radius: 14px;
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.96));
+      background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.98),
+        rgba(2, 6, 23, 0.96)
+      );
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
     }
 
@@ -208,7 +235,9 @@
       padding: 14px 16px;
     }
 
-    .ranking-copy { min-width: 0; }
+    .ranking-copy {
+      min-width: 0;
+    }
 
     .ranking-position {
       color: var(--text-muted);
@@ -258,7 +287,10 @@
       text-align: center;
     }
 
-    .controls-panel { margin-bottom: 14px; }
+    .controls-panel {
+      margin-bottom: 14px;
+    }
+
     .controls-panel summary {
       width: fit-content;
       cursor: pointer;
@@ -267,15 +299,32 @@
       font-weight: 600;
       user-select: none;
     }
-    .controls-panel[open] summary { margin-bottom: 8px; color: var(--text); }
-    .controls-panel .controls { margin-bottom: 0; }
-    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+
+    .controls-panel[open] summary {
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .controls-panel .controls {
+      margin-bottom: 0;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
 
     button {
       border-radius: 999px;
       padding: 7px 14px;
       border: 1px solid rgba(148, 163, 184, 0.4);
-      background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), rgba(15, 23, 42, 0.95));
+      background: radial-gradient(
+        circle at top left,
+        rgba(34, 197, 94, 0.12),
+        rgba(15, 23, 42, 0.95)
+      );
       color: var(--text);
       font-size: 0.85rem;
       display: inline-flex;
@@ -283,23 +332,47 @@
       gap: 6px;
       cursor: pointer;
       outline: none;
-      transition: background 0.15s ease, border-color 0.15s ease, transform 0.06s ease, box-shadow 0.15s ease;
+      transition: background 0.15s ease, border-color 0.15s ease,
+        transform 0.06s ease, box-shadow 0.15s ease;
       box-shadow: 0 0 0 rgba(34, 197, 94, 0.0);
     }
-    button span.icon { font-size: 1rem; line-height: 1; }
+
+    button span.icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
     button:hover {
-      background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.21), rgba(15, 23, 42, 0.98));
+      background: radial-gradient(
+        circle at top left,
+        rgba(34, 197, 94, 0.21),
+        rgba(15, 23, 42, 0.98)
+      );
       border-color: var(--accent);
       box-shadow: 0 0 18px rgba(34, 197, 94, 0.25);
     }
-    button:active { transform: translateY(1px); box-shadow: 0 0 0 rgba(34, 197, 94, 0.0); }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 0 0 rgba(34, 197, 94, 0.0);
+    }
+
     button.danger {
-      background: radial-gradient(circle at top left, rgba(239, 68, 68, 0.12), rgba(15, 23, 42, 0.95));
+      background: radial-gradient(
+        circle at top left,
+        rgba(239, 68, 68, 0.12),
+        rgba(15, 23, 42, 0.95)
+      );
       border-color: rgba(239, 68, 68, 0.65);
       box-shadow: 0 0 0 rgba(239, 68, 68, 0.0);
     }
+
     button.danger:hover {
-      background: radial-gradient(circle at top left, rgba(239, 68, 68, 0.22), rgba(15, 23, 42, 0.98));
+      background: radial-gradient(
+        circle at top left,
+        rgba(239, 68, 68, 0.22),
+        rgba(15, 23, 42, 0.98)
+      );
       border-color: var(--danger);
       box-shadow: 0 0 18px rgba(239, 68, 68, 0.35);
     }
@@ -315,53 +388,176 @@
       touch-action: pan-x pan-y;
       overscroll-behavior-x: contain;
     }
-    .table-wrapper { overflow: auto; max-height: calc(100vh - 150px); }
-    .table-scrollbar { overflow-x: auto; overflow-y: hidden; height: 12px; margin-bottom: 10px; }
+
+    .table-wrapper {
+      overflow: auto;
+      max-height: calc(100vh - 150px);
+    }
+
+    .table-scrollbar {
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: 12px;
+      margin-bottom: 10px;
+    }
+
     .table-scrollbar::-webkit-scrollbar,
-    .table-wrapper::-webkit-scrollbar { height: 8px; }
+    .table-wrapper::-webkit-scrollbar {
+      height: 8px;
+    }
+
     .table-scrollbar::-webkit-scrollbar-track,
-    .table-wrapper::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.85); border-radius: 999px; }
+    .table-wrapper::-webkit-scrollbar-track {
+      background: rgba(30, 41, 59, 0.85);
+      border-radius: 999px;
+    }
+
     .table-scrollbar::-webkit-scrollbar-thumb,
     .table-wrapper::-webkit-scrollbar-thumb {
       background: linear-gradient(90deg, #38bdf8, #0ea5e9);
       border-radius: 999px;
       border: 1px solid rgba(14, 165, 233, 0.5);
     }
-    .table-scrollbar-inner { height: 1px; }
 
-    table { width: 100%; border-collapse: collapse; min-width: 450px; table-layout: fixed; }
+    .table-scrollbar-inner {
+      height: 1px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 450px;
+      table-layout: fixed;
+    }
 
     @media (max-width: 640px) {
-      body { padding: 12px; font-size: 0.95rem; }
-      .app { padding: 14px; }
-      .table-wrapper, .table-scrollbar { margin: 0 -6px; }
-      .table-wrapper { max-height: calc(100vh - 120px); }
-      table { min-width: 0; }
-      .sticky-col { position: static; left: auto !important; z-index: auto; }
-      .header-row .sticky-col { position: sticky; top: 0; }
-      .app-header { margin-bottom: 12px; padding-bottom: 10px; gap: 8px; }
-      .app-title { font-size: 1.1rem; gap: 6px; }
-      .badge { padding: 2px 6px; font-size: 0.7rem; }
-      .app-subtitle { font-size: 0.8rem; }
-      .tabs { margin-bottom: 12px; }
-      .tab-button { padding: 7px 12px; }
-      .ranking-card { grid-template-columns: 78px minmax(0, 1fr); min-height: 78px; }
-      .ranking-image-button { width: 78px; height: 78px; min-width: 78px; }
-      .ranking-card-body { padding: 11px 12px; }
-      .ranking-name { font-size: 1rem; }
-      .ranking-score strong { font-size: 1.25rem; }
-      .controls { gap: 6px; margin-bottom: 10px; }
-      button { padding: 6px 12px; font-size: 0.82rem; gap: 5px; }
-      th .header-inner { gap: 4px; }
-      th, td { padding: 6px 5px; font-size: 0.8rem; }
-      .cell { padding: 3px 4px; margin: -3px -4px; min-height: 16px; }
-      .column-letter-pill { padding: 6px 8px; font-size: 0.8rem; }
+      body {
+        padding: 12px;
+        font-size: 0.95rem;
+      }
+
+      .app {
+        padding: 14px;
+      }
+
+      .table-wrapper,
+      .table-scrollbar {
+        margin: 0 -6px;
+      }
+
+      .table-wrapper {
+        max-height: calc(100vh - 120px);
+      }
+
+      table {
+        min-width: 0;
+      }
+
+      /* Disable sticky columns on small screens */
+      .sticky-col {
+        position: static;
+        left: auto !important;
+        z-index: auto;
+      }
+
+      .header-row .sticky-col {
+        position: sticky;
+        top: 0;
+      }
+
+      .app-header {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        gap: 8px;
+      }
+
+      .app-title {
+        font-size: 1.1rem;
+        gap: 6px;
+      }
+
+      .badge {
+        padding: 2px 6px;
+        font-size: 0.7rem;
+      }
+
+      .app-subtitle {
+        font-size: 0.8rem;
+      }
+
+      .tabs {
+        margin-bottom: 12px;
+      }
+
+      .tab-button {
+        padding: 7px 12px;
+      }
+
+      .ranking-card {
+        grid-template-columns: 78px minmax(0, 1fr);
+        min-height: 78px;
+      }
+
+      .ranking-image-button {
+        width: 78px;
+        height: 78px;
+        min-width: 78px;
+      }
+
+      .ranking-card-body {
+        padding: 11px 12px;
+      }
+
+      .ranking-name {
+        font-size: 1rem;
+      }
+
+      .ranking-score strong {
+        font-size: 1.25rem;
+      }
+
+      .controls {
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      button {
+        padding: 6px 12px;
+        font-size: 0.82rem;
+        gap: 5px;
+      }
+
+      th .header-inner {
+        gap: 4px;
+      }
+
+      th,
+      td {
+        padding: 6px 5px;
+        font-size: 0.8rem;
+      }
+
+      .cell {
+        padding: 3px 4px;
+        margin: -3px -4px;
+        min-height: 16px;
+      }
+
+      .column-letter-pill {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+      }
     }
 
     thead {
       position: static;
-      background: linear-gradient(to bottom, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.96));
+      background: linear-gradient(
+        to bottom,
+        rgba(15, 23, 42, 1),
+        rgba(15, 23, 42, 0.96)
+      );
     }
+
     .header-row th {
       position: sticky;
       top: 0;
@@ -369,14 +565,21 @@
       background: rgba(15, 23, 42, 0.99);
       box-shadow: 0 1px 0 rgba(51, 65, 85, 0.95);
     }
-    th, td {
+
+    th,
+    td {
       border-bottom: 1px solid rgba(30, 41, 59, 0.85);
       padding: 8px 10px;
       font-size: 0.85rem;
       text-align: left;
       vertical-align: middle;
     }
-    th:not(:last-child), td:not(:last-child) { border-right: 1px solid rgba(30, 41, 59, 0.6); }
+
+    th:not(:last-child),
+    td:not(:last-child) {
+      border-right: 1px solid rgba(30, 41, 59, 0.6);
+    }
+
     th {
       font-weight: 500;
       text-transform: uppercase;
@@ -401,15 +604,52 @@
       opacity: 0;
       transition: opacity 0.12s ease;
     }
-    th:hover .column-resizer, th:focus-within .column-resizer, .column-resizer.active { opacity: 1; }
-    th.resizing-hover { cursor: col-resize; }
-    th.resizing-hover .column-resizer { opacity: 1; }
-    body.resizing-column, body.resizing-column * { cursor: col-resize !important; user-select: none !important; }
-    th .header-inner { display: inline-flex; align-items: center; gap: 6px; }
-    th .drag-handle { opacity: 0.4; font-size: 0.85rem; cursor: grab; }
-    .locked-column .drag-handle { display: none; }
-    th.drag-over { outline: 1px dashed rgba(34, 197, 94, 0.55); outline-offset: 4px; }
-    th .header-label { pointer-events: none; }
+
+    th:hover .column-resizer,
+    th:focus-within .column-resizer,
+    .column-resizer.active {
+      opacity: 1;
+    }
+
+    th.resizing-hover {
+      cursor: col-resize;
+    }
+
+    th.resizing-hover .column-resizer {
+      opacity: 1;
+    }
+
+    body.resizing-column,
+    body.resizing-column * {
+      cursor: col-resize !important;
+      user-select: none !important;
+    }
+
+    th .header-inner {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    th .drag-handle {
+      opacity: 0.4;
+      font-size: 0.85rem;
+      cursor: grab;
+    }
+
+    .locked-column .drag-handle {
+      display: none;
+    }
+
+    th.drag-over {
+      outline: 1px dashed rgba(34, 197, 94, 0.55);
+      outline-offset: 4px;
+    }
+
+    th .header-label {
+      pointer-events: none;
+    }
+
     th .sort-indicator {
       display: inline-flex;
       position: relative;
@@ -418,6 +658,7 @@
       align-items: center;
       justify-content: center;
     }
+
     th .sort-indicator::before,
     th .sort-indicator::after {
       content: "";
@@ -426,18 +667,56 @@
       border-right: 4px solid transparent;
       opacity: 0.4;
     }
-    th .sort-indicator::before { border-bottom: 5px solid var(--text-muted); top: 1px; }
-    th .sort-indicator::after { border-top: 5px solid var(--text-muted); bottom: 1px; }
-    th.sorted-asc, th.sorted-desc { color: var(--accent); }
-    th.sorted-asc .sort-indicator::before { border-bottom-color: var(--accent); opacity: 1; }
-    th.sorted-asc .sort-indicator::after { opacity: 0.2; }
-    th.sorted-desc .sort-indicator::after { border-top-color: var(--accent); opacity: 1; }
-    th.sorted-desc .sort-indicator::before { opacity: 0.2; }
 
-    tbody tr:nth-child(even) { background: rgba(15, 23, 42, 0.96); }
-    tbody tr:nth-child(odd) { background: rgba(15, 23, 42, 0.99); }
-    tbody tr:hover { background: var(--cell-hover); }
-    td { color: var(--text); }
+    th .sort-indicator::before {
+      border-bottom: 5px solid var(--text-muted);
+      top: 1px;
+    }
+
+    th .sort-indicator::after {
+      border-top: 5px solid var(--text-muted);
+      bottom: 1px;
+    }
+
+    th.sorted-asc,
+    th.sorted-desc {
+      color: var(--accent);
+    }
+
+    th.sorted-asc .sort-indicator::before {
+      border-bottom-color: var(--accent);
+      opacity: 1;
+    }
+
+    th.sorted-asc .sort-indicator::after {
+      opacity: 0.2;
+    }
+
+    th.sorted-desc .sort-indicator::after {
+      border-top-color: var(--accent);
+      opacity: 1;
+    }
+
+    th.sorted-desc .sort-indicator::before {
+      opacity: 0.2;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.96);
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(15, 23, 42, 0.99);
+    }
+
+    tbody tr:hover {
+      background: var(--cell-hover);
+    }
+
+    td {
+      color: var(--text);
+    }
+
     .cell {
       min-width: 80px;
       outline: none;
@@ -452,10 +731,27 @@
       width: 100%;
       text-align: center;
     }
-    .numeric-cell { text-align: center; justify-content: center; }
-    .high-number { color: #ff4d4d; font-weight: 700; }
-    .cell:focus { background: rgba(15, 23, 42, 0.9); box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.8); }
-    .name-cell { color: #38bdf8; font-weight: 600; }
+
+    .numeric-cell {
+      text-align: center;
+      justify-content: center;
+    }
+
+    .high-number {
+      color: #ff4d4d;
+      font-weight: 700;
+    }
+
+    .cell:focus {
+      background: rgba(15, 23, 42, 0.9);
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.8);
+    }
+
+    .name-cell {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
     .formula-cell {
       color: var(--accent);
       background: rgba(34, 197, 94, 0.08);
@@ -477,7 +773,11 @@
       min-width: 140px;
       overflow: hidden;
     }
-    .suggestion-dropdown.hidden { display: none; }
+
+    .suggestion-dropdown.hidden {
+      display: none;
+    }
+
     .suggestion-item {
       padding: 7px 14px;
       cursor: pointer;
@@ -486,14 +786,39 @@
       font-size: 0.85rem;
       transition: background 0.12s ease, color 0.12s ease;
     }
-    .suggestion-item:hover { background: var(--cell-hover); color: var(--accent); }
 
-    .icon-cell { width: 44px; text-align: center; padding-right: 6px; }
-    .sticky-col { position: sticky; left: var(--sticky-left, 0); background: rgba(15, 23, 42, 0.99); }
-    thead .sticky-col { z-index: 7; }
-    .header-row .sticky-col { z-index: 12; }
-    .column-letter-row .sticky-col { z-index: 8; }
-    tbody .sticky-col { z-index: 3; }
+    .suggestion-item:hover {
+      background: var(--cell-hover);
+      color: var(--accent);
+    }
+
+    .icon-cell {
+      width: 44px;
+      text-align: center;
+      padding-right: 6px;
+    }
+
+    .sticky-col {
+      position: sticky;
+      left: var(--sticky-left, 0);
+      background: rgba(15, 23, 42, 0.99);
+    }
+
+    thead .sticky-col {
+      z-index: 7;
+    }
+
+    .header-row .sticky-col {
+      z-index: 12;
+    }
+
+    .column-letter-row .sticky-col {
+      z-index: 8;
+    }
+
+    tbody .sticky-col {
+      z-index: 3;
+    }
 
     .image-link {
       display: inline-flex;
@@ -506,17 +831,24 @@
       border: 1px solid rgba(56, 189, 248, 0.35);
       color: #e5e7eb;
       text-decoration: none;
-      transition: background 0.15s ease, transform 0.08s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      transition: background 0.15s ease, transform 0.08s ease,
+        border-color 0.15s ease, box-shadow 0.15s ease;
       font-size: 0.95rem;
     }
+
     .image-link:hover {
       background: rgba(56, 189, 248, 0.2);
       border-color: #38bdf8;
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
       transform: translateY(-1px);
     }
-    .image-link:active { transform: translateY(0); }
-    .image-link.disabled, .image-link.disabled:hover {
+
+    .image-link:active {
+      transform: translateY(0);
+    }
+
+    .image-link.disabled,
+    .image-link.disabled:hover {
       border-color: rgba(148, 163, 184, 0.3);
       background: rgba(148, 163, 184, 0.12);
       box-shadow: none;
@@ -533,9 +865,23 @@
       gap: 12px;
       align-items: center;
     }
-    .hint-pill { padding: 2px 8px; border-radius: 999px; border: 1px dashed rgba(148, 163, 184, 0.4); }
-    .column-letter-row th { border-bottom: 1px solid rgba(30, 41, 59, 0.85); padding: 0; text-align: left; }
-    .column-letter { padding: 0; }
+
+    .hint-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px dashed rgba(148, 163, 184, 0.4);
+    }
+
+    .column-letter-row th {
+      border-bottom: 1px solid rgba(30, 41, 59, 0.85);
+      padding: 0;
+      text-align: left;
+    }
+
+    .column-letter {
+      padding: 0;
+    }
+
     .column-letter-pill {
       display: block;
       width: 100%;
@@ -565,58 +911,113 @@
       <details class="controls-panel">
         <summary>Controls</summary>
         <div class="controls">
-          <button id="addRowBtn"><span class="icon">➕</span>Add Row</button>
-          <button id="addColBtn"><span class="icon">📊</span>Add Column</button>
-          <button id="deleteRowBtn" class="danger"><span class="icon">➖</span>Delete Row</button>
-          <button id="deleteColBtn" class="danger"><span class="icon">🧹</span>Delete Column</button>
-          <button id="exportBtn"><span class="icon">⬇️</span>Export Data</button>
-          <button id="importBtn"><span class="icon">⬆️</span>Import Data</button>
-          <button id="clearBtn" class="danger"><span class="icon">🗑️</span>Clear All Data</button>
-          <input type="file" id="importFileInput" accept="application/json,.json,.xlsx,.xls,.csv" hidden />
+          <button id="addRowBtn">
+            <span class="icon">➕</span>
+            Add Row
+          </button>
+          <button id="addColBtn">
+            <span class="icon">📊</span>
+            Add Column
+          </button>
+          <button id="deleteRowBtn" class="danger">
+            <span class="icon">➖</span>
+            Delete Row
+          </button>
+          <button id="deleteColBtn" class="danger">
+            <span class="icon">🧹</span>
+            Delete Column
+          </button>
+          <button id="exportBtn">
+            <span class="icon">⬇️</span>
+            Export Data
+          </button>
+          <button id="importBtn">
+            <span class="icon">⬆️</span>
+            Import Data
+          </button>
+          <button id="clearBtn" class="danger">
+            <span class="icon">🗑️</span>
+            Clear All Data
+          </button>
+          <input
+            type="file"
+            id="importFileInput"
+            accept="application/json,.json,.xlsx,.xls,.csv"
+            hidden
+          />
         </div>
       </details>
 
-      <div class="table-scrollbar" id="tableScrollTop"><div class="table-scrollbar-inner" id="tableScrollTopInner"></div></div>
+      <div class="table-scrollbar" id="tableScrollTop">
+        <div class="table-scrollbar-inner" id="tableScrollTopInner"></div>
+      </div>
 
       <div class="table-wrapper" id="tableWrapper">
         <table id="dataTable">
           <thead>
             <tr class="column-letter-row">
-              <th data-col-index="0" class="column-letter"><span class="column-letter-pill">A</span></th>
-              <th data-col-index="1" class="column-letter"><span class="column-letter-pill">B</span></th>
-              <th data-col-index="2" class="column-letter"><span class="column-letter-pill">C</span></th>
+              <th data-col-index="0" class="column-letter">
+                <span class="column-letter-pill">A</span>
+              </th>
+              <th data-col-index="1" class="column-letter">
+                <span class="column-letter-pill">B</span>
+              </th>
+              <th data-col-index="2" class="column-letter">
+                <span class="column-letter-pill">C</span>
+              </th>
             </tr>
             <tr class="header-row">
-              <th data-col-index="0" class="icon-cell"><span class="header-inner"><span class="header-label">Images</span><span class="sort-indicator" aria-hidden="true"></span></span></th>
-              <th data-col-index="1"><span class="header-inner"><span class="header-label">Name</span><span class="sort-indicator" aria-hidden="true"></span></span></th>
-              <th data-col-index="2"><span class="header-inner"><span class="header-label">Rating</span><span class="sort-indicator" aria-hidden="true"></span></span></th>
+              <th data-col-index="0" class="icon-cell">
+                <span class="header-inner">
+                  <span class="header-label">Images</span>
+                  <span class="sort-indicator" aria-hidden="true"></span>
+                </span>
+              </th>
+              <th data-col-index="1">
+                <span class="header-inner">
+                  <span class="header-label">Name</span>
+                  <span class="sort-indicator" aria-hidden="true"></span>
+                </span>
+              </th>
+              <th data-col-index="2">
+                <span class="header-inner">
+                  <span class="header-label">Rating</span>
+                  <span class="sort-indicator" aria-hidden="true"></span>
+                </span>
+              </th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            <!-- rows will be created by JS -->
+          </tbody>
         </table>
       </div>
 
       <div class="hint-bar">
-        <span class="hint-pill">🔍 Anything typed in the <strong>Name</strong> column becomes a Google Images link.</span>
-        <span>Use the new image icon in each row to open Google Images for that name.</span>
-        <span class="hint-pill">🧮 Double-click a column header to add a formula. Use column letters like <strong>=AVERAGE(D:H)</strong>.</span>
+        <span class="hint-pill">
+          🔍 Anything typed in the <strong>Name</strong> column becomes a Google Images link.
+        </span>
+        <span>
+          Use the new image icon in each row to open Google Images for that name.
+        </span>
+        <span class="hint-pill">
+          🧮 Double-click a column header to add a formula. Use column letters like
+          <strong>=AVERAGE(D:H)</strong>.
+        </span>
       </div>
     </section>
 
     <section class="tab-panel rankings-panel" id="facePanel" role="tabpanel" aria-labelledby="faceTab" data-panel="face" hidden>
-      <div class="rankings-heading"><div><div class="rankings-title">Face Power Rankings</div><div class="rankings-subtitle">Top 20 from Main, ranked automatically by the Face column.</div></div></div>
+      <div class="rankings-heading">
+        <div>
+          <div class="rankings-title">Face Power Rankings</div>
+          <div class="rankings-subtitle">Top 20 from Main, ranked automatically by the Face column.</div>
+        </div>
+      </div>
       <div class="ranking-list" id="faceRankings" aria-live="polite"></div>
     </section>
-
-    <section class="tab-panel rankings-panel" id="titsPanel" role="tabpanel" aria-labelledby="titsTab" data-panel="tits" hidden>
-      <div class="rankings-heading"><div><div class="rankings-title">Tits Power Rankings</div><div class="rankings-subtitle">Top 20 from Main, ranked automatically by the Tits column.</div></div></div>
-      <div class="ranking-list" id="titsRankings" aria-live="polite"></div>
-    </section>
-
-    <section class="tab-panel rankings-panel" id="assPanel" role="tabpanel" aria-labelledby="assTab" data-panel="ass" hidden>
-      <div class="rankings-heading"><div><div class="rankings-title">Ass Power Rankings</div><div class="rankings-subtitle">Top 20 from Main, ranked automatically by the Ass column.</div></div></div>
-      <div class="ranking-list" id="assRankings" aria-live="polite"></div>
-    </section>
+    <section class="tab-panel empty-tab" id="titsPanel" role="tabpanel" aria-labelledby="titsTab" data-panel="tits" hidden></section>
+    <section class="tab-panel empty-tab" id="assPanel" role="tabpanel" aria-labelledby="assTab" data-panel="ass" hidden></section>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -624,8 +1025,6 @@
     const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
     const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
     const faceRankings = document.getElementById("faceRankings");
-    const titsRankings = document.getElementById("titsRankings");
-    const assRankings = document.getElementById("assRankings");
 
     const table = document.getElementById("dataTable");
     const tableWrapper = document.getElementById("tableWrapper");
@@ -645,14 +1044,13 @@
     const RANKING_IMAGE_MAX_DIMENSION = 640;
     const RANKING_IMAGE_QUALITY = 0.82;
     const FACE_LABEL = "face";
-    const TITS_LABEL = "tits";
-    const ASS_LABEL = "ass";
 
     const storage = (() => {
       try {
         const testKey = "__storage_test__";
         localStorage.setItem(testKey, "ok");
         localStorage.removeItem(testKey);
+
         return {
           getItem: (key) => localStorage.getItem(key),
           setItem: (key, value) => localStorage.setItem(key, value),
@@ -662,10 +1060,15 @@
       } catch (err) {
         console.warn("Local storage unavailable, using in-memory fallback.", err);
         const memoryStore = {};
+
         return {
           getItem: (key) => memoryStore[key] || null,
-          setItem: (key, value) => { memoryStore[key] = value; },
-          removeItem: (key) => { delete memoryStore[key]; },
+          setItem: (key, value) => {
+            memoryStore[key] = value;
+          },
+          removeItem: (key) => {
+            delete memoryStore[key];
+          },
           available: false,
         };
       }
@@ -681,15 +1084,9 @@
     const importFileInput = document.getElementById("importFileInput");
 
     let imageDbPromise = null;
-    const rankingsRenderFrames = { face: null, tits: null, ass: null };
-    const rankingsRenderTokens = { face: 0, tits: 0, ass: 0 };
-    const rankingObjectUrls = { face: [], tits: [], ass: [] };
-
-    const RANKING_CONFIG = {
-      face: { label: "Face", columnLabel: FACE_LABEL, container: faceRankings },
-      tits: { label: "Tits", columnLabel: TITS_LABEL, container: titsRankings },
-      ass: { label: "Ass", columnLabel: ASS_LABEL, container: assRankings },
-    };
+    let faceRankingsRenderFrame = null;
+    let faceRankingsRenderToken = 0;
+    let faceRankingObjectUrls = [];
 
     function activateTab(tabName) {
       tabButtons.forEach((button) => {
@@ -697,21 +1094,40 @@
         button.setAttribute("aria-selected", String(isActive));
         button.tabIndex = isActive ? 0 : -1;
       });
-      tabPanels.forEach((panel) => { panel.hidden = panel.dataset.panel !== tabName; });
-      if (tabName === "main") refreshScrollbars();
-      else if (RANKING_CONFIG[tabName]) queueRankingRender(tabName);
+
+      tabPanels.forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== tabName;
+      });
+
+      if (tabName === "main") {
+        refreshScrollbars();
+      } else if (tabName === "face") {
+        queueFaceRankingsRender();
+      }
     }
 
     function getActiveTabName() {
-      return tabButtons.find((button) => button.getAttribute("aria-selected") === "true")?.dataset.tab || "main";
+      return (
+        tabButtons.find((button) => button.getAttribute("aria-selected") === "true")
+          ?.dataset.tab || "main"
+      );
     }
 
-    tabButtons.forEach((button) => button.addEventListener("click", () => activateTab(button.dataset.tab)));
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => activateTab(button.dataset.tab));
+    });
+
     activateTab("main");
 
-    const COLUMN_TYPES = { ICON: "icon", NAME: "name", TEXT: "text" };
+    const COLUMN_TYPES = {
+      ICON: "icon",
+      NAME: "name",
+      TEXT: "text",
+    };
+
     const getHeaderCells = () => Array.from(headerRow.querySelectorAll("th"));
     const getLetterCells = () => Array.from(letterRow.querySelectorAll("th"));
+
     const AGE_LABEL = "age";
     const NAME_LABEL = "name";
 
@@ -722,6 +1138,7 @@
       "katherine johnson": { birth: "1918-08-26", death: "2020-02-24" },
       "elon musk": { birth: "1971-06-28", death: null },
     };
+
     const birthdayCache = new Map();
 
     function ensureLetterCells(count) {
@@ -736,7 +1153,10 @@
         letterCell.appendChild(pill);
         letterRow.appendChild(letterCell);
       }
-      while (letterRow.children.length > count) letterRow.removeChild(letterRow.lastChild);
+
+      while (letterRow.children.length > count) {
+        letterRow.removeChild(letterRow.lastChild);
+      }
     }
 
     const DEFAULT_ROW_COUNT = 10;
@@ -745,15 +1165,20 @@
       { label: "Name", type: COLUMN_TYPES.NAME },
       { label: "Rating", type: COLUMN_TYPES.TEXT },
     ];
+
     const MIN_COLUMN_WIDTH = 70;
     const MIN_ICON_WIDTH = 50;
     const LOCKED_COLUMN_COUNT = 2;
+
+    // Track sort direction per column: "asc" or "desc"
     const sortState = {};
     let isDraggingColumn = false;
     let dragSourceIndex = null;
+
     const NUMERIC_VALUE_PATTERN = /^-?\d+(?:\.\d+)?$/;
     const columnSuggestions = new Map();
     let activeSuggestionCell = null;
+
     const suggestionDropdown = document.createElement("div");
     suggestionDropdown.className = "suggestion-dropdown hidden";
     document.body.appendChild(suggestionDropdown);
@@ -761,9 +1186,11 @@
     document.addEventListener("focusin", (event) => {
       if (!activeSuggestionCell) return;
       const targetCell = event.target.closest?.(".cell, .name-cell");
-      if (targetCell === activeSuggestionCell || suggestionDropdown.contains(event.target)) return;
+      if (targetCell === activeSuggestionCell) return;
+      if (suggestionDropdown.contains(event.target)) return;
       hideSuggestionDropdown();
     });
+
     document.addEventListener("mousedown", (event) => {
       if (!activeSuggestionCell) return;
       if (suggestionDropdown.contains(event.target)) return;
@@ -775,17 +1202,26 @@
     let isSyncingScroll = false;
     let pendingScrollFrame = null;
     let pendingScrollLeft = null;
+
     function refreshScrollbars() {
       if (!table || !topScrollbarInner || !tableWrapper) return;
+
       requestAnimationFrame(() => {
         topScrollbarInner.style.width = `${table.scrollWidth}px`;
-        if (topScrollbar) topScrollbar.scrollLeft = tableWrapper.scrollLeft;
+        if (topScrollbar) {
+          topScrollbar.scrollLeft = tableWrapper.scrollLeft;
+        }
       });
     }
+
     function mirrorScrollPosition(source, target) {
       if (!target || isSyncingScroll) return;
       pendingScrollLeft = source.scrollLeft;
-      if (pendingScrollFrame) return;
+
+      if (pendingScrollFrame) {
+        return;
+      }
+
       pendingScrollFrame = requestAnimationFrame(() => {
         isSyncingScroll = true;
         target.scrollLeft = pendingScrollLeft;
@@ -794,19 +1230,33 @@
         pendingScrollLeft = null;
       });
     }
+
     if (tableWrapper && topScrollbar) {
-      tableWrapper.addEventListener("scroll", () => mirrorScrollPosition(tableWrapper, topScrollbar), { passive: true });
-      topScrollbar.addEventListener("scroll", () => mirrorScrollPosition(topScrollbar, tableWrapper), { passive: true });
+      tableWrapper.addEventListener(
+        "scroll",
+        () => mirrorScrollPosition(tableWrapper, topScrollbar),
+        { passive: true }
+      );
+
+      topScrollbar.addEventListener(
+        "scroll",
+        () => mirrorScrollPosition(topScrollbar, tableWrapper),
+        { passive: true }
+      );
     }
+
     window.addEventListener("resize", refreshScrollbars);
 
     function columnLabelToIndex(label) {
       if (!/^[A-Za-z]+$/.test(label)) return null;
       const upper = label.toUpperCase();
       let index = 0;
-      for (let i = 0; i < upper.length; i++) index = index * 26 + (upper.charCodeAt(i) - 64);
+      for (let i = 0; i < upper.length; i++) {
+        index = index * 26 + (upper.charCodeAt(i) - 64);
+      }
       return index - 1;
     }
+
     function indexToColumnLabel(index) {
       let n = index + 1;
       let label = "";
@@ -817,53 +1267,89 @@
       }
       return label;
     }
-    function normalizeHeaderLabel(label) { return (label || "").trim().toLowerCase(); }
-    function escapeRegExp(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+    function normalizeHeaderLabel(label) {
+      return (label || "").trim().toLowerCase();
+    }
+
+    function escapeRegExp(str) {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
     function getColumnLabelLookup(columns = getColumnDefinitions()) {
       const lookup = new Map();
       columns.forEach((col, idx) => {
         const normalized = normalizeHeaderLabel(col.label);
-        if (normalized && !lookup.has(normalized)) lookup.set(normalized, { index: idx, label: col.label });
+        if (normalized && !lookup.has(normalized)) {
+          lookup.set(normalized, { index: idx, label: col.label });
+        }
       });
       return lookup;
     }
+
     function getColumnIndexByLabel(lookup, rawLabel) {
-      const entry = lookup.get(normalizeHeaderLabel(rawLabel));
-      return entry ? entry.index : columnLabelToIndex(rawLabel);
+      const normalized = normalizeHeaderLabel(rawLabel);
+      const entry = lookup.get(normalized);
+      if (entry) return entry.index;
+      const fallback = columnLabelToIndex(rawLabel);
+      return fallback;
     }
+
     function buildColumnLabelPattern(lookup) {
-      const labels = Array.from(lookup.values()).map(({ label }) => escapeRegExp(label || "")).filter(Boolean);
-      return labels.length ? new RegExp(`\\b(${labels.join("|")})\\b`, "gi") : null;
+      const labels = Array.from(lookup.values())
+        .map(({ label }) => escapeRegExp(label || ""))
+        .filter(Boolean);
+      if (!labels.length) return null;
+      return new RegExp(`\\b(${labels.join("|")})\\b`, "gi");
     }
-    function buildImageSearchUrl(query) { return "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(query); }
+
+    function buildImageSearchUrl(query) {
+      return "https://www.google.com/search?tbm=isch&q=" +
+        encodeURIComponent(query);
+    }
 
     function createCell(columnType, { formula } = {}) {
       const td = document.createElement("td");
+
       if (columnType === COLUMN_TYPES.ICON) {
         td.className = "icon-cell";
+
         const link = document.createElement("a");
         link.href = "#";
         link.target = "_blank";
         link.className = "image-link disabled";
         link.title = "Open Google Images for this name";
-        link.addEventListener("click", (e) => { if (link.classList.contains("disabled")) e.preventDefault(); });
+
+        link.addEventListener("click", (e) => {
+          if (link.classList.contains("disabled")) {
+            e.preventDefault();
+          }
+        });
+
         link.textContent = "🖼️";
         td.appendChild(link);
       } else if (columnType === COLUMN_TYPES.NAME) {
+        // Name column: editable text
         const div = document.createElement("div");
         div.className = "cell name-cell";
         if (!formula) {
           div.setAttribute("contenteditable", "true");
           div.addEventListener("keydown", handleCellKeyDown);
           attachSuggestionEvents(div);
-        } else div.classList.add("formula-cell");
+        } else {
+          div.classList.add("formula-cell");
+        }
         div.dataset.role = "name";
+
+        // Update icon link whenever text changes
         if (!formula) {
           div.addEventListener("input", handleNameInput);
           div.addEventListener("input", handleCellChange);
         }
+
         td.appendChild(div);
       } else {
+        // Regular editable text cell
         const div = document.createElement("div");
         div.className = "cell";
         if (!formula) {
@@ -871,57 +1357,81 @@
           div.addEventListener("input", handleCellChange);
           div.addEventListener("keydown", handleCellKeyDown);
           attachSuggestionEvents(div);
-        } else div.classList.add("formula-cell");
+        } else {
+          div.classList.add("formula-cell");
+        }
         td.appendChild(div);
       }
+
       return td;
     }
 
-    function normalizePersonName(name) { return name?.trim().toLowerCase() || ""; }
+    function normalizePersonName(name) {
+      return name?.trim().toLowerCase() || "";
+    }
+
     function imageKeyForName(name) {
       const normalized = normalizePersonName(name);
       return normalized ? `person:${normalized}` : "";
     }
+
     function openImageDb() {
-      if (!("indexedDB" in window)) return Promise.reject(new Error("IndexedDB is not available in this browser."));
+      if (!("indexedDB" in window)) {
+        return Promise.reject(new Error("IndexedDB is not available in this browser."));
+      }
+
       if (!imageDbPromise) {
         imageDbPromise = new Promise((resolve, reject) => {
           const request = indexedDB.open(IMAGE_DB_NAME, IMAGE_DB_VERSION);
+
           request.onupgradeneeded = () => {
             const db = request.result;
-            if (!db.objectStoreNames.contains(IMAGE_STORE_NAME)) db.createObjectStore(IMAGE_STORE_NAME, { keyPath: "key" });
+            if (!db.objectStoreNames.contains(IMAGE_STORE_NAME)) {
+              db.createObjectStore(IMAGE_STORE_NAME, { keyPath: "key" });
+            }
           };
+
           request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error || new Error("Unable to open image storage."));
-          request.onblocked = () => console.warn("Image storage upgrade is blocked by another open tab.");
+          request.onerror = () =>
+            reject(request.error || new Error("Unable to open image storage."));
+          request.onblocked = () =>
+            console.warn("Image storage upgrade is blocked by another open tab.");
         });
       }
+
       return imageDbPromise;
     }
+
     async function getStoredPersonImage(name) {
       const key = imageKeyForName(name);
       if (!key) return null;
       const db = await openImageDb();
+
       return await new Promise((resolve, reject) => {
         const transaction = db.transaction(IMAGE_STORE_NAME, "readonly");
         const request = transaction.objectStore(IMAGE_STORE_NAME).get(key);
         request.onsuccess = () => resolve(request.result || null);
-        request.onerror = () => reject(request.error || new Error("Unable to read image storage."));
+        request.onerror = () =>
+          reject(request.error || new Error("Unable to read image storage."));
       });
     }
+
     async function getAllStoredImages() {
       const db = await openImageDb();
       return await new Promise((resolve, reject) => {
         const transaction = db.transaction(IMAGE_STORE_NAME, "readonly");
         const request = transaction.objectStore(IMAGE_STORE_NAME).getAll();
         request.onsuccess = () => resolve(request.result || []);
-        request.onerror = () => reject(request.error || new Error("Unable to read image storage."));
+        request.onerror = () =>
+          reject(request.error || new Error("Unable to read image storage."));
       });
     }
+
     async function putStoredPersonImage(name, imageData) {
       const key = imageKeyForName(name);
       if (!key) return;
       const db = await openImageDb();
+
       await new Promise((resolve, reject) => {
         const transaction = db.transaction(IMAGE_STORE_NAME, "readwrite");
         transaction.objectStore(IMAGE_STORE_NAME).put({
@@ -935,25 +1445,45 @@
           updatedAt: new Date().toISOString(),
         });
         transaction.oncomplete = () => resolve();
-        transaction.onerror = () => reject(transaction.error || new Error("Unable to save image."));
-        transaction.onabort = () => reject(transaction.error || new Error("Image save was aborted."));
+        transaction.onerror = () =>
+          reject(transaction.error || new Error("Unable to save image."));
+        transaction.onabort = () =>
+          reject(transaction.error || new Error("Image save was aborted."));
       });
     }
+
     async function loadResizeSource(file) {
       if (typeof createImageBitmap === "function") {
         const bitmap = await createImageBitmap(file);
-        return { source: bitmap, width: bitmap.width, height: bitmap.height, cleanup: () => bitmap.close?.() };
+        return {
+          source: bitmap,
+          width: bitmap.width,
+          height: bitmap.height,
+          cleanup: () => bitmap.close?.(),
+        };
       }
+
       const objectUrl = URL.createObjectURL(file);
       return await new Promise((resolve, reject) => {
         const image = new Image();
-        image.onload = () => resolve({ source: image, width: image.naturalWidth, height: image.naturalHeight, cleanup: () => URL.revokeObjectURL(objectUrl) });
-        image.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Unable to read the selected image.")); };
+        image.onload = () =>
+          resolve({
+            source: image,
+            width: image.naturalWidth,
+            height: image.naturalHeight,
+            cleanup: () => URL.revokeObjectURL(objectUrl),
+          });
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("Unable to read the selected image."));
+        };
         image.src = objectUrl;
       });
     }
+
     async function resizeRankingImage(file) {
       const image = await loadResizeSource(file);
+
       try {
         const longestSide = Math.max(image.width, image.height) || 1;
         const scale = Math.min(1, RANKING_IMAGE_MAX_DIMENSION / longestSide);
@@ -964,53 +1494,77 @@
         canvas.height = height;
         const context = canvas.getContext("2d");
         if (!context) throw new Error("Image resizing is unavailable.");
+
         context.drawImage(image.source, 0, 0, width, height);
-        let blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", RANKING_IMAGE_QUALITY));
-        if (!blob) blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", RANKING_IMAGE_QUALITY));
+
+        let blob = await new Promise((resolve) =>
+          canvas.toBlob(resolve, "image/webp", RANKING_IMAGE_QUALITY)
+        );
+
+        if (!blob) {
+          blob = await new Promise((resolve) =>
+            canvas.toBlob(resolve, "image/jpeg", RANKING_IMAGE_QUALITY)
+          );
+        }
+
         if (!blob) throw new Error("Unable to compress the selected image.");
         return { blob, width, height };
-      } finally { image.cleanup?.(); }
+      } finally {
+        image.cleanup?.();
+      }
     }
+
     function blobToDataUrl(blob) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error || new Error("Unable to serialize an image."));
+        reader.onerror = () =>
+          reject(reader.error || new Error("Unable to serialize an image."));
         reader.readAsDataURL(blob);
       });
     }
+
     async function dataUrlToBlob(dataUrl) {
       const response = await fetch(dataUrl);
       if (!response.ok) throw new Error("Unable to restore an image.");
       return await response.blob();
     }
+
     async function serializeStoredImagesForExport() {
       const records = await getAllStoredImages();
-      return await Promise.all(records.map(async (record) => ({
-        key: record.key,
-        name: record.name,
-        mimeType: record.mimeType || record.blob?.type || "image/webp",
-        width: record.width,
-        height: record.height,
-        size: record.size || record.blob?.size || 0,
-        updatedAt: record.updatedAt || null,
-        data: await blobToDataUrl(record.blob),
-      })));
+      return await Promise.all(
+        records.map(async (record) => ({
+          key: record.key,
+          name: record.name,
+          mimeType: record.mimeType || record.blob?.type || "image/webp",
+          width: record.width,
+          height: record.height,
+          size: record.size || record.blob?.size || 0,
+          updatedAt: record.updatedAt || null,
+          data: await blobToDataUrl(record.blob),
+        }))
+      );
     }
+
     async function replaceStoredImagesFromExport(images) {
-      const restoredRecords = await Promise.all(images.filter((image) => image?.key && image?.data).map(async (image) => {
-        const blob = await dataUrlToBlob(image.data);
-        return {
-          key: image.key,
-          name: image.name || image.key.replace(/^person:/, ""),
-          blob,
-          mimeType: blob.type || image.mimeType || "image/webp",
-          width: image.width,
-          height: image.height,
-          size: blob.size,
-          updatedAt: image.updatedAt || new Date().toISOString(),
-        };
-      }));
+      const restoredRecords = await Promise.all(
+        images
+          .filter((image) => image?.key && image?.data)
+          .map(async (image) => {
+            const blob = await dataUrlToBlob(image.data);
+            return {
+              key: image.key,
+              name: image.name || image.key.replace(/^person:/, ""),
+              blob,
+              mimeType: blob.type || image.mimeType || "image/webp",
+              width: image.width,
+              height: image.height,
+              size: blob.size,
+              updatedAt: image.updatedAt || new Date().toISOString(),
+            };
+          })
+      );
+
       const db = await openImageDb();
       await new Promise((resolve, reject) => {
         const transaction = db.transaction(IMAGE_STORE_NAME, "readwrite");
@@ -1018,200 +1572,312 @@
         store.clear();
         restoredRecords.forEach((record) => store.put(record));
         transaction.oncomplete = () => resolve();
-        transaction.onerror = () => reject(transaction.error || new Error("Unable to restore images."));
-        transaction.onabort = () => reject(transaction.error || new Error("Image restore was aborted."));
+        transaction.onerror = () =>
+          reject(transaction.error || new Error("Unable to restore images."));
+        transaction.onabort = () =>
+          reject(transaction.error || new Error("Image restore was aborted."));
       });
     }
 
-    function releaseRankingObjectUrls(tabName) {
-      rankingObjectUrls[tabName].forEach((url) => URL.revokeObjectURL(url));
-      rankingObjectUrls[tabName] = [];
+    function releaseFaceRankingObjectUrls() {
+      faceRankingObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+      faceRankingObjectUrls = [];
     }
 
-    function getRankingEntries(columnLabel, displayLabel) {
+    function getFaceRankingEntries() {
       const columns = getColumnDefinitions();
       const nameIndex = findColumnIndexByLabel(columns, NAME_LABEL);
-      const scoreIndex = findColumnIndexByLabel(columns, columnLabel);
-      if (nameIndex === -1) return { error: 'The Main table needs a column named "Name".' };
-      if (scoreIndex === -1) return { error: `The Main table needs a column named "${displayLabel}".` };
+      const faceIndex = findColumnIndexByLabel(columns, FACE_LABEL);
+
+      if (nameIndex === -1) {
+        return { error: 'The Main table needs a column named "Name".' };
+      }
+
+      if (faceIndex === -1) {
+        return { error: 'The Main table needs a column named "Face".' };
+      }
+
       const entries = Array.from(tbody.querySelectorAll("tr"))
         .map((row, rowIndex) => {
-          const nameCell = row.children[nameIndex]?.querySelector(".cell, .name-cell");
-          const scoreCell = row.children[scoreIndex]?.querySelector(".cell, .name-cell");
+          const nameCell = row.children[nameIndex]?.querySelector(
+            ".cell, .name-cell"
+          );
+          const faceCell = row.children[faceIndex]?.querySelector(
+            ".cell, .name-cell"
+          );
           const name = nameCell?.textContent.trim() || "";
-          const rawScore = scoreCell?.textContent.trim() || "";
+          const rawScore = faceCell?.textContent.trim() || "";
           const score = Number.parseFloat(rawScore);
+
           if (!name || !rawScore || !Number.isFinite(score)) return null;
           return { name, score, rowIndex };
         })
         .filter(Boolean)
-        .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, undefined, { sensitivity: "base" }))
+        .sort(
+          (a, b) =>
+            b.score - a.score ||
+            a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+        )
         .slice(0, 20);
+
       return { entries };
     }
 
     function formatRankingScore(score) {
-      return Number.isInteger(score) ? String(score) : String(Math.round(score * 100) / 100);
+      return Number.isInteger(score)
+        ? String(score)
+        : String(Math.round(score * 100) / 100);
     }
 
-    async function hydrateRankingImage(imageButton, name, tabName, renderToken) {
+    async function hydrateFaceRankingImage(imageButton, name, renderToken) {
       try {
         const record = await getStoredPersonImage(name);
-        if (renderToken !== rankingsRenderTokens[tabName] || !imageButton.isConnected || !record?.blob) return;
+        if (
+          renderToken !== faceRankingsRenderToken ||
+          !imageButton.isConnected ||
+          !record?.blob
+        ) {
+          return;
+        }
+
         const objectUrl = URL.createObjectURL(record.blob);
-        if (renderToken !== rankingsRenderTokens[tabName] || !imageButton.isConnected) {
+        if (renderToken !== faceRankingsRenderToken || !imageButton.isConnected) {
           URL.revokeObjectURL(objectUrl);
           return;
         }
-        rankingObjectUrls[tabName].push(objectUrl);
+
+        faceRankingObjectUrls.push(objectUrl);
         const image = document.createElement("img");
         image.src = objectUrl;
         image.alt = `${name} ranking image`;
         imageButton.replaceChildren(image);
-      } catch (err) { console.warn("Unable to load ranking image for", name, err); }
+      } catch (err) {
+        console.warn("Unable to load ranking image for", name, err);
+      }
     }
 
-    function createRankingCard(entry, position, tabName, config, renderToken) {
+    function createFaceRankingCard(entry, position, renderToken) {
       const card = document.createElement("article");
       card.className = "ranking-card";
+
       const imageButton = document.createElement("button");
       imageButton.type = "button";
       imageButton.className = "ranking-image-button";
-      imageButton.setAttribute("aria-label", `Add or change ranking image for ${entry.name}`);
+      imageButton.setAttribute(
+        "aria-label",
+        `Add or change ranking image for ${entry.name}`
+      );
+
       const imagePlaceholder = document.createElement("span");
       imagePlaceholder.className = "ranking-image-placeholder";
       imagePlaceholder.textContent = "Add image";
       imageButton.appendChild(imagePlaceholder);
+
       const fileInput = document.createElement("input");
       fileInput.type = "file";
       fileInput.accept = "image/*";
       fileInput.hidden = true;
+
       imageButton.addEventListener("click", () => fileInput.click());
       fileInput.addEventListener("change", async () => {
         const file = fileInput.files?.[0];
         if (!file) return;
+
         imageButton.disabled = true;
         const savingLabel = document.createElement("span");
         savingLabel.className = "ranking-image-placeholder";
         savingLabel.textContent = "Saving…";
         imageButton.replaceChildren(savingLabel);
+
         try {
           const resized = await resizeRankingImage(file);
           await putStoredPersonImage(entry.name, resized);
-          queueAllRankingsRender();
+          queueFaceRankingsRender();
         } catch (err) {
           console.error("Unable to save ranking image", err);
           alert("That image could not be saved. Please try another image.");
-          queueRankingRender(tabName);
+          queueFaceRankingsRender();
         } finally {
           fileInput.value = "";
           imageButton.disabled = false;
         }
       });
+
       const body = document.createElement("div");
       body.className = "ranking-card-body";
+
       const copy = document.createElement("div");
       copy.className = "ranking-copy";
+
       const rank = document.createElement("div");
       rank.className = "ranking-position";
       rank.textContent = `#${position}`;
+
       const name = document.createElement("div");
       name.className = "ranking-name";
       name.textContent = entry.name;
+
       copy.append(rank, name);
+
       const score = document.createElement("div");
       score.className = "ranking-score";
       const scoreLabel = document.createElement("span");
-      scoreLabel.textContent = config.label;
+      scoreLabel.textContent = "Face";
       const scoreValue = document.createElement("strong");
       scoreValue.textContent = formatRankingScore(entry.score);
       score.append(scoreLabel, scoreValue);
+
       body.append(copy, score);
       card.append(imageButton, fileInput, body);
-      hydrateRankingImage(imageButton, entry.name, tabName, renderToken);
+      hydrateFaceRankingImage(imageButton, entry.name, renderToken);
       return card;
     }
 
-    function renderRankings(tabName) {
-      const config = RANKING_CONFIG[tabName];
-      if (!config?.container) return;
-      const renderToken = ++rankingsRenderTokens[tabName];
-      releaseRankingObjectUrls(tabName);
-      config.container.innerHTML = "";
-      const result = getRankingEntries(config.columnLabel, config.label);
+    function renderFaceRankings() {
+      if (!faceRankings) return;
+      const renderToken = ++faceRankingsRenderToken;
+      releaseFaceRankingObjectUrls();
+      faceRankings.innerHTML = "";
+
+      const result = getFaceRankingEntries();
       if (result.error) {
         const empty = document.createElement("div");
         empty.className = "ranking-empty";
         empty.textContent = result.error;
-        config.container.appendChild(empty);
+        faceRankings.appendChild(empty);
         return;
       }
+
       if (!result.entries.length) {
         const empty = document.createElement("div");
         empty.className = "ranking-empty";
-        empty.textContent = `Add names and numeric ${config.label} scores in Main and the top 20 will appear here automatically.`;
-        config.container.appendChild(empty);
+        empty.textContent =
+          "Add names and numeric Face scores in Main and the top 20 will appear here automatically.";
+        faceRankings.appendChild(empty);
         return;
       }
-      result.entries.forEach((entry, index) => config.container.appendChild(createRankingCard(entry, index + 1, tabName, config, renderToken)));
-    }
 
-    function queueRankingRender(tabName) {
-      const config = RANKING_CONFIG[tabName];
-      if (!config?.container || rankingsRenderFrames[tabName] !== null) return;
-      rankingsRenderFrames[tabName] = requestAnimationFrame(() => {
-        rankingsRenderFrames[tabName] = null;
-        renderRankings(tabName);
+      result.entries.forEach((entry, index) => {
+        faceRankings.appendChild(
+          createFaceRankingCard(entry, index + 1, renderToken)
+        );
       });
     }
-    function queueAllRankingsRender() {
-      Object.keys(RANKING_CONFIG).forEach(queueRankingRender);
+
+    function queueFaceRankingsRender() {
+      if (!faceRankings || faceRankingsRenderFrame !== null) return;
+      faceRankingsRenderFrame = requestAnimationFrame(() => {
+        faceRankingsRenderFrame = null;
+        renderFaceRankings();
+      });
     }
 
     function computeAgeFromDates(birthDateString, referenceDateString) {
       const birth = new Date(birthDateString);
-      const reference = referenceDateString ? new Date(referenceDateString) : new Date();
-      if (Number.isNaN(birth.getTime()) || Number.isNaN(reference.getTime())) return null;
+      const reference = referenceDateString
+        ? new Date(referenceDateString)
+        : new Date();
+
+      if (Number.isNaN(birth.getTime()) || Number.isNaN(reference.getTime())) {
+        return null;
+      }
+
       let age = reference.getFullYear() - birth.getFullYear();
-      const hasNotHadBirthdayYet = reference.getMonth() < birth.getMonth() || (reference.getMonth() === birth.getMonth() && reference.getDate() < birth.getDate());
-      if (hasNotHadBirthdayYet) age -= 1;
+      const hasNotHadBirthdayYet =
+        reference.getMonth() < birth.getMonth() ||
+        (reference.getMonth() === birth.getMonth() &&
+          reference.getDate() < birth.getDate());
+
+      if (hasNotHadBirthdayYet) {
+        age -= 1;
+      }
+
       return age >= 0 ? age : null;
     }
+
     function extractWikidataDate(claim) {
       const timeValue = claim?.mainsnak?.datavalue?.value?.time;
       if (!timeValue || typeof timeValue !== "string") return null;
-      return timeValue.replace(/^\+/, "").split("T")[0];
+
+      // Wikidata times can include a leading + and time portion; strip them.
+      const normalized = timeValue.replace(/^\+/, "").split("T")[0];
+      return normalized;
     }
+
     async function fetchBirthdayFromWikidata(name) {
-      const searchParams = new URLSearchParams({ action: "query", list: "search", srsearch: name, format: "json", origin: "*" });
-      const searchResponse = await fetch("https://api.wikidata.org/w/api.php?" + searchParams.toString());
+      const searchParams = new URLSearchParams({
+        action: "query",
+        list: "search",
+        srsearch: name,
+        format: "json",
+        origin: "*",
+      });
+
+      const searchUrl =
+        "https://api.wikidata.org/w/api.php?" + searchParams.toString();
+
+      const searchResponse = await fetch(searchUrl);
       if (!searchResponse.ok) return null;
       const searchJson = await searchResponse.json();
-      const title = searchJson?.query?.search?.[0]?.title;
+      const topResult = searchJson?.query?.search?.[0];
+      const title = topResult?.title;
       if (!title) return null;
-      const entityResponse = await fetch("https://www.wikidata.org/wiki/Special:EntityData/" + title + ".json");
+
+      const entityUrl =
+        "https://www.wikidata.org/wiki/Special:EntityData/" + title + ".json";
+
+      const entityResponse = await fetch(entityUrl);
       if (!entityResponse.ok) return null;
-      const entity = (await entityResponse.json())?.entities?.[title];
+      const entityJson = await entityResponse.json();
+      const entity = entityJson?.entities?.[title];
       if (!entity) return null;
+
       const birthClaim = entity?.claims?.P569?.[0];
       if (!birthClaim) return null;
+
       const instanceClaims = entity?.claims?.P31 || [];
-      const isHuman = instanceClaims.length === 0 || instanceClaims.some((claim) => typeof claim?.mainsnak?.datavalue?.value?.id === "string" && claim.mainsnak.datavalue.value.id.toUpperCase() === "Q5");
+      const isHuman =
+        instanceClaims.length === 0 ||
+        instanceClaims.some((claim) => {
+          const id = claim?.mainsnak?.datavalue?.value?.id;
+          return typeof id === "string" && id.toUpperCase() === "Q5";
+        });
+
       if (!isHuman) return null;
+
+      const deathClaim = entity?.claims?.P570?.[0];
+
       const birth = extractWikidataDate(birthClaim);
-      const death = extractWikidataDate(entity?.claims?.P570?.[0]);
-      return birth ? { birth, death: death || null } : null;
+      const death = extractWikidataDate(deathClaim);
+
+      if (!birth) return null;
+
+      return { birth, death: death || null };
     }
+
     async function resolvePersonDates(rawName) {
       const normalized = normalizePersonName(rawName);
       if (!normalized) return null;
-      if (birthdayCache.has(normalized)) return await Promise.resolve(birthdayCache.get(normalized));
+
+      if (birthdayCache.has(normalized)) {
+        return await Promise.resolve(birthdayCache.get(normalized));
+      }
+
       const localRecord = LOCAL_BIRTHDAY_DB[normalized];
-      if (localRecord) { birthdayCache.set(normalized, localRecord); return localRecord; }
+      if (localRecord) {
+        birthdayCache.set(normalized, localRecord);
+        return localRecord;
+      }
+
       const fetchPromise = (async () => {
-        try { return await fetchBirthdayFromWikidata(rawName); }
-        catch (err) { console.warn("Failed to fetch birth data for", rawName, err); return null; }
+        try {
+          return await fetchBirthdayFromWikidata(rawName);
+        } catch (err) {
+          console.warn("Failed to fetch birth data for", rawName, err);
+          return null;
+        }
       })();
+
       birthdayCache.set(normalized, fetchPromise);
       return fetchPromise;
     }
@@ -1220,27 +1886,46 @@
       const range = document.createRange();
       range.selectNodeContents(element);
       range.collapse(false);
+
       const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
     }
+
     function moveFocusByOffset(currentCell, { rowOffset = 0, colOffset = 0 }) {
       const currentTd = currentCell.closest("td");
       const currentRow = currentTd?.parentElement;
       if (!currentTd || !currentRow) return;
+
       const rows = Array.from(tbody.querySelectorAll("tr"));
       const currentRowIndex = rows.indexOf(currentRow);
       const currentColIndex = Array.from(currentRow.children).indexOf(currentTd);
+
       if (currentColIndex < 0 || currentRowIndex < 0) return;
+
       let targetRowIndex = currentRowIndex + rowOffset;
       const targetColIndex = currentColIndex + colOffset;
+
       if (targetColIndex < 0 || targetColIndex >= getHeaderCells().length) return;
+
       if (targetRowIndex < 0) targetRowIndex = 0;
-      if (targetRowIndex >= rows.length) { addRow(); targetRowIndex = tbody.querySelectorAll("tr").length - 1; }
+
+      if (targetRowIndex >= rows.length) {
+        addRow();
+        targetRowIndex = tbody.querySelectorAll("tr").length - 1;
+      }
+
       const targetRow = tbody.querySelectorAll("tr")[targetRowIndex];
-      const nextCell = targetRow?.children?.[targetColIndex]?.querySelector(".cell, .name-cell");
-      if (nextCell) { nextCell.focus(); placeCursorAtEnd(nextCell); }
+      const nextCell = targetRow?.children?.[targetColIndex]?.querySelector(
+        ".cell, .name-cell"
+      );
+
+      if (nextCell) {
+        nextCell.focus();
+        placeCursorAtEnd(nextCell);
+      }
     }
+
     function handleCellKeyDown(event) {
       const cell = event.currentTarget;
       const selection = window.getSelection();
@@ -1250,511 +1935,1221 @@
       const cellLength = cell.textContent?.length || 0;
       const atStart = caretOffset === 0;
       const atEnd = caretOffset === cellLength;
-      if (event.key === "Enter" || event.key === "ArrowDown") { event.preventDefault(); moveFocusByOffset(cell, { rowOffset: 1, colOffset: 0 }); }
-      if (event.key === "ArrowUp") { event.preventDefault(); moveFocusByOffset(cell, { rowOffset: -1, colOffset: 0 }); }
-      if (event.key === "ArrowLeft" && (atStart || cellLength === 0)) { event.preventDefault(); moveFocusByOffset(cell, { rowOffset: 0, colOffset: -1 }); }
-      if (event.key === "ArrowRight" && (atEnd || cellLength === 0)) { event.preventDefault(); moveFocusByOffset(cell, { rowOffset: 0, colOffset: 1 }); }
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        moveFocusByOffset(cell, { rowOffset: 1, colOffset: 0 });
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        moveFocusByOffset(cell, { rowOffset: 1, colOffset: 0 });
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        moveFocusByOffset(cell, { rowOffset: -1, colOffset: 0 });
+      }
+
+      if (event.key === "ArrowLeft" && (atStart || cellLength === 0)) {
+        event.preventDefault();
+        moveFocusByOffset(cell, { rowOffset: 0, colOffset: -1 });
+      }
+
+      if (event.key === "ArrowRight" && (atEnd || cellLength === 0)) {
+        event.preventDefault();
+        moveFocusByOffset(cell, { rowOffset: 0, colOffset: 1 });
+      }
     }
+
     function handleNameInput(event) {
       const nameCell = event.target;
       const text = nameCell.textContent.trim();
-      const imageLink = nameCell.closest("tr")?.querySelector(".image-link");
+      const row = nameCell.closest("tr");
+      const imageLink = row?.querySelector(".image-link");
+
       if (!imageLink) return;
+
       if (text) {
         imageLink.href = buildImageSearchUrl(text);
         imageLink.classList.remove("disabled");
-        imageLink.setAttribute("aria-label", `Open Google Images for ${text}`);
+        imageLink.setAttribute(
+          "aria-label",
+          `Open Google Images for ${text}`
+        );
       } else {
         imageLink.href = "#";
         imageLink.classList.add("disabled");
-        imageLink.setAttribute("aria-label", "Google Images (enter a name first)");
+        imageLink.setAttribute(
+          "aria-label",
+          "Google Images (enter a name first)"
+        );
       }
     }
 
     function handleCellChange(event) {
       let colIndex = null;
       let row = null;
+
       if (event?.target) {
         const cell = event.target;
         const td = cell.closest("td");
         colIndex = td?.cellIndex;
         row = td?.parentElement || null;
-        const header = Number.isInteger(colIndex) ? getHeaderCells()[colIndex] : null;
-        if (header?.dataset.type !== COLUMN_TYPES.ICON) rememberColumnSuggestion(colIndex, cell.textContent || "");
+        const header = Number.isInteger(colIndex)
+          ? getHeaderCells()[colIndex]
+          : null;
+
+        if (header?.dataset.type !== COLUMN_TYPES.ICON) {
+          rememberColumnSuggestion(colIndex, cell.textContent || "");
+        }
       }
+
       const columns = getColumnDefinitions();
       const ageColumnIndices = getAgeColumnIndices(columns);
       const hasAgeColumns = ageColumnIndices.length > 0;
       const nameColumnIndex = findColumnIndexByLabel(columns, NAME_LABEL);
-      const isNameEdit = hasAgeColumns && Number.isInteger(colIndex) && colIndex === nameColumnIndex;
+      const isNameEdit =
+        hasAgeColumns &&
+        Number.isInteger(colIndex) &&
+        colIndex === nameColumnIndex;
+
       recalculateFormulas({ skipAgeUpdate: hasAgeColumns });
+
       if (hasAgeColumns) {
         if (isNameEdit && row) {
           const existingTimer = ageUpdateDebounceTimers.get(row);
-          if (existingTimer) clearTimeout(existingTimer);
-          const timeoutId = window.setTimeout(() => { ageUpdateDebounceTimers.delete(row); updateAgeColumns(columns); }, 500);
+          if (existingTimer) {
+            clearTimeout(existingTimer);
+          }
+
+          const timeoutId = window.setTimeout(() => {
+            ageUpdateDebounceTimers.delete(row);
+            updateAgeColumns(columns);
+          }, 500);
+
           ageUpdateDebounceTimers.set(row, timeoutId);
-        } else updateAgeColumns(columns);
+        } else {
+          updateAgeColumns(columns);
+        }
       }
+
       saveTableState();
     }
 
     function shouldStoreSuggestion(value) {
       const trimmed = value.trim();
-      return Boolean(trimmed) && !NUMERIC_VALUE_PATTERN.test(trimmed) && (/[a-zA-Z]/.test(trimmed) || trimmed.includes(" "));
+      if (!trimmed) return false;
+      if (NUMERIC_VALUE_PATTERN.test(trimmed)) return false;
+      return /[a-zA-Z]/.test(trimmed) || trimmed.includes(" ");
     }
+
     function rememberColumnSuggestion(colIndex, value) {
       if (!Number.isInteger(colIndex) || !shouldStoreSuggestion(value)) return;
-      if (!columnSuggestions.has(colIndex)) columnSuggestions.set(colIndex, new Set());
+      if (!columnSuggestions.has(colIndex)) {
+        columnSuggestions.set(colIndex, new Set());
+      }
+
       columnSuggestions.get(colIndex).add(value.trim());
     }
+
     function rebuildColumnSuggestionsFromTable() {
       columnSuggestions.clear();
       const headers = getColumnDefinitions();
-      Array.from(tbody.querySelectorAll("tr")).forEach((row) => headers.forEach((col, idx) => {
-        if (col.type === COLUMN_TYPES.ICON) return;
-        const cell = row.children[idx]?.querySelector(".cell, .name-cell");
-        if (cell) rememberColumnSuggestion(idx, cell.textContent || "");
-      }));
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        headers.forEach((col, idx) => {
+          if (col.type === COLUMN_TYPES.ICON) return;
+          const cell = row.children[idx]?.querySelector(".cell, .name-cell");
+          if (!cell) return;
+          rememberColumnSuggestion(idx, cell.textContent || "");
+        });
+      });
     }
+
     function getSuggestionsForColumn(colIndex, currentValue = "") {
       const suggestions = columnSuggestions.get(colIndex);
       if (!suggestions) return [];
       const normalizedCurrent = currentValue.trim();
       return Array.from(suggestions).filter((entry) => entry !== normalizedCurrent);
     }
-    function hideSuggestionDropdown() { suggestionDropdown.classList.add("hidden"); suggestionDropdown.innerHTML = ""; activeSuggestionCell = null; }
+
+    function hideSuggestionDropdown() {
+      suggestionDropdown.classList.add("hidden");
+      suggestionDropdown.innerHTML = "";
+      activeSuggestionCell = null;
+    }
+
     function positionSuggestionDropdown(cell) {
       const rect = cell.getBoundingClientRect();
       suggestionDropdown.style.minWidth = `${rect.width}px`;
       suggestionDropdown.style.left = `${window.scrollX + rect.left}px`;
       suggestionDropdown.style.top = `${window.scrollY + rect.bottom + 6}px`;
     }
-    function applySuggestion(cell, value) { cell.textContent = value; placeCursorAtEnd(cell); cell.focus(); handleCellChange({ target: cell }); hideSuggestionDropdown(); }
+
+    function applySuggestion(cell, value) {
+      cell.textContent = value;
+      placeCursorAtEnd(cell);
+      cell.focus();
+      handleCellChange({ target: cell });
+      hideSuggestionDropdown();
+    }
+
     function showSuggestionsForCell(cell) {
-      const colIndex = cell.closest("td")?.cellIndex;
+      const td = cell.closest("td");
+      const colIndex = td?.cellIndex;
       if (!Number.isInteger(colIndex)) return;
+
       const options = getSuggestionsForColumn(colIndex, cell.textContent || "");
-      if (!options.length) { hideSuggestionDropdown(); return; }
+      if (!options.length) {
+        hideSuggestionDropdown();
+        return;
+      }
+
       suggestionDropdown.innerHTML = "";
+
       options.forEach((option) => {
         const item = document.createElement("div");
         item.className = "suggestion-item";
         item.textContent = option;
-        item.addEventListener("mousedown", (e) => { e.preventDefault(); applySuggestion(cell, option); });
+        item.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          applySuggestion(cell, option);
+        });
         suggestionDropdown.appendChild(item);
       });
+
       activeSuggestionCell = cell;
       positionSuggestionDropdown(cell);
       suggestionDropdown.classList.remove("hidden");
     }
+
     function attachSuggestionEvents(cell) {
       if (cell.dataset.suggestionAttached === "true") return;
+
       cell.addEventListener("focus", () => showSuggestionsForCell(cell));
-      cell.addEventListener("input", () => { if (activeSuggestionCell === cell) showSuggestionsForCell(cell); });
+      cell.addEventListener("input", () => {
+        if (activeSuggestionCell === cell) {
+          showSuggestionsForCell(cell);
+        }
+      });
+
       cell.dataset.suggestionAttached = "true";
     }
+
     function applyNumericStyling(cell) {
       if (!cell) return;
       const raw = cell.textContent || "";
       const numericValue = Number(raw.trim());
       const isNumeric = raw.trim() !== "" && Number.isFinite(numericValue);
+      const isHighNumber = isNumeric && numericValue >= 90;
+
       cell.classList.toggle("numeric-cell", isNumeric);
-      cell.classList.toggle("high-number", isNumeric && numericValue >= 90);
+      cell.classList.toggle("high-number", isHighNumber);
     }
-    function refreshNumericStyling() { Array.from(tbody.querySelectorAll(".cell, .name-cell")).forEach(applyNumericStyling); }
+
+    function refreshNumericStyling() {
+      Array.from(tbody.querySelectorAll(".cell, .name-cell")).forEach(
+        applyNumericStyling
+      );
+    }
 
     function addRow() {
       const columnDefinitions = getColumnDefinitions();
       const tr = document.createElement("tr");
-      columnDefinitions.forEach((col) => tr.appendChild(createCell(col.type, { formula: col.formula })));
+
+      columnDefinitions.forEach((col) => {
+        tr.appendChild(createCell(col.type, { formula: col.formula }));
+      });
+
       tbody.appendChild(tr);
       applyColumnWidthsToRow(tr);
       applyStickyColumns();
       syncFormulaColumnCells();
       recalculateFormulas();
       saveTableState();
+
       return tr;
     }
+
     function parseIndexList(input, { max }) {
-      return Array.from(new Set(input.split(/[\s,]+/).map((part) => part.trim()).filter(Boolean).map((part) => Number.parseInt(part, 10)).filter((num) => Number.isFinite(num) && num >= 1 && num <= max)));
+      const parts = input
+        .split(/[\s,]+/)
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+      const indices = parts
+        .map((part) => Number.parseInt(part, 10))
+        .filter((num) => Number.isFinite(num) && num >= 1 && num <= max);
+
+      return Array.from(new Set(indices));
     }
+
     function deleteRow() {
       const rows = Array.from(tbody.querySelectorAll("tr"));
-      if (!rows.length) { alert("There are no rows to delete."); return; }
-      const input = prompt(`Enter row numbers to delete (1-${rows.length}), separated by commas:`, String(rows.length));
+      if (!rows.length) {
+        alert("There are no rows to delete.");
+        return;
+      }
+
+      const input = prompt(
+        `Enter row numbers to delete (1-${rows.length}), separated by commas:`,
+        String(rows.length)
+      );
+
       if (input === null || input.trim() === "") return;
+
       const indicesToDelete = parseIndexList(input, { max: rows.length });
-      if (!indicesToDelete.length) { alert("No valid row numbers were provided."); return; }
-      indicesToDelete.sort((a, b) => b - a).forEach((rowNumber) => rows[rowNumber - 1]?.remove());
+
+      if (!indicesToDelete.length) {
+        alert("No valid row numbers were provided.");
+        return;
+      }
+
+      indicesToDelete
+        .sort((a, b) => b - a)
+        .forEach((rowNumber) => {
+          rows[rowNumber - 1]?.remove();
+        });
+
       saveTableState();
     }
+
     function applyColumnWidthsToRow(tr) {
-      getHeaderCells().forEach((th, idx) => {
+      const headers = getHeaderCells();
+      headers.forEach((th, idx) => {
         const width = getColumnWidth(th);
-        if (Number.isFinite(width) && tr.children[idx]) tr.children[idx].style.width = `${width}px`;
+        if (Number.isFinite(width)) {
+          const cell = tr.children[idx];
+          if (cell) {
+            cell.style.width = `${width}px`;
+          }
+        }
       });
     }
+
     function addColumn() {
       const currentCols = getHeaderCells().length;
-      const defaultName = "Column " + (currentCols + 1);
-      const headerName = prompt("New column name:", defaultName) || defaultName;
-      headerRow.appendChild(buildHeader(headerName, currentCols, COLUMN_TYPES.TEXT));
+      const newIndex = currentCols;
+      const defaultName = "Column " + (newIndex + 1);
+      const headerName =
+        prompt("New column name:", defaultName) || defaultName;
+
+      // Create header cell
+      const th = buildHeader(headerName, newIndex, COLUMN_TYPES.TEXT);
+      headerRow.appendChild(th);
       ensureLetterCells(headerRow.children.length);
       refreshColumnIndices();
-      Array.from(tbody.querySelectorAll("tr")).forEach((row) => row.appendChild(createCell(COLUMN_TYPES.TEXT)));
-      setColumnWidth(currentCols, 140);
+
+      // Add cells for each existing row
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        row.appendChild(createCell(COLUMN_TYPES.TEXT));
+      });
+
+      setColumnWidth(newIndex, 140);
+      refreshScrollbars();
+
+      recalculateFormulas();
+      saveTableState();
+    }
+
+    function parseColumnSelection(input, max) {
+      const parts = input
+        .split(/[\s,]+/)
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+      const indices = parts
+        .map((part) => {
+          const letterIndex = columnLabelToIndex(part);
+          if (letterIndex !== null) return letterIndex;
+
+          const numeric = Number.parseInt(part, 10);
+          if (Number.isFinite(numeric)) return numeric - 1;
+
+          return null;
+        })
+        .filter((idx) => Number.isInteger(idx) && idx >= 0)
+        .filter((idx) => idx < max);
+
+      return Array.from(new Set(indices));
+    }
+
+    function deleteColumn() {
+      const headers = getHeaderCells();
+      if (headers.length <= 1) {
+        alert("At least one column must remain in the table.");
+        return;
+      }
+
+      const availableLabels = headers
+        .map((_, idx) => indexToColumnLabel(idx))
+        .join(", ");
+
+      const input = prompt(
+        `Enter column letters or numbers to delete (e.g., B or 2). Separate multiple with commas. Available: ${availableLabels}`,
+        indexToColumnLabel(headers.length - 1)
+      );
+
+      if (input === null || input.trim() === "") return;
+
+      const indicesToDelete = parseColumnSelection(input, headers.length);
+
+      if (!indicesToDelete.length) {
+        alert("No valid column identifiers were provided.");
+        return;
+      }
+
+      if (headers.length - indicesToDelete.length < 1) {
+        alert("At least one column must remain in the table.");
+        return;
+      }
+
+      indicesToDelete
+        .sort((a, b) => b - a)
+        .forEach((colIndex) => {
+          headers[colIndex]?.remove();
+          getLetterCells()[colIndex]?.remove();
+
+          Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+            row.children[colIndex]?.remove();
+          });
+        });
+
+      refreshColumnIndices();
+      resetSortState();
+      syncColumnLetterWidths();
+      syncFormulaColumnCells();
       refreshScrollbars();
       recalculateFormulas();
       saveTableState();
     }
-    function parseColumnSelection(input, max) {
-      return Array.from(new Set(input.split(/[\s,]+/).map((part) => part.trim()).filter(Boolean).map((part) => {
-        const letterIndex = columnLabelToIndex(part);
-        if (letterIndex !== null) return letterIndex;
-        const numeric = Number.parseInt(part, 10);
-        return Number.isFinite(numeric) ? numeric - 1 : null;
-      }).filter((idx) => Number.isInteger(idx) && idx >= 0 && idx < max)));
-    }
-    function deleteColumn() {
-      const headers = getHeaderCells();
-      if (headers.length <= 1) { alert("At least one column must remain in the table."); return; }
-      const availableLabels = headers.map((_, idx) => indexToColumnLabel(idx)).join(", ");
-      const input = prompt(`Enter column letters or numbers to delete (e.g., B or 2). Separate multiple with commas. Available: ${availableLabels}`, indexToColumnLabel(headers.length - 1));
-      if (input === null || input.trim() === "") return;
-      const indicesToDelete = parseColumnSelection(input, headers.length);
-      if (!indicesToDelete.length) { alert("No valid column identifiers were provided."); return; }
-      if (headers.length - indicesToDelete.length < 1) { alert("At least one column must remain in the table."); return; }
-      indicesToDelete.sort((a, b) => b - a).forEach((colIndex) => {
-        headers[colIndex]?.remove();
-        getLetterCells()[colIndex]?.remove();
-        Array.from(tbody.querySelectorAll("tr")).forEach((row) => row.children[colIndex]?.remove());
-      });
-      refreshColumnIndices(); resetSortState(); syncColumnLetterWidths(); syncFormulaColumnCells(); refreshScrollbars(); recalculateFormulas(); saveTableState();
+
+    function getHeaderIndex(th) {
+      return getHeaderCells().indexOf(th);
     }
 
-    function getHeaderIndex(th) { return getHeaderCells().indexOf(th); }
-    const columnResizeState = { active: false, startX: 0, startWidth: 0, colIndex: null };
+    const columnResizeState = {
+      active: false,
+      startX: 0,
+      startWidth: 0,
+      colIndex: null,
+    };
+
     function getColumnWidth(th) {
       const datasetWidth = parseFloat(th.dataset.width);
       if (Number.isFinite(datasetWidth)) return datasetWidth;
+
       const styleWidth = parseFloat(th.style.width);
       if (Number.isFinite(styleWidth)) return styleWidth;
+
       const measuredWidth = Math.round(th.getBoundingClientRect().width);
-      return Number.isFinite(measuredWidth) && measuredWidth > 0 ? measuredWidth : null;
+      if (Number.isFinite(measuredWidth) && measuredWidth > 0) {
+        return measuredWidth;
+      }
+
+      return null;
     }
+
     function syncColumnLetterWidths() {
-      const headers = getHeaderCells(), letters = getLetterCells();
+      const headers = getHeaderCells();
+      const letters = getLetterCells();
+
       headers.forEach((th, idx) => {
-        const width = getColumnWidth(th), letter = letters[idx];
-        if (letter && Number.isFinite(width)) letter.style.width = `${width}px`;
+        const width = getColumnWidth(th);
+        const letter = letters[idx];
+
+        if (letter && Number.isFinite(width)) {
+          letter.style.width = `${width}px`;
+        }
       });
     }
+
     function applyWidthToCells(colIndex, width) {
       const pxWidth = `${width}px`;
-      const header = getHeaderCells()[colIndex], letterHeader = getLetterCells()[colIndex];
-      if (header) { header.style.width = pxWidth; header.dataset.width = width; }
-      if (letterHeader) letterHeader.style.width = pxWidth;
-      Array.from(tbody.querySelectorAll("tr")).forEach((row) => { if (row.children[colIndex]) row.children[colIndex].style.width = pxWidth; });
-      syncColumnLetterWidths(); applyStickyColumns();
-    }
-    function setColumnWidth(colIndex, rawWidth) {
       const header = getHeaderCells()[colIndex];
+      const letterHeader = getLetterCells()[colIndex];
+      if (header) {
+        header.style.width = pxWidth;
+        header.dataset.width = width;
+      }
+
+      if (letterHeader) {
+        letterHeader.style.width = pxWidth;
+      }
+
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        const cell = row.children[colIndex];
+        if (cell) {
+          cell.style.width = pxWidth;
+        }
+      });
+
+      syncColumnLetterWidths();
+      applyStickyColumns();
+    }
+
+    function setColumnWidth(colIndex, rawWidth) {
+      const headers = getHeaderCells();
+      const header = headers[colIndex];
       if (!header) return;
-      const minWidth = header.dataset.type === COLUMN_TYPES.ICON ? MIN_ICON_WIDTH : MIN_COLUMN_WIDTH;
-      applyWidthToCells(colIndex, Math.max(minWidth, rawWidth));
+
+      const minWidth =
+        header.dataset.type === COLUMN_TYPES.ICON ? MIN_ICON_WIDTH : MIN_COLUMN_WIDTH;
+      const width = Math.max(minWidth, rawWidth);
+      applyWidthToCells(colIndex, width);
       refreshScrollbars();
     }
+
     function applySavedColumnWidths() {
-      getHeaderCells().forEach((th, idx) => { const width = getColumnWidth(th); if (Number.isFinite(width)) applyWidthToCells(idx, width); });
+      const headers = getHeaderCells();
+      headers.forEach((th, idx) => {
+        const width = getColumnWidth(th);
+        if (Number.isFinite(width)) {
+          applyWidthToCells(idx, width);
+        }
+      });
     }
-    function isLockedColumnIndex(index) { return Number.isInteger(index) && index < LOCKED_COLUMN_COUNT; }
+
+    function isLockedColumnIndex(index) {
+      return Number.isInteger(index) && index < LOCKED_COLUMN_COUNT;
+    }
+
     function applyStickyColumns() {
-      const headers = getHeaderCells(), letters = getLetterCells(), rows = Array.from(tbody.querySelectorAll("tr"));
+      const headers = getHeaderCells();
+      const letters = getLetterCells();
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+
       let offset = 0;
+
       headers.forEach((th, idx) => {
         const isLocked = isLockedColumnIndex(idx);
-        const width = getColumnWidth(th) || (th.dataset.type === COLUMN_TYPES.ICON ? MIN_ICON_WIDTH : MIN_COLUMN_WIDTH);
+        const rawWidth = getColumnWidth(th);
+        const fallbackWidth =
+          th.dataset.type === COLUMN_TYPES.ICON ? MIN_ICON_WIDTH : MIN_COLUMN_WIDTH;
+        const width = rawWidth || fallbackWidth;
         const leftValue = isLocked ? offset : null;
+
         [th, letters[idx]].forEach((cell) => {
           if (!cell) return;
           cell.classList.toggle("sticky-col", isLocked);
           cell.classList.toggle("locked-column", isLocked);
-          if (isLocked) cell.style.setProperty("--sticky-left", `${leftValue}px`); else cell.style.removeProperty("--sticky-left");
+          if (isLocked && leftValue !== null) {
+            cell.style.setProperty("--sticky-left", `${leftValue}px`);
+          } else {
+            cell.style.removeProperty("--sticky-left");
+          }
         });
+
         rows.forEach((row) => {
           const td = row.children[idx];
           if (!td) return;
           td.classList.toggle("sticky-col", isLocked);
-          if (isLocked) td.style.setProperty("--sticky-left", `${leftValue}px`); else td.style.removeProperty("--sticky-left");
+          if (isLocked && leftValue !== null) {
+            td.style.setProperty("--sticky-left", `${leftValue}px`);
+          } else {
+            td.style.removeProperty("--sticky-left");
+          }
         });
-        if (isLocked) offset += width;
+
+        if (isLocked) {
+          offset += width;
+        }
       });
     }
+
     function startColumnResize(th, event) {
+      const colIndex = getHeaderIndex(th);
       columnResizeState.active = true;
       columnResizeState.startX = event.clientX;
       columnResizeState.startWidth = th.getBoundingClientRect().width;
-      columnResizeState.colIndex = getHeaderIndex(th);
+      columnResizeState.colIndex = colIndex;
       document.body.classList.add("resizing-column");
-      th.querySelector(".column-resizer")?.classList.add("active");
+
+      const resizer = th.querySelector(".column-resizer");
+      if (resizer) {
+        resizer.classList.add("active");
+      }
+
       document.addEventListener("mousemove", handleColumnResizeMove);
       document.addEventListener("mouseup", stopColumnResize);
     }
+
     function handleColumnResizeMove(event) {
       if (!columnResizeState.active) return;
-      setColumnWidth(columnResizeState.colIndex, columnResizeState.startWidth + event.clientX - columnResizeState.startX);
+      const delta = event.clientX - columnResizeState.startX;
+      const newWidth = columnResizeState.startWidth + delta;
+      setColumnWidth(columnResizeState.colIndex, newWidth);
     }
+
     function stopColumnResize() {
       if (!columnResizeState.active) return;
       const colIndex = columnResizeState.colIndex;
-      columnResizeState.active = false; columnResizeState.startX = 0; columnResizeState.startWidth = 0; columnResizeState.colIndex = null;
+      columnResizeState.active = false;
+      columnResizeState.startX = 0;
+      columnResizeState.startWidth = 0;
+      columnResizeState.colIndex = null;
+
       const header = getHeaderCells()[colIndex];
-      header?.querySelector(".column-resizer")?.classList.remove("active");
-      header?.classList.remove("resizing-hover");
+      if (header) {
+        const resizer = header.querySelector(".column-resizer");
+        if (resizer) {
+          resizer.classList.remove("active");
+        }
+        header.classList.remove("resizing-hover");
+      }
+
       document.body.classList.remove("resizing-column");
       document.removeEventListener("mousemove", handleColumnResizeMove);
       document.removeEventListener("mouseup", stopColumnResize);
       saveTableState();
     }
+
     const RESIZE_EDGE_THRESHOLD = 8;
-    function isNearRightEdge(event, th) { return th.getBoundingClientRect().right - event.clientX <= RESIZE_EDGE_THRESHOLD; }
-    function clearHeaderDragState() { getHeaderCells().forEach((header) => header.classList.remove("drag-over", "dragging")); }
+
+    function isNearRightEdge(event, th) {
+      const rect = th.getBoundingClientRect();
+      return rect.right - event.clientX <= RESIZE_EDGE_THRESHOLD;
+    }
+
+    function clearHeaderDragState() {
+      getHeaderCells().forEach((header) => {
+        header.classList.remove("drag-over", "dragging");
+      });
+    }
+
     function attachHeaderEvents(th) {
       if (th.dataset.eventsAttached === "true") return;
-      const initialIndex = getHeaderIndex(th), isLocked = isLockedColumnIndex(initialIndex);
+
+      const initialIndex = getHeaderIndex(th);
+      const isLocked = isLockedColumnIndex(initialIndex);
       th.draggable = !isLocked;
-      th.addEventListener("mousemove", (e) => { if (!columnResizeState.active) th.classList.toggle("resizing-hover", isNearRightEdge(e, th)); });
-      th.addEventListener("mouseleave", () => { if (!columnResizeState.active) th.classList.remove("resizing-hover"); });
-      th.addEventListener("mousedown", (e) => { if (isNearRightEdge(e, th)) { e.preventDefault(); e.stopPropagation(); startColumnResize(th, e); } });
-      th.addEventListener("click", () => { if (window.getSelection().toString().length === 0 && !isDraggingColumn) sortTable(getHeaderIndex(th)); });
+
+      th.addEventListener("mousemove", (e) => {
+        if (columnResizeState.active) return;
+        const nearEdge = isNearRightEdge(e, th);
+        th.classList.toggle("resizing-hover", nearEdge);
+      });
+
+      th.addEventListener("mouseleave", () => {
+        if (!columnResizeState.active) {
+          th.classList.remove("resizing-hover");
+        }
+      });
+
+      th.addEventListener("mousedown", (e) => {
+        if (isNearRightEdge(e, th)) {
+          e.preventDefault();
+          e.stopPropagation();
+          startColumnResize(th, e);
+          return;
+        }
+      });
+
+      th.addEventListener("click", (e) => {
+        // Ignore clicks if user is selecting text (simple heuristic)
+        if (window.getSelection().toString().length > 0) return;
+        if (isDraggingColumn) return;
+
+        const colIndex = getHeaderIndex(th);
+        sortTable(colIndex);
+      });
+
       th.addEventListener("dblclick", (e) => {
         e.stopPropagation();
-        const label = th.querySelector(".header-label");
-        const currentName = (label?.textContent || "").trim();
-        const newName = prompt("Rename column:", currentName) || currentName;
-        if (label && newName.trim()) { label.textContent = newName.trim(); saveTableState(); }
-        if (th.dataset.type !== COLUMN_TYPES.ICON) {
-          const formulaInput = prompt("Set formula for this column (use column headers, e.g. =AVERAGE(Rating:Score)). Leave blank to clear.", th.dataset.formula || "");
+          const label = th.querySelector(".header-label");
+          const currentName = (label?.textContent || "").trim();
+          const newName = prompt("Rename column:", currentName) || currentName;
+          if (label && newName.trim()) {
+            label.textContent = newName.trim();
+            saveTableState();
+          }
+
+          if (th.dataset.type !== COLUMN_TYPES.ICON) {
+            const existingFormula = th.dataset.formula || "";
+            const formulaInput = prompt(
+            "Set formula for this column (use column headers, e.g. =AVERAGE(Rating:Score)). Leave blank to clear.",
+            existingFormula
+          );
+
           if (formulaInput !== null) {
             const sanitized = (formulaInput || "").trim();
-            if (sanitized) th.dataset.formula = sanitized.startsWith("=") ? sanitized : "=" + sanitized; else delete th.dataset.formula;
-            syncFormulaColumnCells(); recalculateFormulas(); saveTableState();
+            if (sanitized) {
+              th.dataset.formula = sanitized.startsWith("=")
+                ? sanitized
+                : "=" + sanitized;
+            } else {
+              delete th.dataset.formula;
+            }
+
+            syncFormulaColumnCells();
+            recalculateFormulas();
+            saveTableState();
           }
         }
       });
+
       if (!isLocked) {
-        th.addEventListener("dragstart", (e) => { dragSourceIndex = getHeaderIndex(th); isDraggingColumn = true; th.classList.add("dragging"); e.dataTransfer.setData("text/plain", String(dragSourceIndex)); e.dataTransfer.effectAllowed = "move"; });
-        th.addEventListener("dragenter", (e) => { e.preventDefault(); th.classList.add("drag-over"); });
-        th.addEventListener("dragover", (e) => { e.preventDefault(); th.classList.add("drag-over"); e.dataTransfer.dropEffect = "move"; });
-        th.addEventListener("dragleave", () => th.classList.remove("drag-over"));
-        th.addEventListener("dragend", () => { isDraggingColumn = false; clearHeaderDragState(); });
+        th.addEventListener("dragstart", (e) => {
+          dragSourceIndex = getHeaderIndex(th);
+          isDraggingColumn = true;
+          th.classList.add("dragging");
+          e.dataTransfer.setData("text/plain", String(dragSourceIndex));
+          e.dataTransfer.effectAllowed = "move";
+        });
+
+        th.addEventListener("dragenter", (e) => {
+          e.preventDefault();
+          th.classList.add("drag-over");
+        });
+
+        th.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          th.classList.add("drag-over");
+          e.dataTransfer.dropEffect = "move";
+        });
+
+        th.addEventListener("dragleave", () => {
+          th.classList.remove("drag-over");
+        });
+
+        th.addEventListener("dragend", () => {
+          isDraggingColumn = false;
+          clearHeaderDragState();
+        });
+
         th.addEventListener("drop", (e) => {
           e.preventDefault();
           const targetIndex = getHeaderIndex(th);
           clearHeaderDragState();
-          if (dragSourceIndex !== null && dragSourceIndex !== targetIndex) reorderColumns(dragSourceIndex, targetIndex);
-          isDraggingColumn = false; dragSourceIndex = null; saveTableState();
+
+          if (dragSourceIndex === null || dragSourceIndex === targetIndex) {
+            isDraggingColumn = false;
+            dragSourceIndex = null;
+            return;
+          }
+
+          reorderColumns(dragSourceIndex, targetIndex);
+          isDraggingColumn = false;
+          dragSourceIndex = null;
+          saveTableState();
         });
       }
+
       th.dataset.eventsAttached = "true";
     }
+
     function reorderColumns(fromIndex, toIndex) {
-      if (fromIndex === toIndex || isLockedColumnIndex(fromIndex) || isLockedColumnIndex(toIndex)) return;
-      const headers = Array.from(headerRow.children), movingHeader = headers[fromIndex];
+      if (fromIndex === toIndex) return;
+      if (isLockedColumnIndex(fromIndex) || isLockedColumnIndex(toIndex)) return;
+
+      const headers = Array.from(headerRow.children);
+      const movingHeader = headers[fromIndex];
       if (!movingHeader) return;
+
       const headersWithoutMoving = headers.filter((_, idx) => idx !== fromIndex);
-      headerRow.insertBefore(movingHeader, toIndex > fromIndex ? headersWithoutMoving[toIndex] : headersWithoutMoving[toIndex] || null);
-      const letterCells = Array.from(letterRow.children), movingLetter = letterCells[fromIndex], lettersWithoutMoving = letterCells.filter((_, idx) => idx !== fromIndex);
-      letterRow.insertBefore(movingLetter, toIndex > fromIndex ? lettersWithoutMoving[toIndex] : lettersWithoutMoving[toIndex] || null);
+      const insertBeforeHeader =
+        toIndex > fromIndex
+          ? headersWithoutMoving[toIndex]
+          : headersWithoutMoving[toIndex] || null;
+
+      headerRow.insertBefore(movingHeader, insertBeforeHeader);
+
+      const letterCells = Array.from(letterRow.children);
+      const movingLetter = letterCells[fromIndex];
+      const lettersWithoutMoving = letterCells.filter((_, idx) => idx !== fromIndex);
+      const insertBeforeLetter =
+        toIndex > fromIndex
+          ? lettersWithoutMoving[toIndex]
+          : lettersWithoutMoving[toIndex] || null;
+
+      letterRow.insertBefore(movingLetter, insertBeforeLetter);
+
       Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
-        const cells = Array.from(row.children), movingCell = cells[fromIndex];
+        const cells = Array.from(row.children);
+        const movingCell = cells[fromIndex];
         if (!movingCell) return;
+
         const cellsWithoutMoving = cells.filter((_, idx) => idx !== fromIndex);
-        row.insertBefore(movingCell, toIndex > fromIndex ? cellsWithoutMoving[toIndex] : cellsWithoutMoving[toIndex] || null);
+        const insertBeforeCell =
+          toIndex > fromIndex
+            ? cellsWithoutMoving[toIndex]
+            : cellsWithoutMoving[toIndex] || null;
+
+        row.insertBefore(movingCell, insertBeforeCell);
       });
-      refreshColumnIndices(); resetSortState(); syncFormulaColumnCells(); refreshScrollbars(); recalculateFormulas();
+
+      refreshColumnIndices();
+      resetSortState();
+      syncFormulaColumnCells();
+      refreshScrollbars();
+      recalculateFormulas();
     }
+
     function sortTable(colIndex) {
       const rows = Array.from(tbody.querySelectorAll("tr"));
-      if (!rows.length) return;
-      const newDirection = (sortState[colIndex] || "desc") === "asc" ? "desc" : "asc";
+      if (rows.length === 0) return;
+
+      const currentDirection = sortState[colIndex] || "desc";
+      const newDirection = currentDirection === "asc" ? "desc" : "asc";
       sortState[colIndex] = newDirection;
+
       rows.sort((rowA, rowB) => {
-        const textA = rowA.children[colIndex]?.textContent.trim() || "", textB = rowB.children[colIndex]?.textContent.trim() || "";
-        const numA = parseFloat(textA), numB = parseFloat(textB);
-        const cmp = !isNaN(numA) && !isNaN(numB) && textA !== "" && textB !== "" ? numA - numB : textA.localeCompare(textB, undefined, { numeric: true, sensitivity: "base" });
+        const cellA = rowA.children[colIndex];
+        const cellB = rowB.children[colIndex];
+
+        if (!cellA || !cellB) return 0;
+
+        const textA = cellA.textContent.trim();
+        const textB = cellB.textContent.trim();
+
+        const numA = parseFloat(textA);
+        const numB = parseFloat(textB);
+
+        let cmp;
+        if (!isNaN(numA) && !isNaN(numB) && textA !== "" && textB !== "") {
+          // Numeric comparison if both cells look like numbers
+          cmp = numA - numB;
+        } else {
+          // String comparison (case-insensitive, numeric-aware)
+          cmp = textA.localeCompare(textB, undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
+        }
+
         return newDirection === "asc" ? cmp : -cmp;
       });
-      tbody.innerHTML = ""; rows.forEach((row) => tbody.appendChild(row)); updateSortIndicators(colIndex, newDirection); saveTableState();
+
+      // Clear tbody and re-append in new order
+      tbody.innerHTML = "";
+      rows.forEach((row) => tbody.appendChild(row));
+
+      // Update header sort indicators
+      updateSortIndicators(colIndex, newDirection);
+
+      saveTableState();
     }
+
     function updateSortIndicators(activeIndex, direction) {
-      getHeaderCells().forEach((th, idx) => {
+      const headers = getHeaderCells();
+      headers.forEach((th, idx) => {
+        const indicator = th.querySelector(".sort-indicator");
         th.classList.remove("sorted-asc", "sorted-desc");
-        if (idx === activeIndex) th.classList.add(direction === "asc" ? "sorted-asc" : "sorted-desc");
+
+        if (!indicator) return;
+
+        if (idx === activeIndex) {
+          if (direction === "asc") {
+            th.classList.add("sorted-asc");
+          } else {
+            th.classList.add("sorted-desc");
+          }
+        }
       });
     }
+
     function refreshColumnIndices() {
-      const headers = getHeaderCells(); ensureLetterCells(headers.length);
+      const headers = getHeaderCells();
+      ensureLetterCells(headers.length);
       headers.forEach((th, idx) => {
         th.dataset.colIndex = idx;
         const isLocked = isLockedColumnIndex(idx);
         th.draggable = !isLocked;
         const dragHandle = th.querySelector(".drag-handle");
-        if (dragHandle) dragHandle.style.display = isLocked ? "none" : "";
+        if (dragHandle) {
+          dragHandle.style.display = isLocked ? "none" : "";
+        }
         ensureColumnLetter(th, idx);
       });
       applyStickyColumns();
     }
+
     function initHeaders() {
-      const headers = getHeaderCells(); ensureLetterCells(headers.length);
+      const headers = getHeaderCells();
+      ensureLetterCells(headers.length);
       headers.forEach((th, index) => {
         th.dataset.colIndex = index;
-        if (!th.dataset.type) th.dataset.type = index === 0 ? COLUMN_TYPES.ICON : index === 1 ? COLUMN_TYPES.NAME : COLUMN_TYPES.TEXT;
-        ensureColumnLetter(th, index);
-        const headerInner = th.querySelector(".header-inner");
-        if (headerInner && !headerInner.querySelector(".drag-handle") && !isLockedColumnIndex(index)) {
-          const dragHandle = document.createElement("span"); dragHandle.className = "drag-handle"; dragHandle.textContent = "↕"; dragHandle.setAttribute("aria-hidden", "true"); headerInner.insertBefore(dragHandle, headerInner.firstChild);
+        if (!th.dataset.type) {
+          th.dataset.type =
+            index === 0
+              ? COLUMN_TYPES.ICON
+              : index === 1
+              ? COLUMN_TYPES.NAME
+              : COLUMN_TYPES.TEXT;
         }
-        ensureColumnResizer(th); attachHeaderEvents(th);
+
+        ensureColumnLetter(th, index);
+
+        const headerInner = th.querySelector(".header-inner");
+        if (
+          headerInner &&
+          !headerInner.querySelector(".drag-handle") &&
+          !isLockedColumnIndex(index)
+        ) {
+          const dragHandle = document.createElement("span");
+          dragHandle.className = "drag-handle";
+          dragHandle.textContent = "↕";
+          dragHandle.setAttribute("aria-hidden", "true");
+          headerInner.insertBefore(dragHandle, headerInner.firstChild);
+        }
+
+        ensureColumnResizer(th);
+
+        attachHeaderEvents(th);
       });
+
       applyStickyColumns();
     }
+
     function saveTableState() {
       rebuildColumnSuggestionsFromTable();
-      storage.setItem(STORAGE_KEY, JSON.stringify(collectTableState()));
-      queueAllRankingsRender();
+      const state = collectTableState();
+      storage.setItem(STORAGE_KEY, JSON.stringify(state));
+      queueFaceRankingsRender();
     }
-    function buildHeader(label, index, type = COLUMN_TYPES.TEXT, formula = "", width) {
+
+    function buildHeader(
+      label,
+      index,
+      type = COLUMN_TYPES.TEXT,
+      formula = "",
+      width
+    ) {
       const th = document.createElement("th");
-      th.dataset.colIndex = index; th.dataset.type = type;
-      if (formula) th.dataset.formula = formula;
-      if (Number.isFinite(width)) { th.dataset.width = width; th.style.width = `${width}px`; }
-      if (type === COLUMN_TYPES.ICON) th.classList.add("icon-cell");
-      const headerInner = document.createElement("span"); headerInner.className = "header-inner";
-      if (!isLockedColumnIndex(index)) {
-        const dragHandle = document.createElement("span"); dragHandle.className = "drag-handle"; dragHandle.textContent = "↕"; dragHandle.setAttribute("aria-hidden", "true"); headerInner.appendChild(dragHandle);
+      th.dataset.colIndex = index;
+      th.dataset.type = type;
+      if (formula) {
+        th.dataset.formula = formula;
       }
-      const lbl = document.createElement("span"); lbl.className = "header-label"; lbl.textContent = label;
-      const sortIndicator = document.createElement("span"); sortIndicator.className = "sort-indicator"; sortIndicator.setAttribute("aria-hidden", "true");
-      headerInner.append(lbl, sortIndicator); th.appendChild(headerInner); ensureColumnResizer(th); attachHeaderEvents(th); return th;
+      if (Number.isFinite(width)) {
+        th.dataset.width = width;
+        th.style.width = `${width}px`;
+      }
+      if (type === COLUMN_TYPES.ICON) {
+        th.classList.add("icon-cell");
+      }
+
+      const headerInner = document.createElement("span");
+      headerInner.className = "header-inner";
+
+      if (!isLockedColumnIndex(index)) {
+        const dragHandle = document.createElement("span");
+        dragHandle.className = "drag-handle";
+        dragHandle.textContent = "↕";
+        dragHandle.setAttribute("aria-hidden", "true");
+        headerInner.appendChild(dragHandle);
+      }
+
+      const lbl = document.createElement("span");
+      lbl.className = "header-label";
+      lbl.textContent = label;
+
+      const sortIndicator = document.createElement("span");
+      sortIndicator.className = "sort-indicator";
+      sortIndicator.setAttribute("aria-hidden", "true");
+
+      headerInner.appendChild(lbl);
+      headerInner.appendChild(sortIndicator);
+      th.appendChild(headerInner);
+
+      ensureColumnResizer(th);
+
+      attachHeaderEvents(th);
+      return th;
     }
+
     function ensureColumnResizer(th) {
       if (th.querySelector(".column-resizer")) return;
-      const resizer = document.createElement("span"); resizer.className = "column-resizer"; resizer.title = "Drag to resize column";
-      resizer.addEventListener("mousedown", (e) => { e.preventDefault(); e.stopPropagation(); startColumnResize(th, e); });
+
+      const resizer = document.createElement("span");
+      resizer.className = "column-resizer";
+      resizer.title = "Drag to resize column";
+      resizer.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startColumnResize(th, e);
+      });
+
       th.appendChild(resizer);
     }
+
     function getColumnDefinitions() {
-      return getHeaderCells().map((th, idx) => ({
-        label: th.querySelector(".header-label")?.textContent?.trim() || "Column " + (idx + 1),
-        type: th.dataset.type || (idx === 0 ? COLUMN_TYPES.ICON : idx === 1 ? COLUMN_TYPES.NAME : COLUMN_TYPES.TEXT),
-        formula: th.dataset.formula || "",
-        width: Number.isFinite(getColumnWidth(th)) ? getColumnWidth(th) : undefined,
-      }));
+      return getHeaderCells().map((th, idx) => {
+        const label = th.querySelector(".header-label")?.textContent?.trim() ||
+          "Column " + (idx + 1);
+        const type = th.dataset.type ||
+          (idx === 0
+            ? COLUMN_TYPES.ICON
+            : idx === 1
+            ? COLUMN_TYPES.NAME
+            : COLUMN_TYPES.TEXT);
+        const formula = th.dataset.formula || "";
+        const width = getColumnWidth(th);
+
+        return {
+          label,
+          type,
+          formula,
+          width: Number.isFinite(width) ? width : undefined,
+        };
+      });
     }
+
     function ensureColumnLetter(_th, index) {
       const letterCell = getLetterCells()[index];
       if (!letterCell) return;
       letterCell.dataset.colIndex = index;
       const pill = letterCell.querySelector(".column-letter-pill");
-      if (pill) pill.textContent = indexToColumnLabel(index); else letterCell.textContent = indexToColumnLabel(index);
+      if (pill) {
+        pill.textContent = indexToColumnLabel(index);
+      } else {
+        letterCell.textContent = indexToColumnLabel(index);
+      }
     }
+
     function getNumericCellValue(row, colIndex) {
-      const text = row.children[colIndex]?.querySelector(".cell, .name-cell")?.textContent.trim() || "";
-      const num = parseFloat(text); return Number.isFinite(num) ? num : 0;
+      const cell = row.children[colIndex]?.querySelector(".cell, .name-cell");
+      if (!cell) return 0;
+      const text = cell.textContent.trim();
+      const num = parseFloat(text);
+      return Number.isFinite(num) ? num : 0;
     }
+
     function getRangeValues(row, range, labelLookup) {
       const [startLabel, endLabel] = range.split(":").map((part) => part.trim());
-      const startIndex = getColumnIndexByLabel(labelLookup, startLabel), endIndex = getColumnIndexByLabel(labelLookup, endLabel);
+      const startIndex = getColumnIndexByLabel(labelLookup, startLabel);
+      const endIndex = getColumnIndexByLabel(labelLookup, endLabel);
       if (startIndex === null || endIndex === null) return [];
+
+      const from = Math.min(startIndex, endIndex);
+      const to = Math.max(startIndex, endIndex);
       const values = [];
-      for (let i = Math.min(startIndex, endIndex); i <= Math.max(startIndex, endIndex); i++) values.push(getNumericCellValue(row, i));
+      for (let i = from; i <= to; i++) {
+        values.push(getNumericCellValue(row, i));
+      }
       return values;
     }
+
     function evaluateFormula(formula, row) {
       if (!formula) return "";
       const normalized = formula.trim().replace(/^=/, "");
       if (!normalized) return "";
-      const labelLookup = getColumnLabelLookup(), labelPattern = buildColumnLabelPattern(labelLookup);
-      const resolveArguments = (argsStr) => argsStr.split(",").flatMap((part) => {
-        const trimmed = part.trim();
-        if (!trimmed) return [];
-        if (trimmed.includes(":")) return getRangeValues(row, trimmed, labelLookup);
-        const idx = getColumnIndexByLabel(labelLookup, trimmed);
-        if (idx !== null) return [getNumericCellValue(row, idx)];
-        const direct = parseFloat(trimmed); return Number.isFinite(direct) ? [direct] : [];
-      }).filter(Number.isFinite);
-      let expression = normalized.replace(/\b(SUM|AVERAGE|AVG|MIN|MAX)\s*\(([^()]*)\)/gi, (_match, fn, args) => {
-        const values = resolveArguments(args); if (!values.length) return "0";
-        switch (fn.toUpperCase()) {
-          case "SUM": return values.reduce((a, b) => a + b, 0);
-          case "AVERAGE": case "AVG": return values.reduce((a, b) => a + b, 0) / values.length;
-          case "MIN": return Math.min(...values);
-          case "MAX": return Math.max(...values);
-          default: return "0";
+
+      const labelLookup = getColumnLabelLookup();
+      const labelPattern = buildColumnLabelPattern(labelLookup);
+
+      const resolveArguments = (argsStr) =>
+        argsStr
+          .split(",")
+          .flatMap((part) => {
+            const trimmed = part.trim();
+            if (!trimmed) return [];
+            if (trimmed.includes(":"))
+              return getRangeValues(row, trimmed, labelLookup);
+
+            const idx = getColumnIndexByLabel(labelLookup, trimmed);
+            if (idx !== null) return [getNumericCellValue(row, idx)];
+
+            const direct = parseFloat(trimmed);
+            return Number.isFinite(direct) ? [direct] : [];
+          })
+          .filter((n) => Number.isFinite(n));
+
+      let expression = normalized.replace(
+        /\b(SUM|AVERAGE|AVG|MIN|MAX)\s*\(([^()]*)\)/gi,
+        (match, fn, args) => {
+          const values = resolveArguments(args);
+          if (!values.length) return "0";
+
+          switch (fn.toUpperCase()) {
+            case "SUM":
+              return values.reduce((a, b) => a + b, 0);
+            case "AVERAGE":
+            case "AVG":
+              return values.reduce((a, b) => a + b, 0) / values.length;
+            case "MIN":
+              return Math.min(...values);
+            case "MAX":
+              return Math.max(...values);
+            default:
+              return "0";
+          }
         }
-      });
-      if (labelPattern) expression = expression.replace(labelPattern, (match) => {
-        const idx = getColumnIndexByLabel(labelLookup, match); return idx === null ? "0" : getNumericCellValue(row, idx);
-      });
-      if (!/^[0-9+\-*/().\s]+$/.test(expression)) return "ERR";
+      );
+
+      if (labelPattern) {
+        expression = expression.replace(labelPattern, (match) => {
+          const idx = getColumnIndexByLabel(labelLookup, match);
+          if (idx === null) return "0";
+          return getNumericCellValue(row, idx);
+        });
+      }
+
+      if (!/^[0-9+\-*/().\s]+$/.test(expression)) {
+        return "ERR";
+      }
+
       try {
         const result = Function("\"use strict\"; return " + expression)();
-        return Number.isFinite(result) ? (Math.round(result * 100) / 100).toFixed(2) : "";
-      } catch { return "ERR"; }
+        if (Number.isFinite(result)) {
+          const rounded = Math.round(result * 100) / 100;
+          return rounded.toFixed(2);
+        }
+        return "";
+      } catch (err) {
+        return "ERR";
+      }
     }
-    function makeCellFormula(cell) { cell.removeAttribute("contenteditable"); cell.classList.add("formula-cell"); }
+
+    function makeCellFormula(cell) {
+      cell.removeAttribute("contenteditable");
+      cell.classList.add("formula-cell");
+    }
+
     function ensureEditableCell(cell, columnType) {
-      cell.classList.remove("formula-cell"); cell.setAttribute("contenteditable", "true");
+      cell.classList.remove("formula-cell");
+      cell.setAttribute("contenteditable", "true");
       if (columnType === COLUMN_TYPES.NAME) {
-        if (!cell.dataset.nameListenerAttached) { cell.addEventListener("input", handleNameInput); cell.addEventListener("input", handleCellChange); cell.dataset.nameListenerAttached = "true"; }
-      } else if (!cell.dataset.textListenerAttached) { cell.addEventListener("input", handleCellChange); cell.dataset.textListenerAttached = "true"; }
-      if (!cell.dataset.keyboardListenerAttached) { cell.addEventListener("keydown", handleCellKeyDown); cell.dataset.keyboardListenerAttached = "true"; }
+        if (!cell.dataset.nameListenerAttached) {
+          cell.addEventListener("input", handleNameInput);
+          cell.addEventListener("input", handleCellChange);
+          cell.dataset.nameListenerAttached = "true";
+        }
+      } else {
+        if (!cell.dataset.textListenerAttached) {
+          cell.addEventListener("input", handleCellChange);
+          cell.dataset.textListenerAttached = "true";
+        }
+      }
+
+      if (!cell.dataset.keyboardListenerAttached) {
+        cell.addEventListener("keydown", handleCellKeyDown);
+        cell.dataset.keyboardListenerAttached = "true";
+      }
+
       attachSuggestionEvents(cell);
     }
+
     function syncFormulaColumnCells() {
       const columns = getColumnDefinitions();
-      Array.from(tbody.querySelectorAll("tr")).forEach((row) => columns.forEach((col, idx) => {
-        if (col.type === COLUMN_TYPES.ICON) return;
-        const cell = row.children[idx]?.querySelector(".cell, .name-cell"); if (!cell) return;
-        const isAgeColumn = typeof col.label === "string" && col.label.trim().toLowerCase() === AGE_LABEL;
-        if (col.formula || isAgeColumn) makeCellFormula(cell); else ensureEditableCell(cell, col.type);
-      }));
+      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+        columns.forEach((col, idx) => {
+          if (col.type === COLUMN_TYPES.ICON) return;
+          const cell = row.children[idx]?.querySelector(".cell, .name-cell");
+          if (!cell) return;
+
+          const isAgeColumn =
+            typeof col.label === "string" &&
+            col.label.trim().toLowerCase() === AGE_LABEL;
+
+          if (col.formula || isAgeColumn) {
+            makeCellFormula(cell);
+          } else {
+            ensureEditableCell(cell, col.type);
+          }
+        });
+      });
     }
+
     function recalculateFormulas({ skipAgeUpdate = false } = {}) {
       const columns = getColumnDefinitions();
-      const formulaColumns = columns.map((col, idx) => ({ idx, formula: col.formula })).filter((entry) => entry.formula && entry.formula.trim());
-      if (formulaColumns.length) Array.from(tbody.querySelectorAll("tr")).forEach((row) => formulaColumns.forEach(({ idx, formula }) => {
-        const cell = row.children[idx]?.querySelector(".cell, .name-cell");
-        if (cell) { cell.textContent = evaluateFormula(formula, row); applyNumericStyling(cell); }
-      }));
-      if (!skipAgeUpdate) updateAgeColumns(columns);
+      const formulaColumns = columns
+        .map((col, idx) => ({ idx, formula: col.formula }))
+        .filter((entry) => entry.formula && entry.formula.trim());
+
+      if (formulaColumns.length) {
+        Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+          formulaColumns.forEach(({ idx, formula }) => {
+            const cell = row.children[idx]?.querySelector(".cell, .name-cell");
+            if (!cell) return;
+            const value = evaluateFormula(formula, row);
+            cell.textContent = value;
+            applyNumericStyling(cell);
+          });
+        });
+      }
+
+      if (!skipAgeUpdate) {
+        updateAgeColumns(columns);
+      }
+
       refreshNumericStyling();
     }
+
     function findColumnIndexByLabel(columns, targetLabel) {
-      return columns.findIndex((col) => typeof (col.label || "") === "string" && (col.label || "").trim().toLowerCase() === targetLabel);
+      return columns.findIndex((col) => {
+        const labelText = col.label || "";
+        return (
+          typeof labelText === "string" &&
+          labelText.trim().toLowerCase() === targetLabel
+        );
+      });
     }
+
     function getAgeColumnIndices(columns) {
-      return columns.map((col, idx) => ({ col, idx })).filter(({ col }) => typeof (col.label || "") === "string" && (col.label || "").trim().toLowerCase() === AGE_LABEL).map(({ idx }) => idx);
+      return columns
+        .map((col, idx) => ({ col, idx }))
+        .filter(({ col }) => {
+          const labelText = col.label || "";
+          return (
+            typeof labelText === "string" &&
+            labelText.trim().toLowerCase() === AGE_LABEL
+          );
+        })
+        .map(({ idx }) => idx);
     }
+
     const ageRequestTokens = new WeakMap();
     const ageUpdateDebounceTimers = new WeakMap();
+
     function updateAgeColumns(columns = getColumnDefinitions()) {
-      const nameColumnIndex = findColumnIndexByLabel(columns, NAME_LABEL), ageColumnIndices = getAgeColumnIndices(columns);
-      if (nameColumnIndex === -1 || !ageColumnIndices.length) return;
-      Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
-        const personName = row.children[nameColumnIndex]?.querySelector(".cell, .name-cell")?.textContent.trim();
+      const nameColumnIndex = findColumnIndexByLabel(columns, NAME_LABEL);
+      const ageColumnIndices = getAgeColumnIndices(columns);
+
+      if (nameColumnIndex === -1 || ageColumnIndices.length === 0) return;
+
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      rows.forEach((row) => {
+        const nameCell = row.children[nameColumnIndex]?.querySelector(
+          ".cell, .name-cell"
+        );
+        const personName = nameCell?.textContent.trim();
+
         ageColumnIndices.forEach((ageIdx) => {
-          const ageCell = row.children[ageIdx]?.querySelector(".cell, .name-cell"); if (!ageCell) return;
-          const requestToken = Symbol("ageRequest"); ageRequestTokens.set(ageCell, requestToken);
-          if (!personName) { ageCell.textContent = ""; applyNumericStyling(ageCell); return; }
-          ageCell.textContent = "…"; applyNumericStyling(ageCell);
+          const ageCell = row.children[ageIdx]?.querySelector(
+            ".cell, .name-cell"
+          );
+          if (!ageCell) return;
+
+          const requestToken = Symbol("ageRequest");
+          ageRequestTokens.set(ageCell, requestToken);
+
+          if (!personName) {
+            ageCell.textContent = "";
+            applyNumericStyling(ageCell);
+            return;
+          }
+
+          ageCell.textContent = "…";
+          applyNumericStyling(ageCell);
+
           resolvePersonDates(personName).then((record) => {
             if (ageRequestTokens.get(ageCell) !== requestToken) return;
-            if (!record?.birth) ageCell.textContent = "";
-            else if (record.death) ageCell.textContent = "dead";
-            else { const age = computeAgeFromDates(record.birth); ageCell.textContent = Number.isFinite(age) ? age : ""; }
+
+            if (!record || !record.birth) {
+              ageCell.textContent = "";
+              applyNumericStyling(ageCell);
+              return;
+            }
+
+            if (record.death) {
+              ageCell.textContent = "dead";
+              applyNumericStyling(ageCell);
+              return;
+            }
+
+            const age = computeAgeFromDates(record.birth);
+            ageCell.textContent = Number.isFinite(age) ? age : "";
             applyNumericStyling(ageCell);
           });
         });
@@ -1763,137 +3158,345 @@
 
     function collectTableState() {
       const headers = getColumnDefinitions();
-      const rows = Array.from(tbody.querySelectorAll("tr")).map((tr) => headers.map((col, idx) => {
-        if (col.type === COLUMN_TYPES.ICON) return "";
-        return tr.children[idx]?.querySelector(".cell, .name-cell")?.textContent || "";
-      }));
+
+      const rows = Array.from(tbody.querySelectorAll("tr")).map((tr) => {
+        return headers.map((col, idx) => {
+          if (col.type === COLUMN_TYPES.ICON) return "";
+          const cell = tr.children[idx]?.querySelector(".cell, .name-cell");
+          return cell ? cell.textContent : "";
+        });
+      });
+
       return { headers, rows };
     }
-    function resetSortState() { Object.keys(sortState).forEach((key) => delete sortState[key]); updateSortIndicators(-1, null); }
+
+    function resetSortState() {
+      Object.keys(sortState).forEach((key) => delete sortState[key]);
+      updateSortIndicators(-1, null);
+    }
+
     function normalizeHeaders(headers) {
       if (!Array.isArray(headers)) return [];
-      if (headers.length && typeof headers[0] === "string") return headers.map((label, idx) => ({ label: label || "Column " + (idx + 1), type: idx === 0 ? COLUMN_TYPES.ICON : idx === 1 ? COLUMN_TYPES.NAME : COLUMN_TYPES.TEXT, formula: "", width: undefined }));
+
+      if (headers.length && typeof headers[0] === "string") {
+        return headers.map((label, idx) => ({
+          label: label || "Column " + (idx + 1),
+          type:
+            idx === 0
+              ? COLUMN_TYPES.ICON
+              : idx === 1
+              ? COLUMN_TYPES.NAME
+              : COLUMN_TYPES.TEXT,
+          formula: "",
+          width: undefined,
+        }));
+      }
+
       return headers.map((header, idx) => ({
         label: header?.label || header || "Column " + (idx + 1),
-        type: header?.type || (idx === 0 ? COLUMN_TYPES.ICON : idx === 1 ? COLUMN_TYPES.NAME : COLUMN_TYPES.TEXT),
+        type:
+          header?.type ||
+          (idx === 0
+            ? COLUMN_TYPES.ICON
+            : idx === 1
+            ? COLUMN_TYPES.NAME
+            : COLUMN_TYPES.TEXT),
         formula: header?.formula || "",
-        width: Number.isFinite(Number(header?.width)) ? Number(header.width) : undefined,
+        width: Number.isFinite(Number(header?.width))
+          ? Number(header.width)
+          : undefined,
       }));
     }
+
     function applyState(state) {
-      if (!state || !Array.isArray(state.headers) || !Array.isArray(state.rows)) return false;
+      if (!state || !Array.isArray(state.headers) || !Array.isArray(state.rows)) {
+        return false;
+      }
+
       const normalizedHeaders = normalizeHeaders(state.headers);
-      headerRow.innerHTML = ""; letterRow.innerHTML = "";
-      normalizedHeaders.forEach((header, idx) => { headerRow.appendChild(buildHeader(header.label || "Column " + (idx + 1), idx, header.type, header.formula, header.width)); ensureLetterCells(idx + 1); });
+      headerRow.innerHTML = "";
+      letterRow.innerHTML = "";
+      normalizedHeaders.forEach((header, idx) => {
+        const th = buildHeader(
+          header.label || "Column " + (idx + 1),
+          idx,
+          header.type,
+          header.formula,
+          header.width
+        );
+        headerRow.appendChild(th);
+        ensureLetterCells(idx + 1);
+      });
+
       tbody.innerHTML = "";
       state.rows.forEach((rowData) => {
         const tr = document.createElement("tr");
         normalizedHeaders.forEach((col, idx) => {
           const td = createCell(col.type, { formula: col.formula });
+          const val = rowData[idx] || "";
           if (col.type !== COLUMN_TYPES.ICON) {
-            const cellEl = td.querySelector(".name-cell, .cell"); if (cellEl) cellEl.textContent = rowData[idx] || "";
+            const cellEl = td.querySelector(".name-cell, .cell");
+            if (cellEl) {
+              cellEl.textContent = val;
+            }
           }
           tr.appendChild(td);
         });
-        const nameCell = tr.querySelector(".name-cell"); if (nameCell) handleNameInput({ target: nameCell });
+
+        // After the row is assembled and attached, wire the image icon to the
+        // saved name so image links work immediately on page load.
+        const nameCell = tr.querySelector(".name-cell");
+        if (nameCell) {
+          handleNameInput({ target: nameCell });
+        }
+
         tbody.appendChild(tr);
       });
-      applySavedColumnWidths(); syncColumnLetterWidths(); initHeaders(); refreshColumnIndices(); resetSortState(); syncFormulaColumnCells(); recalculateFormulas(); rebuildColumnSuggestionsFromTable(); refreshScrollbars(); queueAllRankingsRender();
+
+      applySavedColumnWidths();
+      syncColumnLetterWidths();
+      initHeaders();
+      refreshColumnIndices();
+      resetSortState();
+      syncFormulaColumnCells();
+      recalculateFormulas();
+      rebuildColumnSuggestionsFromTable();
+      refreshScrollbars();
+      queueFaceRankingsRender();
       return true;
     }
-    function buildDefaultState() { return { headers: DEFAULT_HEADERS, rows: Array.from({ length: DEFAULT_ROW_COUNT }, () => DEFAULT_HEADERS.map(() => "")) }; }
+
+    function buildDefaultState() {
+      const rows = Array.from({ length: DEFAULT_ROW_COUNT }, () =>
+        DEFAULT_HEADERS.map(() => "")
+      );
+
+      return { headers: DEFAULT_HEADERS, rows };
+    }
+
     function loadTableState() {
-      const saved = storage.getItem(STORAGE_KEY); if (!saved) return false;
-      try { return applyState(JSON.parse(saved)); } catch (err) { console.warn("Failed to load saved table state", err); return false; }
+      const saved = storage.getItem(STORAGE_KEY);
+      if (!saved) return false;
+
+      try {
+        const state = JSON.parse(saved);
+        if (!applyState(state)) {
+          return false;
+        }
+        return true;
+      } catch (err) {
+        console.warn("Failed to load saved table state", err);
+        return false;
+      }
     }
+
     function bootstrap() {
-      if (!loadTableState()) { applyState(buildDefaultState()); saveTableState(); }
+      const restored = loadTableState();
+      if (!restored) {
+        applyState(buildDefaultState());
+        saveTableState();
+      }
     }
+
+    // Capture any last-minute edits when the tab is about to close or hide.
     window.addEventListener("beforeunload", saveTableState);
-    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") saveTableState(); });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        saveTableState();
+      }
+    });
 
     async function exportData() {
       let images = null;
-      try { images = await serializeStoredImagesForExport(); } catch (err) { console.warn("Images could not be included in this backup.", err); }
+      try {
+        images = await serializeStoredImagesForExport();
+      } catch (err) {
+        console.warn("Images could not be included in this backup.", err);
+      }
+
       const backup = {
         format: APP_EXPORT_FORMAT,
         version: APP_EXPORT_VERSION,
         exportedAt: new Date().toISOString(),
         activeTab: getActiveTabName(),
-        tabs: { main: collectTableState(), face: null, tits: null, ass: null },
+        tabs: {
+          main: collectTableState(),
+          face: null,
+          tits: null,
+          ass: null,
+        },
         images,
       };
-      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob), link = document.createElement("a"), today = new Date().toISOString().split("T")[0];
-      link.href = url; link.download = `ranking-tables-backup-${today}.json`; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+      const json = JSON.stringify(backup, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const today = new Date().toISOString().split("T")[0];
+      link.href = url;
+      link.download = `ranking-tables-backup-${today}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
     }
+
     function handleImportFile(event) {
-      const file = event.target.files?.[0]; if (!file) return;
+      const file = event.target.files?.[0];
+      if (!file) return;
+
       const fileName = file.name.toLowerCase();
+
       if (fileName.endsWith(".json")) {
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
             const parsed = JSON.parse(e.target?.result);
-            const isAppBackup = parsed?.format === APP_EXPORT_FORMAT && parsed?.tabs?.main;
-            if (!applyState(isAppBackup ? parsed.tabs.main : parsed)) { alert("Import failed: file is missing valid table data."); return; }
+            const isAppBackup =
+              parsed?.format === APP_EXPORT_FORMAT &&
+              parsed?.tabs?.main;
+            const tableState = isAppBackup ? parsed.tabs.main : parsed;
+            const applied = applyState(tableState);
+            if (!applied) {
+              alert("Import failed: file is missing valid table data.");
+              return;
+            }
+
             if (isAppBackup && Array.isArray(parsed.images)) {
-              try { await replaceStoredImagesFromExport(parsed.images); } catch (imageErr) { console.error("Image restore failed", imageErr); alert("The table imported, but some saved images could not be restored."); }
+              try {
+                await replaceStoredImagesFromExport(parsed.images);
+              } catch (imageErr) {
+                console.error("Image restore failed", imageErr);
+                alert("The table imported, but some saved images could not be restored.");
+              }
             }
-            saveTableState(); queueAllRankingsRender();
+
+            saveTableState();
+            queueFaceRankingsRender();
+
             if (isAppBackup) {
-              const availableTabs = new Set(tabButtons.map((button) => button.dataset.tab));
-              activateTab(availableTabs.has(parsed.activeTab) ? parsed.activeTab : "main");
+              const availableTabs = new Set(
+                tabButtons.map((button) => button.dataset.tab)
+              );
+              const restoredTab = availableTabs.has(parsed.activeTab)
+                ? parsed.activeTab
+                : "main";
+              activateTab(restoredTab);
             }
-          } catch (err) { console.error("Import failed", err); alert("Import failed: invalid JSON file."); }
-          finally { importFileInput.value = ""; }
+          } catch (err) {
+            console.error("Import failed", err);
+            alert("Import failed: invalid JSON file.");
+          } finally {
+            importFileInput.value = "";
+          }
         };
         reader.readAsText(file);
-      } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls") || fileName.endsWith(".csv")) parseExcelFile(file);
-      else { alert("Unsupported file type. Please upload a JSON or Excel file."); importFileInput.value = ""; }
+      } else if (
+        fileName.endsWith(".xlsx") ||
+        fileName.endsWith(".xls") ||
+        fileName.endsWith(".csv")
+      ) {
+        parseExcelFile(file);
+      } else {
+        alert("Unsupported file type. Please upload a JSON or Excel file.");
+        importFileInput.value = "";
+      }
     }
+
     function buildStateFromMatrix(matrix) {
-      if (!Array.isArray(matrix) || !matrix.length) return null;
-      const [firstRow, ...rows] = matrix; if (!firstRow?.length) return null;
-      const dataHeaders = firstRow.map((label, idx) => ({ label: label || `Column ${idx + 1}`, type: idx === 0 ? COLUMN_TYPES.NAME : COLUMN_TYPES.TEXT, formula: "" }));
-      const headers = [{ label: "Images", type: COLUMN_TYPES.ICON }, ...dataHeaders];
+      if (!Array.isArray(matrix) || matrix.length === 0) return null;
+
+      const [headerRow, ...rows] = matrix;
+      if (!headerRow || headerRow.length === 0) return null;
+
+      const dataHeaders = headerRow.map((label, idx) => ({
+        label: label || `Column ${idx + 1}`,
+        type: idx === 0 ? COLUMN_TYPES.NAME : COLUMN_TYPES.TEXT,
+        formula: "",
+      }));
+
+      const headers = [
+        { label: "Images", type: COLUMN_TYPES.ICON },
+        ...dataHeaders,
+      ];
+
       const normalizedRows = rows.map((row) => {
         const cells = new Array(headers.length).fill("");
-        row.forEach((value, idx) => { cells[idx + 1] = value ?? ""; });
+        row.forEach((value, idx) => {
+          cells[idx + 1] = value ?? "";
+        });
         return cells;
       });
+
       return { headers, rows: normalizedRows };
     }
+
     function parseExcelFile(file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const workbook = XLSX.read(new Uint8Array(e.target?.result), { type: "array" });
-          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-          if (!worksheet) { alert("Import failed: the Excel file has no sheets."); return; }
-          const state = buildStateFromMatrix(XLSX.utils.sheet_to_json(worksheet, { header: 1 }));
-          if (!state || !applyState(state)) { alert("Import failed: Excel file is missing header or row data."); return; }
+          const data = new Uint8Array(e.target?.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const firstSheet = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheet];
+
+          if (!worksheet) {
+            alert("Import failed: the Excel file has no sheets.");
+            return;
+          }
+
+          const matrix = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          const state = buildStateFromMatrix(matrix);
+
+          if (!state || !applyState(state)) {
+            alert("Import failed: Excel file is missing header or row data.");
+            return;
+          }
+
           saveTableState();
-        } catch (err) { console.error("Import failed", err); alert("Import failed: unable to read the Excel file."); }
-        finally { importFileInput.value = ""; }
+        } catch (err) {
+          console.error("Import failed", err);
+          alert("Import failed: unable to read the Excel file.");
+        } finally {
+          importFileInput.value = "";
+        }
       };
+
       reader.readAsArrayBuffer(file);
     }
 
     document.addEventListener("click", (event) => {
-      if (suggestionDropdown.classList.contains("hidden") || suggestionDropdown.contains(event.target) || (activeSuggestionCell && activeSuggestionCell.contains(event.target))) return;
+      if (suggestionDropdown.classList.contains("hidden")) return;
+      if (suggestionDropdown.contains(event.target)) return;
+      if (activeSuggestionCell && activeSuggestionCell.contains(event.target)) {
+        return;
+      }
+
       hideSuggestionDropdown();
     });
+
     function clearData() {
-      if (!confirm("This will remove all rows and reset the table to its default state. Continue?")) return;
-      storage.removeItem(STORAGE_KEY); applyState(buildDefaultState()); saveTableState();
+      const confirmed = confirm(
+        "This will remove all rows and reset the table to its default state. Continue?"
+      );
+
+      if (!confirmed) return;
+
+      storage.removeItem(STORAGE_KEY);
+      applyState(buildDefaultState());
+      saveTableState();
     }
 
-    const rankingsObserver = new MutationObserver(queueAllRankingsRender);
-    rankingsObserver.observe(table, { subtree: true, childList: true, characterData: true });
-    bootstrap();
-    queueAllRankingsRender();
+    const rankingsObserver = new MutationObserver(queueFaceRankingsRender);
+    rankingsObserver.observe(table, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+    });
 
+    bootstrap();
+    queueFaceRankingsRender();
+
+    // Button wiring
     addRowBtn.addEventListener("click", addRow);
     addColBtn.addEventListener("click", addColumn);
     deleteRowBtn.addEventListener("click", deleteRow);
