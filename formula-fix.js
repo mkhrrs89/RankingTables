@@ -22,6 +22,51 @@
       return getNumericCellValue(row, index);
     };
 
+    // Aggregate functions use Excel-like blank handling. A genuinely blank or
+    // non-numeric referenced cell is omitted from AVERAGE/AVG (and the other
+    // aggregate helpers), while an explicit numeric 0 is still included.
+    const getAggregateCellValue = (index) => {
+      if (
+        !Number.isInteger(index) ||
+        index < 0 ||
+        index >= columns.length
+      ) {
+        return null;
+      }
+
+      const cell = row.children[index]?.querySelector(".cell, .name-cell");
+      if (!cell) return null;
+      const text = cell.textContent.trim();
+      if (!text) return null;
+      const value = Number.parseFloat(text);
+      return Number.isFinite(value) ? value : null;
+    };
+
+    const getAggregateReferencedValue = (rawLabel) => {
+      const index = getColumnIndexByLabel(labelLookup, rawLabel);
+      return getAggregateCellValue(index);
+    };
+
+    const getAggregateRangeValues = (range) => {
+      const [startLabel, endLabel] = range
+        .split(":")
+        .map((part) => part.trim());
+      const startIndex = getColumnIndexByLabel(labelLookup, startLabel);
+      const endIndex = getColumnIndexByLabel(labelLookup, endLabel);
+      if (!Number.isInteger(startIndex) || !Number.isInteger(endIndex)) {
+        return [];
+      }
+
+      const from = Math.min(startIndex, endIndex);
+      const to = Math.max(startIndex, endIndex);
+      const values = [];
+      for (let index = from; index <= to; index += 1) {
+        const value = getAggregateCellValue(index);
+        if (value !== null) values.push(value);
+      }
+      return values;
+    };
+
     const resolveArguments = (argsStr) =>
       argsStr
         .split(",")
@@ -30,10 +75,10 @@
           if (!trimmed) return [];
 
           if (trimmed.includes(":")) {
-            return getRangeValues(row, trimmed, labelLookup);
+            return getAggregateRangeValues(trimmed);
           }
 
-          const referenced = getReferencedValue(trimmed);
+          const referenced = getAggregateReferencedValue(trimmed);
           if (referenced !== null) return [referenced];
 
           const direct = Number.parseFloat(trimmed);
@@ -73,8 +118,8 @@
     }
 
     // Resolve standalone Excel-style column letters anywhere in arithmetic.
-    // Limit them to columns that actually exist so unknown words still produce
-    // ERR instead of silently turning into zero.
+    // Keep the existing non-aggregate behavior where a blank standalone cell is
+    // treated as 0; the requested blank-skipping behavior applies to averages.
     expression = expression.replace(/\b([A-Za-z]+)\b/g, (match, letters) => {
       const index = columnLabelToIndex(letters);
       if (
@@ -103,8 +148,8 @@
 
   evaluateFormula = evaluateFormulaWithColumnLetters;
 
-  // Refresh existing formula cells immediately so saved formulas such as
-  // =N/((O+P)/2) begin working as soon as this helper loads.
+  // Refresh existing formula cells immediately so saved formulas begin using
+  // the enhanced evaluator as soon as this helper loads.
   try {
     recalculateFormulas();
   } catch (err) {
