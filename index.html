@@ -1016,8 +1016,24 @@
       </div>
       <div class="ranking-list" id="faceRankings" aria-live="polite"></div>
     </section>
-    <section class="tab-panel empty-tab" id="titsPanel" role="tabpanel" aria-labelledby="titsTab" data-panel="tits" hidden></section>
-    <section class="tab-panel empty-tab" id="assPanel" role="tabpanel" aria-labelledby="assTab" data-panel="ass" hidden></section>
+    <section class="tab-panel rankings-panel" id="titsPanel" role="tabpanel" aria-labelledby="titsTab" data-panel="tits" hidden>
+      <div class="rankings-heading">
+        <div>
+          <div class="rankings-title">Tits Power Rankings</div>
+          <div class="rankings-subtitle">Top 20 from Main, ranked automatically by the Tits column.</div>
+        </div>
+      </div>
+      <div class="ranking-list" id="titsRankings" aria-live="polite"></div>
+    </section>
+    <section class="tab-panel rankings-panel" id="assPanel" role="tabpanel" aria-labelledby="assTab" data-panel="ass" hidden>
+      <div class="rankings-heading">
+        <div>
+          <div class="rankings-title">Ass Power Rankings</div>
+          <div class="rankings-subtitle">Top 20 from Main, ranked automatically by the Ass column.</div>
+        </div>
+      </div>
+      <div class="ranking-list" id="assRankings" aria-live="polite"></div>
+    </section>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -1025,6 +1041,8 @@
     const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
     const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
     const faceRankings = document.getElementById("faceRankings");
+    const titsRankings = document.getElementById("titsRankings");
+    const assRankings = document.getElementById("assRankings");
 
     const table = document.getElementById("dataTable");
     const tableWrapper = document.getElementById("tableWrapper");
@@ -1044,6 +1062,8 @@
     const RANKING_IMAGE_MAX_DIMENSION = 640;
     const RANKING_IMAGE_QUALITY = 0.82;
     const FACE_LABEL = "face";
+    const TITS_LABEL = "tits";
+    const ASS_LABEL = "ass";
 
     const storage = (() => {
       try {
@@ -1103,6 +1123,10 @@
         refreshScrollbars();
       } else if (tabName === "face") {
         queueFaceRankingsRender();
+      } else if (tabName === "tits") {
+        queueTitsRankingsRender();
+      } else if (tabName === "ass") {
+        queueAssRankingsRender();
       }
     }
 
@@ -1770,6 +1794,220 @@
         faceRankingsRenderFrame = null;
         renderFaceRankings();
       });
+    }
+
+    function createCategoryRankingsController(container, columnLabel, displayLabel) {
+      let renderFrame = null;
+      let renderToken = 0;
+      let objectUrls = [];
+
+      function releaseObjectUrls() {
+        objectUrls.forEach((url) => URL.revokeObjectURL(url));
+        objectUrls = [];
+      }
+
+      function getEntries() {
+        const columns = getColumnDefinitions();
+        const nameIndex = findColumnIndexByLabel(columns, NAME_LABEL);
+        const scoreIndex = findColumnIndexByLabel(columns, columnLabel);
+
+        if (nameIndex === -1) {
+          return { error: 'The Main table needs a column named "Name".' };
+        }
+
+        if (scoreIndex === -1) {
+          return { error: `The Main table needs a column named "${displayLabel}".` };
+        }
+
+        const entries = Array.from(tbody.querySelectorAll("tr"))
+          .map((row, rowIndex) => {
+            const nameCell = row.children[nameIndex]?.querySelector(
+              ".cell, .name-cell"
+            );
+            const scoreCell = row.children[scoreIndex]?.querySelector(
+              ".cell, .name-cell"
+            );
+            const name = nameCell?.textContent.trim() || "";
+            const rawScore = scoreCell?.textContent.trim() || "";
+            const score = Number.parseFloat(rawScore);
+
+            if (!name || !rawScore || !Number.isFinite(score)) return null;
+            return { name, score, rowIndex };
+          })
+          .filter(Boolean)
+          .sort(
+            (a, b) =>
+              b.score - a.score ||
+              a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+          )
+          .slice(0, 20);
+
+        return { entries };
+      }
+
+      async function hydrateImage(imageButton, name, token) {
+        try {
+          const record = await getStoredPersonImage(name);
+          if (token !== renderToken || !imageButton.isConnected || !record?.blob) {
+            return;
+          }
+
+          const objectUrl = URL.createObjectURL(record.blob);
+          if (token !== renderToken || !imageButton.isConnected) {
+            URL.revokeObjectURL(objectUrl);
+            return;
+          }
+
+          objectUrls.push(objectUrl);
+          const image = document.createElement("img");
+          image.src = objectUrl;
+          image.alt = `${name} ranking image`;
+          imageButton.replaceChildren(image);
+        } catch (err) {
+          console.warn("Unable to load ranking image for", name, err);
+        }
+      }
+
+      function createCard(entry, position, token) {
+        const card = document.createElement("article");
+        card.className = "ranking-card";
+
+        const imageButton = document.createElement("button");
+        imageButton.type = "button";
+        imageButton.className = "ranking-image-button";
+        imageButton.setAttribute(
+          "aria-label",
+          `Add or change ranking image for ${entry.name}`
+        );
+
+        const imagePlaceholder = document.createElement("span");
+        imagePlaceholder.className = "ranking-image-placeholder";
+        imagePlaceholder.textContent = "Add image";
+        imageButton.appendChild(imagePlaceholder);
+
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+        fileInput.hidden = true;
+
+        imageButton.addEventListener("click", () => fileInput.click());
+        fileInput.addEventListener("change", async () => {
+          const file = fileInput.files?.[0];
+          if (!file) return;
+
+          imageButton.disabled = true;
+          const savingLabel = document.createElement("span");
+          savingLabel.className = "ranking-image-placeholder";
+          savingLabel.textContent = "Saving…";
+          imageButton.replaceChildren(savingLabel);
+
+          try {
+            const resized = await resizeRankingImage(file);
+            await putStoredPersonImage(entry.name, resized);
+            queueAllRankingsRender();
+          } catch (err) {
+            console.error("Unable to save ranking image", err);
+            alert("That image could not be saved. Please try another image.");
+            queueRender();
+          } finally {
+            fileInput.value = "";
+            imageButton.disabled = false;
+          }
+        });
+
+        const body = document.createElement("div");
+        body.className = "ranking-card-body";
+
+        const copy = document.createElement("div");
+        copy.className = "ranking-copy";
+
+        const rank = document.createElement("div");
+        rank.className = "ranking-position";
+        rank.textContent = `#${position}`;
+
+        const name = document.createElement("div");
+        name.className = "ranking-name";
+        name.textContent = entry.name;
+
+        copy.append(rank, name);
+
+        const score = document.createElement("div");
+        score.className = "ranking-score";
+        const scoreLabel = document.createElement("span");
+        scoreLabel.textContent = displayLabel;
+        const scoreValue = document.createElement("strong");
+        scoreValue.textContent = formatRankingScore(entry.score);
+        score.append(scoreLabel, scoreValue);
+
+        body.append(copy, score);
+        card.append(imageButton, fileInput, body);
+        hydrateImage(imageButton, entry.name, token);
+        return card;
+      }
+
+      function render() {
+        if (!container) return;
+        const token = ++renderToken;
+        releaseObjectUrls();
+        container.innerHTML = "";
+
+        const result = getEntries();
+        if (result.error) {
+          const empty = document.createElement("div");
+          empty.className = "ranking-empty";
+          empty.textContent = result.error;
+          container.appendChild(empty);
+          return;
+        }
+
+        if (!result.entries.length) {
+          const empty = document.createElement("div");
+          empty.className = "ranking-empty";
+          empty.textContent =
+            `Add names and numeric ${displayLabel} scores in Main and the top 20 will appear here automatically.`;
+          container.appendChild(empty);
+          return;
+        }
+
+        result.entries.forEach((entry, index) => {
+          container.appendChild(createCard(entry, index + 1, token));
+        });
+      }
+
+      function queueRender() {
+        if (!container || renderFrame !== null) return;
+        renderFrame = requestAnimationFrame(() => {
+          renderFrame = null;
+          render();
+        });
+      }
+
+      return { queueRender };
+    }
+
+    const titsRankingsController = createCategoryRankingsController(
+      titsRankings,
+      TITS_LABEL,
+      "Tits"
+    );
+    const assRankingsController = createCategoryRankingsController(
+      assRankings,
+      ASS_LABEL,
+      "Ass"
+    );
+
+    function queueTitsRankingsRender() {
+      titsRankingsController.queueRender();
+    }
+
+    function queueAssRankingsRender() {
+      assRankingsController.queueRender();
+    }
+
+    function queueAllRankingsRender() {
+      queueFaceRankingsRender();
+      queueTitsRankingsRender();
+      queueAssRankingsRender();
     }
 
     function computeAgeFromDates(birthDateString, referenceDateString) {
@@ -2805,7 +3043,7 @@
       rebuildColumnSuggestionsFromTable();
       const state = collectTableState();
       storage.setItem(STORAGE_KEY, JSON.stringify(state));
-      queueFaceRankingsRender();
+      queueAllRankingsRender();
     }
 
     function buildHeader(
@@ -3262,7 +3500,7 @@
       recalculateFormulas();
       rebuildColumnSuggestionsFromTable();
       refreshScrollbars();
-      queueFaceRankingsRender();
+      queueAllRankingsRender();
       return true;
     }
 
@@ -3371,7 +3609,7 @@
             }
 
             saveTableState();
-            queueFaceRankingsRender();
+            queueAllRankingsRender();
 
             if (isAppBackup) {
               const availableTabs = new Set(
@@ -3486,7 +3724,7 @@
       saveTableState();
     }
 
-    const rankingsObserver = new MutationObserver(queueFaceRankingsRender);
+    const rankingsObserver = new MutationObserver(queueAllRankingsRender);
     rankingsObserver.observe(table, {
       subtree: true,
       childList: true,
@@ -3494,7 +3732,7 @@
     });
 
     bootstrap();
-    queueFaceRankingsRender();
+    queueAllRankingsRender();
 
     // Button wiring
     addRowBtn.addEventListener("click", addRow);
