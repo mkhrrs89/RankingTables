@@ -453,18 +453,6 @@
         min-width: 0;
       }
 
-      /* Disable sticky columns on small screens */
-      .sticky-col {
-        position: static;
-        left: auto !important;
-        z-index: auto;
-      }
-
-      .header-row .sticky-col {
-        position: sticky;
-        top: 0;
-      }
-
       .app-header {
         margin-bottom: 12px;
         padding-bottom: 10px;
@@ -1059,7 +1047,7 @@
     const IMAGE_DB_NAME = "ranking-tables-media";
     const IMAGE_DB_VERSION = 1;
     const IMAGE_STORE_NAME = "images";
-    const RANKING_IMAGE_MAX_DIMENSION = 640;
+    const RANKING_IMAGE_MAX_DIMENSION = 450;
     const RANKING_IMAGE_QUALITY = 0.82;
     const FACE_LABEL = "face";
     const TITS_LABEL = "tits";
@@ -2657,21 +2645,16 @@
       const letters = getLetterCells();
       const rows = Array.from(tbody.querySelectorAll("tr"));
 
-      let offset = 0;
-
       headers.forEach((th, idx) => {
         const isLocked = isLockedColumnIndex(idx);
-        const rawWidth = getColumnWidth(th);
-        const fallbackWidth =
-          th.dataset.type === COLUMN_TYPES.ICON ? MIN_ICON_WIDTH : MIN_COLUMN_WIDTH;
-        const width = rawWidth || fallbackWidth;
-        const leftValue = isLocked ? offset : null;
+        const isSticky = th.dataset.type === COLUMN_TYPES.NAME;
+        const leftValue = isSticky ? 0 : null;
 
         [th, letters[idx]].forEach((cell) => {
           if (!cell) return;
-          cell.classList.toggle("sticky-col", isLocked);
+          cell.classList.toggle("sticky-col", isSticky);
           cell.classList.toggle("locked-column", isLocked);
-          if (isLocked && leftValue !== null) {
+          if (isSticky && leftValue !== null) {
             cell.style.setProperty("--sticky-left", `${leftValue}px`);
           } else {
             cell.style.removeProperty("--sticky-left");
@@ -2681,17 +2664,13 @@
         rows.forEach((row) => {
           const td = row.children[idx];
           if (!td) return;
-          td.classList.toggle("sticky-col", isLocked);
-          if (isLocked && leftValue !== null) {
+          td.classList.toggle("sticky-col", isSticky);
+          if (isSticky && leftValue !== null) {
             td.style.setProperty("--sticky-left", `${leftValue}px`);
           } else {
             td.style.removeProperty("--sticky-left");
           }
         });
-
-        if (isLocked) {
-          offset += width;
-        }
       });
     }
 
