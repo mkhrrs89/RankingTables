@@ -3620,9 +3620,22 @@
       const blob = new Blob([json], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      const today = new Date().toISOString().split("T")[0];
+      const now = new Date();
+      const easternParts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }).formatToParts(now);
+      const getEasternPart = (type) =>
+        easternParts.find((part) => part.type === type)?.value || "";
+      const easternDate = `${getEasternPart("year")}-${getEasternPart("month")}-${getEasternPart("day")}`;
+      const easternTime = `${getEasternPart("hour")}_${getEasternPart("minute")}_${getEasternPart("dayPeriod").toUpperCase()}`;
       link.href = url;
-      link.download = `ranking-tables-backup-${today}.json`;
+      link.download = `ranking-tables-backup-${easternDate}-${easternTime}.json`;
       document.body.appendChild(link);
       link.click();
       link.remove();
