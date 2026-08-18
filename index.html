@@ -737,7 +737,22 @@
 
     .name-cell {
       color: #38bdf8;
-      font-weight: 600;
+      font-weight: 400;
+      min-width: 0;
+      padding-left: 2px;
+      padding-right: 2px;
+      margin-left: -2px;
+      margin-right: -2px;
+    }
+
+    tbody td.sticky-col,
+    .header-row th.sticky-col {
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    .header-row th.sticky-col .header-inner {
+      gap: 3px;
     }
 
     .formula-cell {
@@ -2025,7 +2040,6 @@
       const timeValue = claim?.mainsnak?.datavalue?.value?.time;
       if (!timeValue || typeof timeValue !== "string") return null;
 
-      // Wikidata times can include a leading + and time portion; strip them.
       const normalized = timeValue.replace(/^\+/, "").split("T")[0];
       return normalized;
     }
@@ -2460,13 +2474,11 @@
       const headerName =
         prompt("New column name:", defaultName) || defaultName;
 
-      // Create header cell
       const th = buildHeader(headerName, newIndex, COLUMN_TYPES.TEXT);
       headerRow.appendChild(th);
       ensureLetterCells(headerRow.children.length);
       refreshColumnIndices();
 
-      // Add cells for each existing row
       Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
         row.appendChild(createCell(COLUMN_TYPES.TEXT));
       });
@@ -2763,7 +2775,6 @@
       });
 
       th.addEventListener("click", (e) => {
-        // Ignore clicks if user is selecting text (simple heuristic)
         if (window.getSelection().toString().length > 0) return;
         if (isDraggingColumn) return;
 
@@ -2924,10 +2935,8 @@
 
         let cmp;
         if (!isNaN(numA) && !isNaN(numB) && textA !== "" && textB !== "") {
-          // Numeric comparison if both cells look like numbers
           cmp = numA - numB;
         } else {
-          // String comparison (case-insensitive, numeric-aware)
           cmp = textA.localeCompare(textB, undefined, {
             numeric: true,
             sensitivity: "base",
@@ -2937,11 +2946,9 @@
         return newDirection === "asc" ? cmp : -cmp;
       });
 
-      // Clear tbody and re-append in new order
       tbody.innerHTML = "";
       rows.forEach((row) => tbody.appendChild(row));
 
-      // Update header sort indicators
       updateSortIndicators(colIndex, newDirection);
 
       saveTableState();
@@ -3460,8 +3467,6 @@
           tr.appendChild(td);
         });
 
-        // After the row is assembled and attached, wire the image icon to the
-        // saved name so image links work immediately on page load.
         const nameCell = tr.querySelector(".name-cell");
         if (nameCell) {
           handleNameInput({ target: nameCell });
@@ -3515,7 +3520,6 @@
       }
     }
 
-    // Capture any last-minute edits when the tab is about to close or hide.
     window.addEventListener("beforeunload", saveTableState);
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") {
@@ -3713,7 +3717,6 @@
     bootstrap();
     queueAllRankingsRender();
 
-    // Button wiring
     addRowBtn.addEventListener("click", addRow);
     addColBtn.addEventListener("click", addColumn);
     deleteRowBtn.addEventListener("click", deleteRow);
