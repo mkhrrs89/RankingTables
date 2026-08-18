@@ -1,7 +1,16 @@
 (() => {
-  const AGE_CACHE_KEY = "ranking-tables-age-cache-v2";
+  const AGE_CACHE_KEY = "ranking-tables-age-cache-v3";
+  const PREVIOUS_AGE_CACHE_KEYS = ["ranking-tables-age-cache-v2"];
   const ageLookupCache = new Map();
   let persistedAgeCache = {};
+
+  // Older Age versions could cache the birthday of a different person who
+  // happened to share the typed name. Do not reuse those identity-unsafe rows.
+  try {
+    PREVIOUS_AGE_CACHE_KEYS.forEach((key) => localStorage.removeItem(key));
+  } catch (err) {
+    // A cache cleanup failure must never prevent the table from loading.
+  }
 
   try {
     persistedAgeCache = JSON.parse(localStorage.getItem(AGE_CACHE_KEY) || "{}") || {};
@@ -16,6 +25,8 @@
     persistedAgeCache[key] = {
       birth: record.birth,
       death: record.death || null,
+      entityId: record.entityId || null,
+      sourceTitle: record.sourceTitle || null,
     };
     try {
       localStorage.setItem(AGE_CACHE_KEY, JSON.stringify(persistedAgeCache));
@@ -31,6 +42,24 @@
     return record?.birth ? record : null;
   }
 
+  function normalizeIdentityText(value) {
+    return String(value || "")
+      .replace(/_/g, " ")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  }
+
+  function wikipediaTitleMatchesName(title, name) {
+    const normalizedTitle = normalizeIdentityText(title);
+    const normalizedName = normalizeIdentityText(name);
+    if (!normalizedTitle || !normalizedName) return false;
+    return (
+      normalizedTitle === normalizedName ||
+      normalizedTitle.startsWith(`${normalizedName} (`)
+    );
+  }
+
   function bestClaim(claims) {
     if (!Array.isArray(claims)) return null;
     return (
@@ -40,7 +69,7 @@
     );
   }
 
-  function datesFromEntity(entity) {
+  function datesFromEntity(entity, metadata = {}) {
     if (!entity || entity.missing !== undefined) return null;
 
     const instanceClaims = entity?.claims?.P31 || [];
@@ -53,7 +82,38 @@
     const birth = extractWikidataDate(bestClaim(entity?.claims?.P569));
     if (!birth) return null;
     const death = extractWikidataDate(bestClaim(entity?.claims?.P570));
-    return { birth, death: death || null };
+    return {
+      birth,
+      death: death || null,
+      entityId: metadata.entityId || entity.id || null,
+      sourceTitle: metadata.sourceTitle || entity?.sitelinks?.enwiki?.title || null,
+    };
+  }
+
+  function entityHasStrongEnglishNameMatch(entity, name) {
+    const requested = normalizeIdentityText(name);
+    if (!requested) return false;
+
+    const enwikiTitle = entity?.sitelinks?.enwiki?.title || "";
+    if (!enwikiTitle || !wikipediaTitleMatchesName(enwikiTitle, name)) {
+      return false;
+    }
+
+    const label = entity?.labels?.en?.value || "";
+    const aliases = (entity?.aliases?.en || [])
+      .map((alias) => alias?.value || "")
+      .filter(Boolean);
+    const exactNameMatch = [label, ...aliases].some(
+      (candidate) => normalizeIdentityText(candidate) === requested
+    );
+
+    // An exact English Wikipedia title is strong enough on its own. A
+    // disambiguated title such as "Jane Doe (model)" additionally needs the
+    // entity label/alias to exactly match the typed name.
+    return (
+      normalizeIdentityText(enwikiTitle) === requested ||
+      exactNameMatch
+    );
   }
 
   function fetchWithTimeout(url, timeoutMs = 5000) {
@@ -154,7 +214,29 @@
     return firstSuccessful([fetchRequest, jsonpRequest]);
   }
 
-  async function searchWikidataIds(name) {
+  async function getExactWikipediaCandidate(name) {
+    const json = await mediaWikiRequest("https://en.wikipedia.org/w/api.php", {
+      action: "query",
+      titles: name,
+      redirects: "1",
+      prop: "pageprops",
+    });
+
+    const pages = Object.values(json?.query?.pages || {});
+    const page = pages.find((entry) => entry && entry.missing === undefined);
+    if (!page) {
+      return { found: false, id: null, title: null };
+    }
+
+    const id = page?.pageprops?.wikibase_item;
+    return {
+      found: true,
+      id: typeof id === "string" && /^Q\d+$/i.test(id) ? id : null,
+      title: page?.title || name,
+    };
+  }
+
+  async function searchWikidataCandidates(name) {
     const json = await mediaWikiRequest("https://www.wikidata.org/w/api.php", {
       action: "wbsearchentities",
       search: name,
@@ -165,8 +247,12 @@
     });
 
     return (json?.search || [])
-      .map((item) => item?.id)
-      .filter((id) => typeof id === "string" && /^Q\d+$/i.test(id));
+      .map((item) => ({
+        id: item?.id,
+        label: item?.label || "",
+        description: item?.description || "",
+      }))
+      .filter((item) => typeof item.id === "string" && /^Q\d+$/i.test(item.id));
   }
 
   async function fetchWikidataEntities(ids) {
@@ -174,12 +260,14 @@
     const json = await mediaWikiRequest("https://www.wikidata.org/w/api.php", {
       action: "wbgetentities",
       ids: ids.join("|"),
-      props: "claims",
+      props: "claims|labels|aliases|sitelinks",
+      languages: "en",
+      sitefilter: "enwiki",
     });
     return json?.entities || {};
   }
 
-  async function searchWikipediaWikidataIds(name) {
+  async function searchWikipediaCandidates(name) {
     const json = await mediaWikiRequest("https://en.wikipedia.org/w/api.php", {
       action: "query",
       generator: "search",
@@ -191,46 +279,93 @@
     });
 
     return Object.values(json?.query?.pages || {})
-      .map((page) => page?.pageprops?.wikibase_item)
-      .filter((id) => typeof id === "string" && /^Q\d+$/i.test(id));
+      .map((page) => ({
+        id: page?.pageprops?.wikibase_item,
+        title: page?.title || "",
+      }))
+      .filter(
+        (candidate) =>
+          typeof candidate.id === "string" &&
+          /^Q\d+$/i.test(candidate.id) &&
+          wikipediaTitleMatchesName(candidate.title, name)
+      );
+  }
+
+  function chooseSingleStrongRecord(candidates, entities, name) {
+    const records = [];
+
+    candidates.forEach((candidate) => {
+      const entity = entities[candidate.id];
+      if (!entity || !entityHasStrongEnglishNameMatch(entity, name)) return;
+      const record = datesFromEntity(entity, {
+        entityId: candidate.id,
+        sourceTitle: entity?.sitelinks?.enwiki?.title || candidate.title || null,
+      });
+      if (record) records.push(record);
+    });
+
+    // If more than one distinct person still survives the strict checks, the
+    // name is genuinely ambiguous. A blank Age is safer than a confident error.
+    return records.length === 1 ? records[0] : null;
   }
 
   async function lookupPublicPersonDates(name) {
-    let ids = [];
-
+    // First choice: the exact English Wikipedia page for the typed name. This
+    // avoids a Wikidata search result for an older namesake outranking the
+    // current public figure the user actually meant.
     try {
-      ids = await searchWikidataIds(name);
+      const exact = await getExactWikipediaCandidate(name);
+      if (exact.found) {
+        if (!exact.id) return null;
+        const entities = await fetchWikidataEntities([exact.id]);
+        const entity = entities[exact.id];
+        if (!entity) return null;
+
+        const record = datesFromEntity(entity, {
+          entityId: exact.id,
+          sourceTitle: exact.title,
+        });
+
+        // If an exact page exists but has no usable birthday, stop here rather
+        // than silently switching to a different person with the same name.
+        return record || null;
+      }
     } catch (err) {
-      console.warn("Wikidata name search failed for", name, err);
+      console.warn("Exact Wikipedia age lookup failed for", name, err);
     }
 
-    if (ids.length) {
-      try {
+    // Next, allow a single strongly matching English Wikipedia result, such as
+    // a disambiguated "Name (model)" page. Multiple surviving people => blank.
+    try {
+      const wikipediaCandidates = await searchWikipediaCandidates(name);
+      if (wikipediaCandidates.length) {
+        const ids = wikipediaCandidates.map((candidate) => candidate.id);
         const entities = await fetchWikidataEntities(ids);
-        for (const id of ids) {
-          const record = datesFromEntity(entities[id]);
-          if (record) return record;
-        }
-      } catch (err) {
-        console.warn("Wikidata entity lookup failed for", name, err);
-      }
-    }
-
-    try {
-      const wikipediaIds = await searchWikipediaWikidataIds(name);
-      const unusedIds = wikipediaIds.filter((id) => !ids.includes(id));
-      if (unusedIds.length) {
-        const entities = await fetchWikidataEntities(unusedIds);
-        for (const id of unusedIds) {
-          const record = datesFromEntity(entities[id]);
-          if (record) return record;
-        }
+        const record = chooseSingleStrongRecord(
+          wikipediaCandidates,
+          entities,
+          name
+        );
+        if (record) return record;
+        if (wikipediaCandidates.length > 1) return null;
       }
     } catch (err) {
-      console.warn("Wikipedia/Wikidata fallback failed for", name, err);
+      console.warn("Wikipedia age search failed for", name, err);
     }
 
-    return null;
+    // Final fallback: Wikidata search, but only accept an entity whose English
+    // Wikipedia sitelink and label/alias strongly match the typed name. Do not
+    // take the first human result merely because it has a birthday.
+    try {
+      const wikidataCandidates = await searchWikidataCandidates(name);
+      if (!wikidataCandidates.length) return null;
+      const ids = wikidataCandidates.map((candidate) => candidate.id);
+      const entities = await fetchWikidataEntities(ids);
+      return chooseSingleStrongRecord(wikidataCandidates, entities, name);
+    } catch (err) {
+      console.warn("Wikidata age fallback failed for", name, err);
+      return null;
+    }
   }
 
   async function resolveAgeRecord(rawName) {
@@ -329,7 +464,7 @@
         );
         if (!ageCell) return;
 
-        const token = Symbol("ageV2");
+        const token = Symbol("ageV3");
         ageRequestTokens.set(ageCell, token);
 
         if (!personName) {
@@ -406,6 +541,6 @@
   const rowObserver = new MutationObserver(() => queueAgeRefresh(40));
   rowObserver.observe(tbody, { childList: true });
 
-  document.documentElement.dataset.ageEngine = "v2";
+  document.documentElement.dataset.ageEngine = "v3";
   queueAgeRefresh(0);
 })();
