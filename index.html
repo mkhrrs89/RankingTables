@@ -917,6 +917,36 @@
     th .drag-handle {
       display: none !important;
     }
+
+    @media (pointer: coarse) {
+      .table-wrapper {
+        touch-action: pan-y pinch-zoom;
+      }
+
+      .header-row th {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+
+      body.touch-reordering,
+      body.touch-reordering * {
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        -webkit-touch-callout: none !important;
+      }
+
+      .header-row th.touch-dragging {
+        outline: 2px solid rgba(56, 189, 248, 0.9);
+        outline-offset: -2px;
+        background: rgba(30, 41, 59, 0.99);
+      }
+
+      .header-row th.touch-drop-target {
+        outline: 2px dashed rgba(34, 197, 94, 0.95);
+        outline-offset: -3px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -3955,6 +3985,338 @@
         });
       });
     }
+
+    const mobileHeaderReorderState = {
+      pending: false,
+      active: false,
+      timer: null,
+      sourceHeader: null,
+      sourceIndex: null,
+      targetHeader: null,
+      targetIndex: null,
+      startX: 0,
+      startY: 0,
+    };
+
+    let suppressHeaderClickUntil = 0;
+
+    function clearMobileHeaderReorderVisuals() {
+      getHeaderCells().forEach((header) => {
+        header.classList.remove("touch-dragging", "touch-drop-target");
+      });
+      document.body.classList.remove("touch-reordering");
+    }
+
+    function cancelPendingMobileHeaderReorder() {
+      if (mobileHeaderReorderState.timer !== null) {
+        clearTimeout(mobileHeaderReorderState.timer);
+      }
+      mobileHeaderReorderState.pending = false;
+      mobileHeaderReorderState.timer = null;
+    }
+
+    function resetMobileHeaderReorder() {
+      cancelPendingMobileHeaderReorder();
+      mobileHeaderReorderState.active = false;
+      mobileHeaderReorderState.sourceHeader = null;
+      mobileHeaderReorderState.sourceIndex = null;
+      mobileHeaderReorderState.targetHeader = null;
+      mobileHeaderReorderState.targetIndex = null;
+      mobileHeaderReorderState.startX = 0;
+      mobileHeaderReorderState.startY = 0;
+      clearMobileHeaderReorderVisuals();
+    }
+
+    function findUnlockedHeaderAtPoint(x, y) {
+      const element = document.elementFromPoint(x, y);
+      const header = element?.closest?.(".header-row th");
+      if (!header) return null;
+      const index = getHeaderIndex(header);
+      return isLockedColumnIndex(index) ? null : { header, index };
+    }
+
+    function autoScrollTableDuringHeaderDrag(clientX) {
+      if (!tableWrapper) return;
+      const rect = tableWrapper.getBoundingClientRect();
+      const edgeZone = 48;
+      const step = 16;
+
+      if (clientX < rect.left + edgeZone) {
+        tableWrapper.scrollLeft = Math.max(0, tableWrapper.scrollLeft - step);
+      } else if (clientX > rect.right - edgeZone) {
+        tableWrapper.scrollLeft += step;
+      }
+    }
+
+    function updateMobileHeaderDropTarget(clientX, clientY) {
+      const target = findUnlockedHeaderAtPoint(clientX, clientY);
+      getHeaderCells().forEach((header) =>
+        header.classList.remove("touch-drop-target")
+      );
+
+      if (!target) {
+        mobileHeaderReorderState.targetHeader = null;
+        mobileHeaderReorderState.targetIndex = null;
+        return;
+      }
+
+      mobileHeaderReorderState.targetHeader = target.header;
+      mobileHeaderReorderState.targetIndex = target.index;
+      if (target.index !== mobileHeaderReorderState.sourceIndex) {
+        target.header.classList.add("touch-drop-target");
+      }
+    }
+
+    function handleMobileHeaderTouchStart(event) {
+      if (event.touches.length !== 1) {
+        resetMobileHeaderReorder();
+        return;
+      }
+
+      const header = event.target.closest?.(".header-row th");
+      if (!header) return;
+      const index = getHeaderIndex(header);
+      if (isLockedColumnIndex(index)) return;
+
+      const touch = event.touches[0];
+      cancelPendingMobileHeaderReorder();
+      mobileHeaderReorderState.pending = true;
+      mobileHeaderReorderState.sourceHeader = header;
+      mobileHeaderReorderState.sourceIndex = index;
+      mobileHeaderReorderState.targetHeader = header;
+      mobileHeaderReorderState.targetIndex = index;
+      mobileHeaderReorderState.startX = touch.clientX;
+      mobileHeaderReorderState.startY = touch.clientY;
+
+      mobileHeaderReorderState.timer = window.setTimeout(() => {
+        if (!mobileHeaderReorderState.pending) return;
+        mobileHeaderReorderState.pending = false;
+        mobileHeaderReorderState.timer = null;
+        mobileHeaderReorderState.active = true;
+        suppressHeaderClickUntil = Date.now() + 900;
+        header.classList.add("touch-dragging");
+        document.body.classList.add("touch-reordering");
+      }, 280);
+    }
+
+    function handleMobileHeaderTouchMove(event) {
+      if (event.touches.length !== 1) {
+        resetMobileHeaderReorder();
+        return;
+      }
+
+      const touch = event.touches[0];
+
+      if (mobileHeaderReorderState.pending) {
+        const dx = touch.clientX - mobileHeaderReorderState.startX;
+        const dy = touch.clientY - mobileHeaderReorderState.startY;
+        if (Math.hypot(dx, dy) > 8) {
+          cancelPendingMobileHeaderReorder();
+        }
+        return;
+      }
+
+      if (!mobileHeaderReorderState.active) return;
+      if (event.cancelable) event.preventDefault();
+      autoScrollTableDuringHeaderDrag(touch.clientX);
+      updateMobileHeaderDropTarget(touch.clientX, touch.clientY);
+    }
+
+    function finishMobileHeaderReorder(event) {
+      if (mobileHeaderReorderState.pending) {
+        cancelPendingMobileHeaderReorder();
+        return;
+      }
+
+      if (!mobileHeaderReorderState.active) return;
+      if (event.cancelable) event.preventDefault();
+
+      const fromIndex = mobileHeaderReorderState.sourceIndex;
+      const toIndex = mobileHeaderReorderState.targetIndex;
+      suppressHeaderClickUntil = Date.now() + 900;
+
+      if (
+        Number.isInteger(fromIndex) &&
+        Number.isInteger(toIndex) &&
+        fromIndex !== toIndex &&
+        !isLockedColumnIndex(fromIndex) &&
+        !isLockedColumnIndex(toIndex)
+      ) {
+        reorderColumns(fromIndex, toIndex);
+        saveTableState();
+      }
+
+      resetMobileHeaderReorder();
+    }
+
+    headerRow.addEventListener("touchstart", handleMobileHeaderTouchStart, {
+      passive: true,
+    });
+    headerRow.addEventListener("touchmove", handleMobileHeaderTouchMove, {
+      passive: false,
+    });
+    headerRow.addEventListener("touchend", finishMobileHeaderReorder, {
+      passive: false,
+    });
+    headerRow.addEventListener("touchcancel", resetMobileHeaderReorder, {
+      passive: true,
+    });
+    headerRow.addEventListener(
+      "click",
+      (event) => {
+        if (Date.now() >= suppressHeaderClickUntil) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      },
+      true
+    );
+
+    const mobileHorizontalPanState = {
+      active: false,
+      mode: null,
+      startX: 0,
+      startY: 0,
+      startScrollLeft: 0,
+      lastX: 0,
+      lastTime: 0,
+      velocity: 0,
+    };
+
+    let mobileMomentumFrame = null;
+
+    function cancelMobileHorizontalMomentum() {
+      if (mobileMomentumFrame !== null) {
+        cancelAnimationFrame(mobileMomentumFrame);
+        mobileMomentumFrame = null;
+      }
+    }
+
+    function resetMobileHorizontalPan() {
+      mobileHorizontalPanState.active = false;
+      mobileHorizontalPanState.mode = null;
+      mobileHorizontalPanState.velocity = 0;
+    }
+
+    function startMobileHorizontalMomentum(initialVelocity) {
+      cancelMobileHorizontalMomentum();
+      let velocity = Math.max(-2.8, Math.min(2.8, initialVelocity));
+      if (Math.abs(velocity) < 0.03) return;
+
+      let lastTimestamp = performance.now();
+      const step = (timestamp) => {
+        const elapsed = Math.min(32, timestamp - lastTimestamp || 16.67);
+        lastTimestamp = timestamp;
+
+        const before = tableWrapper.scrollLeft;
+        tableWrapper.scrollLeft += velocity * elapsed;
+        const after = tableWrapper.scrollLeft;
+
+        const friction = Math.pow(0.94, elapsed / 16.67);
+        velocity *= friction;
+
+        if (Math.abs(velocity) < 0.02 || Math.abs(after - before) < 0.1) {
+          mobileMomentumFrame = null;
+          return;
+        }
+
+        mobileMomentumFrame = requestAnimationFrame(step);
+      };
+
+      mobileMomentumFrame = requestAnimationFrame(step);
+    }
+
+    function handleMobileTableTouchStart(event) {
+      cancelMobileHorizontalMomentum();
+
+      if (event.touches.length !== 1) {
+        resetMobileHorizontalPan();
+        return;
+      }
+
+      const touch = event.touches[0];
+      mobileHorizontalPanState.active = true;
+      mobileHorizontalPanState.mode = null;
+      mobileHorizontalPanState.startX = touch.clientX;
+      mobileHorizontalPanState.startY = touch.clientY;
+      mobileHorizontalPanState.startScrollLeft = tableWrapper.scrollLeft;
+      mobileHorizontalPanState.lastX = touch.clientX;
+      mobileHorizontalPanState.lastTime = performance.now();
+      mobileHorizontalPanState.velocity = 0;
+    }
+
+    function handleMobileTableTouchMove(event) {
+      if (
+        !mobileHorizontalPanState.active ||
+        event.touches.length !== 1 ||
+        mobileHeaderReorderState.active
+      ) {
+        return;
+      }
+
+      const touch = event.touches[0];
+      const dx = touch.clientX - mobileHorizontalPanState.startX;
+      const dy = touch.clientY - mobileHorizontalPanState.startY;
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+
+      if (mobileHorizontalPanState.mode === null) {
+        if (Math.hypot(dx, dy) < 6) return;
+
+        if (absX >= absY * 0.65) {
+          mobileHorizontalPanState.mode = "horizontal";
+        } else if (absY >= absX * 1.25) {
+          mobileHorizontalPanState.mode = "vertical";
+          return;
+        } else {
+          return;
+        }
+      }
+
+      if (mobileHorizontalPanState.mode !== "horizontal") return;
+      if (event.cancelable) event.preventDefault();
+
+      tableWrapper.scrollLeft = mobileHorizontalPanState.startScrollLeft - dx;
+
+      const now = performance.now();
+      const elapsed = Math.max(1, now - mobileHorizontalPanState.lastTime);
+      const instantaneousVelocity =
+        -(touch.clientX - mobileHorizontalPanState.lastX) / elapsed;
+      mobileHorizontalPanState.velocity =
+        mobileHorizontalPanState.velocity * 0.35 + instantaneousVelocity * 0.65;
+      mobileHorizontalPanState.lastX = touch.clientX;
+      mobileHorizontalPanState.lastTime = now;
+    }
+
+    function handleMobileTableTouchEnd(event) {
+      if (event.touches.length > 0) {
+        resetMobileHorizontalPan();
+        return;
+      }
+
+      const shouldGlide =
+        mobileHorizontalPanState.active &&
+        mobileHorizontalPanState.mode === "horizontal" &&
+        !mobileHeaderReorderState.active;
+      const velocity = mobileHorizontalPanState.velocity;
+      resetMobileHorizontalPan();
+
+      if (shouldGlide) {
+        startMobileHorizontalMomentum(velocity);
+      }
+    }
+
+    tableWrapper.addEventListener("touchstart", handleMobileTableTouchStart, {
+      passive: true,
+    });
+    tableWrapper.addEventListener("touchmove", handleMobileTableTouchMove, {
+      passive: false,
+    });
+    tableWrapper.addEventListener("touchend", handleMobileTableTouchEnd, {
+      passive: true,
+    });
+    tableWrapper.addEventListener("touchcancel", resetMobileHorizontalPan, {
+      passive: true,
+    });
 
     const rankingsObserver = new MutationObserver(queueAllRankingsRender);
     rankingsObserver.observe(table, {
