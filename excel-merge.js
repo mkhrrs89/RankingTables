@@ -28,5 +28,6 @@
 
   loadClassicScript("excel-merge-core.js")
     .then(() => loadClassicScript("age-fix.js"))
+    .then(() => loadClassicScript("formula-fix.js"))
     .catch((err) => console.error("App helper loading failed", err));
 })();
