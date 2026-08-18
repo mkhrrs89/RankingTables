@@ -1,9 +1,7 @@
 (() => {
   function getImportedFormulaColumnIndexes(worksheet, headerCount) {
     const formulaColumns = new Set();
-    if (!worksheet?.["!ref"] || !Number.isInteger(headerCount)) {
-      return formulaColumns;
-    }
+    if (!worksheet?.["!ref"] || !Number.isInteger(headerCount)) return formulaColumns;
 
     const range = XLSX.utils.decode_range(worksheet["!ref"]);
     for (let sourceIndex = 0; sourceIndex < headerCount; sourceIndex++) {
@@ -11,17 +9,13 @@
       if (sheetColumnIndex > range.e.c) break;
 
       for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex++) {
-        const address = XLSX.utils.encode_cell({
-          r: rowIndex,
-          c: sheetColumnIndex,
-        });
+        const address = XLSX.utils.encode_cell({ r: rowIndex, c: sheetColumnIndex });
         if (worksheet[address]?.f) {
           formulaColumns.add(sourceIndex);
           break;
         }
       }
     }
-
     return formulaColumns;
   }
 
@@ -45,7 +39,6 @@
     const importNameIndex = importHeaders.findIndex(
       (label) => normalizeHeaderLabel(label) === NAME_LABEL
     );
-
     if (importNameIndex === -1) {
       alert('Import failed: the Excel file needs a column named "Name".');
       return null;
@@ -55,7 +48,6 @@
       worksheet,
       importHeaders.length
     );
-
     if (formulaSourceColumns.has(importNameIndex)) {
       alert('Import failed: the Excel "Name" column cannot be a formula column.');
       return null;
@@ -70,7 +62,6 @@
 
     const writableAppColumns = new Map();
     const ignoredAppFormulaHeaders = [];
-
     appColumns.forEach((column, index) => {
       const label = normalizeHeaderLabel(column.label);
       if (!label) return;
@@ -78,53 +69,36 @@
       const isFormulaColumn = Boolean(column.formula?.trim());
       const isAutoAgeColumn = label === AGE_LABEL;
       const isImageColumn = column.type === COLUMN_TYPES.ICON;
-
       if (isFormulaColumn || isAutoAgeColumn || isImageColumn) {
         if (isFormulaColumn) ignoredAppFormulaHeaders.push(column.label);
         return;
       }
-
-      if (!writableAppColumns.has(label)) {
-        writableAppColumns.set(label, index);
-      }
+      if (!writableAppColumns.has(label)) writableAppColumns.set(label, index);
     });
 
     const mappings = [];
     const ignoredSourceFormulaHeaders = [];
-
     importHeaders.forEach((header, sourceIndex) => {
       const normalizedHeader = normalizeHeaderLabel(header);
       if (!normalizedHeader) return;
-
       if (formulaSourceColumns.has(sourceIndex)) {
         ignoredSourceFormulaHeaders.push(header);
         return;
       }
-
       const targetIndex = writableAppColumns.get(normalizedHeader);
       if (Number.isInteger(targetIndex)) {
-        mappings.push({
-          sourceIndex,
-          targetIndex,
-          label: appColumns[targetIndex].label,
-        });
+        mappings.push({ sourceIndex, targetIndex, label: appColumns[targetIndex].label });
       }
     });
 
     const existingRows = Array.from(tbody.querySelectorAll("tr"));
     const rowsByName = new Map();
     const blankRows = [];
-
     existingRows.forEach((row) => {
-      const nameCell = row.children[appNameIndex]?.querySelector(
-        ".cell, .name-cell"
-      );
+      const nameCell = row.children[appNameIndex]?.querySelector(".cell, .name-cell");
       const normalizedName = normalizePersonName(nameCell?.textContent || "");
-
       if (normalizedName) {
-        if (!rowsByName.has(normalizedName)) {
-          rowsByName.set(normalizedName, row);
-        }
+        if (!rowsByName.has(normalizedName)) rowsByName.set(normalizedName, row);
       } else {
         blankRows.push(row);
       }
@@ -137,7 +111,6 @@
 
     matrix.slice(1).forEach((importRow) => {
       if (!Array.isArray(importRow)) return;
-
       const importedName = String(importRow[importNameIndex] ?? "").trim();
       const normalizedName = normalizePersonName(importedName);
       if (!normalizedName) {
@@ -157,28 +130,19 @@
       mappings.forEach(({ sourceIndex, targetIndex }) => {
         const value = importRow[sourceIndex];
         if (value === undefined || value === null) return;
-
         const textValue = String(value).trim();
         if (!textValue && sourceIndex !== importNameIndex) return;
 
-        const cell = row.children[targetIndex]?.querySelector(
-          ".cell, .name-cell"
-        );
+        const cell = row.children[targetIndex]?.querySelector(".cell, .name-cell");
         if (!cell) return;
-
-        cell.textContent = sourceIndex === importNameIndex
-          ? importedName
-          : String(value);
+        cell.textContent = sourceIndex === importNameIndex ? importedName : String(value);
       });
 
-      const nameCell = row.children[appNameIndex]?.querySelector(
-        ".cell, .name-cell"
-      );
+      const nameCell = row.children[appNameIndex]?.querySelector(".cell, .name-cell");
       if (nameCell) {
         nameCell.textContent = importedName;
         handleNameInput({ target: nameCell });
       }
-
       affectedRows.add(row);
     });
 
@@ -186,9 +150,7 @@
     syncFormulaColumnCells();
     recalculateFormulas();
     affectedRows.forEach((row) => {
-      Array.from(row.querySelectorAll(".cell, .name-cell")).forEach(
-        applyNumericStyling
-      );
+      Array.from(row.querySelectorAll(".cell, .name-cell")).forEach(applyNumericStyling);
     });
     rebuildColumnSuggestionsFromTable();
     refreshScrollbars();
@@ -198,12 +160,8 @@
       addedCount,
       updatedCount,
       skippedBlankNames,
-      matchedHeaders: Array.from(
-        new Set(mappings.map((mapping) => mapping.label))
-      ),
-      ignoredSourceFormulaHeaders: Array.from(
-        new Set(ignoredSourceFormulaHeaders)
-      ),
+      matchedHeaders: Array.from(new Set(mappings.map((mapping) => mapping.label))),
+      ignoredSourceFormulaHeaders: Array.from(new Set(ignoredSourceFormulaHeaders)),
       ignoredAppFormulaHeaders: Array.from(new Set(ignoredAppFormulaHeaders)),
     };
   }
@@ -220,23 +178,18 @@
         });
         const firstSheet = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheet];
-
         if (!worksheet) {
           alert("Import failed: the Excel file has no sheets.");
           return;
         }
 
-        const matrix = XLSX.utils.sheet_to_json(worksheet, {
-          header: 1,
-          raw: false,
-        });
+        const matrix = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
         const result = mergeExcelMatrixIntoMain(matrix, worksheet);
         if (!result) return;
 
         const matched = result.matchedHeaders.length
           ? result.matchedHeaders.join(", ")
           : "Name only";
-
         const ignoredFormulaHeaders = Array.from(
           new Set([
             ...result.ignoredSourceFormulaHeaders,
@@ -263,40 +216,26 @@
         importFileInput.value = "";
       }
     };
-
     reader.readAsArrayBuffer(file);
   }
 
   function handleExcelMergeImport(event) {
     const file = event.target?.files?.[0];
     if (!file) return;
-
     const fileName = file.name.toLowerCase();
     const isExcel = fileName.endsWith(".xlsx") || fileName.endsWith(".xls");
     if (!isExcel) return;
 
-    // Capture phase runs before the app's existing change handler. Stop only
-    // Excel files here so JSON backup import and CSV import keep their existing
-    // behavior unchanged.
     event.stopImmediatePropagation();
     mergeExcelFileIntoMain(file);
   }
 
   importFileInput.addEventListener("change", handleExcelMergeImport, true);
 
-  /*
-    Desktop reorder repair: headers rebuilt from saved state are wired before
-    they are inserted into headerRow, so getHeaderIndex() returns -1 during
-    attachHeaderEvents(). The original lock check treated -1 as locked and
-    skipped the native drag listeners. Require a real non-negative index for
-    locking, then add the missing drag listeners to the headers already loaded.
-  */
+  // Fix the lock test used while headers are being rebuilt. A not-yet-inserted
+  // header has index -1 and must not be treated as one of the two locked columns.
   isLockedColumnIndex = function (index) {
-    return (
-      Number.isInteger(index) &&
-      index >= 0 &&
-      index < LOCKED_COLUMN_COUNT
-    );
+    return Number.isInteger(index) && index >= 0 && index < LOCKED_COLUMN_COUNT;
   };
 
   function attachMissingDesktopDragEvents(th) {
@@ -304,9 +243,7 @@
     if (
       isLockedColumnIndex(index) ||
       th.dataset.desktopDragRepairAttached === "true"
-    ) {
-      return;
-    }
+    ) return;
 
     th.draggable = true;
 
@@ -316,7 +253,6 @@
         event.preventDefault();
         return;
       }
-
       dragSourceIndex = sourceIndex;
       isDraggingColumn = true;
       th.classList.add("dragging");
@@ -335,10 +271,7 @@
       event.dataTransfer.dropEffect = "move";
     });
 
-    th.addEventListener("dragleave", () => {
-      th.classList.remove("drag-over");
-    });
-
+    th.addEventListener("dragleave", () => th.classList.remove("drag-over"));
     th.addEventListener("dragend", () => {
       isDraggingColumn = false;
       dragSourceIndex = null;
@@ -349,7 +282,6 @@
       event.preventDefault();
       const targetIndex = getHeaderIndex(th);
       clearHeaderDragState();
-
       if (
         dragSourceIndex === null ||
         dragSourceIndex === targetIndex ||
@@ -359,7 +291,6 @@
         dragSourceIndex = null;
         return;
       }
-
       reorderColumns(dragSourceIndex, targetIndex);
       isDraggingColumn = false;
       dragSourceIndex = null;
@@ -370,4 +301,234 @@
   }
 
   getHeaderCells().forEach(attachMissingDesktopDragEvents);
+
+  // Reliable Age refresh. Keep the display to a whole number of years and use
+  // a Wikipedia page-property fallback when Wikidata's name search misses.
+  const reliableAgeCache = new Map();
+
+  function getBestClaim(claims) {
+    if (!Array.isArray(claims)) return null;
+    return (
+      claims.find((claim) => claim?.rank === "preferred") ||
+      claims.find((claim) => claim?.rank !== "deprecated") ||
+      null
+    );
+  }
+
+  function personDatesFromEntity(entity) {
+    if (!entity || entity.missing !== undefined) return null;
+    const instanceClaims = entity?.claims?.P31 || [];
+    const isHuman = instanceClaims.some(
+      (claim) => claim?.mainsnak?.datavalue?.value?.id?.toUpperCase?.() === "Q5"
+    );
+    if (!isHuman) return null;
+
+    const birth = extractWikidataDate(getBestClaim(entity?.claims?.P569));
+    if (!birth) return null;
+    const death = extractWikidataDate(getBestClaim(entity?.claims?.P570));
+    return { birth, death: death || null };
+  }
+
+  async function fetchWikidataEntities(ids) {
+    if (!ids.length) return {};
+    const params = new URLSearchParams({
+      action: "wbgetentities",
+      ids: ids.join("|"),
+      props: "claims",
+      format: "json",
+      origin: "*",
+    });
+    const response = await fetch("https://www.wikidata.org/w/api.php?" + params);
+    if (!response.ok) return {};
+    const json = await response.json();
+    return json?.entities || {};
+  }
+
+  async function searchWikidataIds(name) {
+    const params = new URLSearchParams({
+      action: "wbsearchentities",
+      search: name,
+      language: "en",
+      uselang: "en",
+      type: "item",
+      limit: "12",
+      format: "json",
+      origin: "*",
+    });
+    const response = await fetch("https://www.wikidata.org/w/api.php?" + params);
+    if (!response.ok) return [];
+    const json = await response.json();
+    return (json?.search || [])
+      .map((item) => item?.id)
+      .filter((id) => typeof id === "string" && /^Q\d+$/i.test(id));
+  }
+
+  async function wikipediaWikidataId(name) {
+    try {
+      const params = new URLSearchParams({
+        action: "query",
+        titles: name,
+        redirects: "1",
+        prop: "pageprops",
+        format: "json",
+        origin: "*",
+      });
+      const response = await fetch("https://en.wikipedia.org/w/api.php?" + params);
+      if (!response.ok) return null;
+      const json = await response.json();
+      const pages = Object.values(json?.query?.pages || {});
+      const id = pages[0]?.pageprops?.wikibase_item;
+      return typeof id === "string" && /^Q\d+$/i.test(id) ? id : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async function reliableBirthdayLookup(name) {
+    const ids = await searchWikidataIds(name);
+    const entities = await fetchWikidataEntities(ids);
+    for (const id of ids) {
+      const record = personDatesFromEntity(entities[id]);
+      if (record) return record;
+    }
+
+    const fallbackId = await wikipediaWikidataId(name);
+    if (fallbackId && !ids.includes(fallbackId)) {
+      const fallbackEntities = await fetchWikidataEntities([fallbackId]);
+      const record = personDatesFromEntity(fallbackEntities[fallbackId]);
+      if (record) return record;
+    }
+    return null;
+  }
+
+  async function reliableResolvePersonDates(rawName) {
+    const normalized = normalizePersonName(rawName);
+    if (!normalized) return null;
+
+    const localRecord = LOCAL_BIRTHDAY_DB[normalized];
+    if (localRecord) return localRecord;
+
+    if (reliableAgeCache.has(normalized)) {
+      return await Promise.resolve(reliableAgeCache.get(normalized));
+    }
+
+    const lookup = reliableBirthdayLookup(rawName)
+      .then((record) => {
+        if (record) reliableAgeCache.set(normalized, record);
+        else reliableAgeCache.delete(normalized);
+        return record;
+      })
+      .catch((err) => {
+        reliableAgeCache.delete(normalized);
+        console.warn("Failed to fetch birth data for", rawName, err);
+        return null;
+      });
+
+    reliableAgeCache.set(normalized, lookup);
+    return await lookup;
+  }
+
+  function reliableAgeInYears(birthDateString, referenceDateString) {
+    const parse = (value) => {
+      const match = /^(-?\d{1,6})-(\d{2})-(\d{2})$/.exec(value || "");
+      if (!match) return null;
+      return {
+        year: Number(match[1]),
+        month: Number(match[2]),
+        day: Number(match[3]),
+      };
+    };
+
+    const birth = parse(birthDateString);
+    if (!birth) return null;
+
+    let reference = referenceDateString ? parse(referenceDateString) : null;
+    if (!reference) {
+      const today = new Date();
+      reference = {
+        year: today.getFullYear(),
+        month: today.getMonth() + 1,
+        day: today.getDate(),
+      };
+    }
+
+    let age = reference.year - birth.year;
+    if (
+      reference.month < birth.month ||
+      (reference.month === birth.month && reference.day < birth.day)
+    ) {
+      age -= 1;
+    }
+    return Number.isFinite(age) && age >= 0 ? age : null;
+  }
+
+  function reliableUpdateAgeColumns(columns = getColumnDefinitions()) {
+    const nameColumnIndex = findColumnIndexByLabel(columns, NAME_LABEL);
+    const ageColumnIndices = getAgeColumnIndices(columns);
+    if (nameColumnIndex === -1 || !ageColumnIndices.length) return;
+
+    Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+      const nameCell = row.children[nameColumnIndex]?.querySelector(".cell, .name-cell");
+      const personName = nameCell?.textContent.trim() || "";
+
+      ageColumnIndices.forEach((ageIndex) => {
+        const ageCell = row.children[ageIndex]?.querySelector(".cell, .name-cell");
+        if (!ageCell) return;
+
+        const token = Symbol("reliableAgeRequest");
+        ageRequestTokens.set(ageCell, token);
+
+        if (!personName) {
+          ageCell.textContent = "";
+          applyNumericStyling(ageCell);
+          return;
+        }
+
+        ageCell.textContent = "…";
+        applyNumericStyling(ageCell);
+
+        reliableResolvePersonDates(personName).then((record) => {
+          if (ageRequestTokens.get(ageCell) !== token) return;
+          if (!record?.birth) {
+            ageCell.textContent = "";
+            applyNumericStyling(ageCell);
+            return;
+          }
+
+          const age = reliableAgeInYears(record.birth, record.death || undefined);
+          ageCell.textContent = Number.isFinite(age) ? String(age) : "";
+          applyNumericStyling(ageCell);
+        });
+      });
+    });
+  }
+
+  // Replace the original lookup/update bindings so all existing app triggers —
+  // typing, imports, formulas, and column reorders — use the reliable path.
+  birthdayCache.clear();
+  fetchBirthdayFromWikidata = reliableBirthdayLookup;
+  resolvePersonDates = reliableResolvePersonDates;
+  computeAgeFromDates = reliableAgeInYears;
+  updateAgeColumns = reliableUpdateAgeColumns;
+
+  let ageRefreshTimer = null;
+  function queueReliableAgeRefresh() {
+    if (ageRefreshTimer !== null) clearTimeout(ageRefreshTimer);
+    ageRefreshTimer = window.setTimeout(() => {
+      ageRefreshTimer = null;
+      reliableUpdateAgeColumns();
+    }, 80);
+  }
+
+  tbody.addEventListener("input", (event) => {
+    const cell = event.target.closest?.(".cell, .name-cell");
+    const td = cell?.closest?.("td");
+    const columns = getColumnDefinitions();
+    const nameIndex = findColumnIndexByLabel(columns, NAME_LABEL);
+    if (td && td.cellIndex === nameIndex) queueReliableAgeRefresh();
+  });
+
+  const ageHeaderObserver = new MutationObserver(queueReliableAgeRefresh);
+  ageHeaderObserver.observe(headerRow, { childList: true });
+  queueReliableAgeRefresh();
 })();
