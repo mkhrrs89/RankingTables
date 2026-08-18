@@ -1058,7 +1058,7 @@
 
     const STORAGE_KEY = "simple-data-table-state";
     const APP_EXPORT_FORMAT = "ranking-tables-app";
-    const APP_EXPORT_VERSION = 2;
+    const APP_EXPORT_VERSION = 3;
     const IMAGE_DB_NAME = "ranking-tables-media";
     const IMAGE_DB_VERSION = 1;
     const IMAGE_STORE_NAME = "images";
@@ -1197,7 +1197,6 @@
     const MIN_ICON_WIDTH = 50;
     const LOCKED_COLUMN_COUNT = 2;
 
-    // Track sort direction per column: "asc" or "desc"
     const sortState = {};
     let isDraggingColumn = false;
     let dragSourceIndex = null;
@@ -1356,7 +1355,6 @@
         link.textContent = "🖼️";
         td.appendChild(link);
       } else if (columnType === COLUMN_TYPES.NAME) {
-        // Name column: editable text
         const div = document.createElement("div");
         div.className = "cell name-cell";
         if (!formula) {
@@ -1368,7 +1366,6 @@
         }
         div.dataset.role = "name";
 
-        // Update icon link whenever text changes
         if (!formula) {
           div.addEventListener("input", handleNameInput);
           div.addEventListener("input", handleCellChange);
@@ -1376,7 +1373,6 @@
 
         td.appendChild(div);
       } else {
-        // Regular editable text cell
         const div = document.createElement("div");
         div.className = "cell";
         if (!formula) {
@@ -1397,9 +1393,10 @@
       return name?.trim().toLowerCase() || "";
     }
 
-    function imageKeyForName(name) {
+    function imageKeyForName(name, category = "") {
       const normalized = normalizePersonName(name);
-      return normalized ? `person:${normalized}` : "";
+      if (!normalized) return "";
+      return category ? `${category}:${normalized}` : `person:${normalized}`;
     }
 
     function openImageDb() {
@@ -1429,8 +1426,7 @@
       return imageDbPromise;
     }
 
-    async function getStoredPersonImage(name) {
-      const key = imageKeyForName(name);
+    async function getStoredImageByKey(key) {
       if (!key) return null;
       const db = await openImageDb();
 
@@ -1441,6 +1437,18 @@
         request.onerror = () =>
           reject(request.error || new Error("Unable to read image storage."));
       });
+    }
+
+    async function getStoredPersonImage(name, category = "") {
+      const categoryKey = imageKeyForName(name, category);
+      const record = await getStoredImageByKey(categoryKey);
+      if (record) return record;
+
+      if (category === FACE_LABEL) {
+        return await getStoredImageByKey(imageKeyForName(name));
+      }
+
+      return null;
     }
 
     async function getAllStoredImages() {
@@ -1454,8 +1462,8 @@
       });
     }
 
-    async function putStoredPersonImage(name, imageData) {
-      const key = imageKeyForName(name);
+    async function putStoredPersonImage(name, imageData, category = "") {
+      const key = imageKeyForName(name, category);
       if (!key) return;
       const db = await openImageDb();
 
@@ -1464,6 +1472,7 @@
         transaction.objectStore(IMAGE_STORE_NAME).put({
           key,
           name,
+          category: category || null,
           blob: imageData.blob,
           mimeType: imageData.blob.type || "image/webp",
           width: imageData.width,
@@ -1563,6 +1572,7 @@
         records.map(async (record) => ({
           key: record.key,
           name: record.name,
+          category: record.category || null,
           mimeType: record.mimeType || record.blob?.type || "image/webp",
           width: record.width,
           height: record.height,
@@ -1573,6 +1583,15 @@
       );
     }
 
+    function inferImageCategoryFromKey(key) {
+      const prefix = String(key || "").split(":", 1)[0];
+      return [FACE_LABEL, TITS_LABEL, ASS_LABEL].includes(prefix) ? prefix : null;
+    }
+
+    function inferImageNameFromKey(key) {
+      return String(key || "").replace(/^(?:person|face|tits|ass):/, "");
+    }
+
     async function replaceStoredImagesFromExport(images) {
       const restoredRecords = await Promise.all(
         images
@@ -1581,7 +1600,8 @@
             const blob = await dataUrlToBlob(image.data);
             return {
               key: image.key,
-              name: image.name || image.key.replace(/^person:/, ""),
+              name: image.name || inferImageNameFromKey(image.key),
+              category: image.category || inferImageCategoryFromKey(image.key),
               blob,
               mimeType: blob.type || image.mimeType || "image/webp",
               width: image.width,
@@ -1658,7 +1678,7 @@
 
     async function hydrateFaceRankingImage(imageButton, name, renderToken) {
       try {
-        const record = await getStoredPersonImage(name);
+        const record = await getStoredPersonImage(name, FACE_LABEL);
         if (
           renderToken !== faceRankingsRenderToken ||
           !imageButton.isConnected ||
@@ -1718,7 +1738,7 @@
 
         try {
           const resized = await resizeRankingImage(file);
-          await putStoredPersonImage(entry.name, resized);
+          await putStoredPersonImage(entry.name, resized, FACE_LABEL);
           queueFaceRankingsRender();
         } catch (err) {
           console.error("Unable to save ranking image", err);
@@ -1850,7 +1870,7 @@
 
       async function hydrateImage(imageButton, name, token) {
         try {
-          const record = await getStoredPersonImage(name);
+          const record = await getStoredPersonImage(name, columnLabel);
           if (token !== renderToken || !imageButton.isConnected || !record?.blob) {
             return;
           }
@@ -1906,7 +1926,7 @@
 
           try {
             const resized = await resizeRankingImage(file);
-            await putStoredPersonImage(entry.name, resized);
+            await putStoredPersonImage(entry.name, resized, columnLabel);
             queueAllRankingsRender();
           } catch (err) {
             console.error("Unable to save ranking image", err);
