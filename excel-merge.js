@@ -32,5 +32,6 @@
     .then(() => loadClassicScript("feature-updates.js"))
     .then(() => loadClassicScript("eyes-layout.js"))
     .then(() => loadClassicScript("image-tools.js"))
+    .then(() => loadClassicScript("image-click-menu.js"))
     .catch((err) => console.error("App helper loading failed", err));
 })();
