@@ -31,5 +31,6 @@
     .then(() => loadClassicScript("formula-fix.js"))
     .then(() => loadClassicScript("feature-updates.js"))
     .then(() => loadClassicScript("eyes-layout.js"))
+    .then(() => loadClassicScript("image-tools.js"))
     .catch((err) => console.error("App helper loading failed", err));
 })();
