@@ -33,5 +33,6 @@
     .then(() => loadClassicScript("eyes-layout.js"))
     .then(() => loadClassicScript("image-tools.js"))
     .then(() => loadClassicScript("image-click-menu.js"))
+    .then(() => loadClassicScript("ranking-rating-editor.js"))
     .catch((err) => console.error("App helper loading failed", err));
 })();
