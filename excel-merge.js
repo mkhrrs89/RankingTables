@@ -2,18 +2,26 @@
   const currentScriptUrl = document.currentScript?.src || document.baseURI;
   const baseUrl = new URL(".", currentScriptUrl);
 
-  // Desktop-only width override. The inline app styles cap the shell at 1100px;
-  // remove that cap on desktop so the Main table can use the browser's full
-  // available width. Mobile/tablet sizing remains unchanged.
-  const desktopWidthStyle = document.createElement("style");
-  desktopWidthStyle.textContent = `
+  // Layout-only overrides. Keep the desktop app shell full-width, and on mobile
+  // keep editable Main-table cells at Safari's 16px focus threshold so tapping
+  // a cell does not trigger the browser's automatic focus zoom. Pinch zoom and
+  // the existing table gestures remain enabled.
+  const layoutStyle = document.createElement("style");
+  layoutStyle.textContent = `
     @media (min-width: 768px) {
       .app {
         max-width: none;
       }
     }
+
+    @media (max-width: 767px) {
+      #mainPanel .cell[contenteditable="true"],
+      #mainPanel .name-cell[contenteditable="true"] {
+        font-size: 16px;
+      }
+    }
   `;
-  document.head.appendChild(desktopWidthStyle);
+  document.head.appendChild(layoutStyle);
 
   function loadClassicScript(fileName) {
     return new Promise((resolve, reject) => {
