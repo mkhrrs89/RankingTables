@@ -43,5 +43,6 @@
     .then(() => loadClassicScript("image-click-menu.js"))
     .then(() => loadClassicScript("one-tap-paste.js"))
     .then(() => loadClassicScript("ranking-rating-editor.js"))
+    .then(() => loadClassicScript("add-row-top.js"))
     .catch((err) => console.error("App helper loading failed", err));
 })();
