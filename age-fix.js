@@ -4,6 +4,11 @@
   const ageLookupCache = new Map();
   let persistedAgeCache = {};
 
+  function isAgeLookupEnabled() {
+    const gate = window.__rankingTablesAgeLookupEnabled;
+    return typeof gate !== "function" || gate();
+  }
+
   // Older Age versions could cache the birthday of a different person who
   // happened to share the typed name. Do not reuse those identity-unsafe rows.
   try {
@@ -369,6 +374,7 @@
   }
 
   async function resolveAgeRecord(rawName) {
+    if (!isAgeLookupEnabled()) return null;
     const normalized = normalizePersonName(rawName);
     if (!normalized) return null;
 
@@ -448,6 +454,7 @@
   }
 
   function refreshAgeColumns(columns = getColumnDefinitions()) {
+    if (!isAgeLookupEnabled()) return;
     const nameColumnIndex = findColumnIndexByLabel(columns, NAME_LABEL);
     const ageColumnIndices = getAgeColumnIndices(columns);
     if (nameColumnIndex === -1 || !ageColumnIndices.length) return;
@@ -492,6 +499,7 @@
 
         resolveAgeRecord(personName).then((record) => {
           if (ageRequestTokens.get(ageCell) !== token) return;
+          if (!isAgeLookupEnabled()) return;
 
           if (!record?.birth) {
             ageCell.textContent = "";
