@@ -104,5 +104,6 @@
     .then(() => loadClassicScript("ranking-rating-editor.js"))
     .then(() => loadClassicScript("add-row-top.js"))
     .then(() => loadClassicScript("workspaces.js"))
+    .then(() => loadClassicScript("mobile-column-menu.js"))
     .catch((err) => console.error("App helper loading failed", err));
 })();
