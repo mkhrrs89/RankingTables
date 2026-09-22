@@ -7,6 +7,11 @@
     { key: "cute", label: "Cute" },
   ];
 
+  function isAgeLookupEnabled() {
+    const gate = window.__rankingTablesAgeLookupEnabled;
+    return typeof gate !== "function" || gate();
+  }
+
   function padDatePart(value) {
     return String(value).padStart(2, "0");
   }
@@ -57,6 +62,7 @@
   const previousUpdateAgeColumns = updateAgeColumns;
 
   function updateAgeColumnsWithBirthday(columns = getColumnDefinitions()) {
+    if (!isAgeLookupEnabled()) return;
     const birthdayColumnIndex = findColumnIndexByLabel(columns, BIRTHDAY_LABEL);
     if (birthdayColumnIndex === -1) {
       return previousUpdateAgeColumns(columns);
@@ -109,6 +115,7 @@
 
         Promise.resolve(resolvePersonDates(personName)).then((record) => {
           if (ageRequestTokens.get(ageCell) !== token) return;
+          if (!isAgeLookupEnabled()) return;
           if (!record?.birth) {
             ageCell.textContent = "";
             applyNumericStyling(ageCell);
