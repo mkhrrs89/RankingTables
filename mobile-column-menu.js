@@ -1,9 +1,10 @@
 (() => {
   function isMobileHeaderMenuMode() {
-    return (
-      window.matchMedia?.("(pointer: coarse)")?.matches ||
-      (navigator.maxTouchPoints || 0) > 0
-    );
+    const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches;
+    const narrowTouchScreen =
+      (navigator.maxTouchPoints || 0) > 0 &&
+      window.matchMedia?.("(max-width: 767px)")?.matches;
+    return Boolean(coarsePointer || narrowTouchScreen);
   }
 
   let activeHeader = null;
