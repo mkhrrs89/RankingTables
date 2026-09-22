@@ -79,8 +79,45 @@
       gap: 10px;
     }
 
-    .mobile-column-editor[hidden] {
+    .mobile-column-editor[hidden],
+    .mobile-column-resize[hidden] {
       display: none !important;
+    }
+
+    .mobile-column-resize {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mobile-column-resize-controls {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .mobile-column-resize-controls button {
+      min-height: 48px;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    .mobile-column-resize-value {
+      min-width: 86px;
+      text-align: center;
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mobile-column-resize-done {
+      width: 100%;
+      min-height: 44px;
+      justify-content: center;
+      border-radius: 12px;
     }
 
     .mobile-column-editor-label {
@@ -161,11 +198,21 @@
   sortButton.type = "button";
   sortButton.textContent = "Sort";
 
+  const resizeButton = document.createElement("button");
+  resizeButton.type = "button";
+  resizeButton.textContent = "Resize Column";
+
   const closeButton = document.createElement("button");
   closeButton.type = "button";
   closeButton.textContent = "Close";
 
-  menuActions.append(formulaButton, renameButton, sortButton, closeButton);
+  menuActions.append(
+    formulaButton,
+    renameButton,
+    sortButton,
+    resizeButton,
+    closeButton
+  );
 
   const editor = document.createElement("div");
   editor.className = "mobile-column-editor";
@@ -202,7 +249,44 @@
   editorActions.append(saveButton, clearButton, backButton);
   editor.append(editorLabel, editorInput, editorHelp, editorActions);
 
-  sheet.append(title, subtitle, menuActions, editor);
+  const resizeEditor = document.createElement("div");
+  resizeEditor.className = "mobile-column-resize";
+  resizeEditor.hidden = true;
+
+  const resizeLabel = document.createElement("div");
+  resizeLabel.className = "mobile-column-editor-label";
+  resizeLabel.textContent = "Column width";
+
+  const resizeControls = document.createElement("div");
+  resizeControls.className = "mobile-column-resize-controls";
+
+  const narrowerButton = document.createElement("button");
+  narrowerButton.type = "button";
+  narrowerButton.setAttribute("aria-label", "Make column narrower");
+  narrowerButton.textContent = "−";
+
+  const resizeValue = document.createElement("div");
+  resizeValue.className = "mobile-column-resize-value";
+
+  const widerButton = document.createElement("button");
+  widerButton.type = "button";
+  widerButton.setAttribute("aria-label", "Make column wider");
+  widerButton.textContent = "+";
+
+  resizeControls.append(narrowerButton, resizeValue, widerButton);
+
+  const resizeHelp = document.createElement("div");
+  resizeHelp.className = "mobile-column-editor-help";
+  resizeHelp.textContent = "Each tap changes the width by 10 px.";
+
+  const resizeDoneButton = document.createElement("button");
+  resizeDoneButton.type = "button";
+  resizeDoneButton.className = "mobile-column-resize-done";
+  resizeDoneButton.textContent = "Done";
+
+  resizeEditor.append(resizeLabel, resizeControls, resizeHelp, resizeDoneButton);
+
+  sheet.append(title, subtitle, menuActions, editor, resizeEditor);
   backdrop.appendChild(sheet);
   document.body.appendChild(backdrop);
 
@@ -224,6 +308,7 @@
     activeMode = "menu";
     menuActions.hidden = false;
     editor.hidden = true;
+    resizeEditor.hidden = true;
     editorInput.value = "";
 
     const isIcon = activeHeader?.dataset?.type === COLUMN_TYPES.ICON;
@@ -252,6 +337,7 @@
     activeHeader = null;
     activeMode = "menu";
     editorInput.blur();
+    resizeEditor.hidden = true;
   }
 
   function focusEditorInput() {
@@ -266,6 +352,7 @@
     if (!activeHeader || activeHeader.dataset.type === COLUMN_TYPES.ICON) return;
     activeMode = "formula";
     menuActions.hidden = true;
+    resizeEditor.hidden = true;
     editor.hidden = false;
     editorLabel.textContent = "Formula";
     editorInput.value = activeHeader.dataset.formula || "";
@@ -280,6 +367,7 @@
     if (!activeHeader) return;
     activeMode = "rename";
     menuActions.hidden = true;
+    resizeEditor.hidden = true;
     editor.hidden = false;
     editorLabel.textContent = "Column name";
     editorInput.value = getHeaderLabel(activeHeader);
@@ -287,6 +375,36 @@
     editorHelp.textContent = "Rename this column.";
     clearButton.hidden = true;
     focusEditorInput();
+  }
+
+  function showResizeEditor() {
+    if (!activeHeader) return;
+    activeMode = "resize";
+    menuActions.hidden = true;
+    editor.hidden = true;
+    resizeEditor.hidden = false;
+    updateResizeValue();
+  }
+
+  function updateResizeValue() {
+    const width = activeHeader ? getColumnWidth(activeHeader) : null;
+    resizeValue.textContent = Number.isFinite(width)
+      ? `${Math.round(width)} px`
+      : "Auto";
+  }
+
+  function adjustColumnWidth(delta) {
+    if (!activeHeader) return;
+    const index = getHeaderIndex(activeHeader);
+    if (!Number.isInteger(index) || index < 0) return;
+
+    const currentWidth = getColumnWidth(activeHeader);
+    const startingWidth = Number.isFinite(currentWidth)
+      ? currentWidth
+      : activeHeader.getBoundingClientRect().width;
+    setColumnWidth(index, startingWidth + delta);
+    saveTableState();
+    updateResizeValue();
   }
 
   function saveEditor() {
@@ -322,6 +440,10 @@
 
   formulaButton.addEventListener("click", showFormulaEditor);
   renameButton.addEventListener("click", showRenameEditor);
+  resizeButton.addEventListener("click", showResizeEditor);
+  narrowerButton.addEventListener("click", () => adjustColumnWidth(-10));
+  widerButton.addEventListener("click", () => adjustColumnWidth(10));
+  resizeDoneButton.addEventListener("click", showMenuView);
 
   sortButton.addEventListener("click", () => {
     if (!activeHeader) return;
