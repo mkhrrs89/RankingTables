@@ -53,6 +53,11 @@
   });
 
   let activeWorkspace = "one";
+
+  // Age auto-lookup stays enabled in One, but is intentionally disabled in Two.
+  // The Age helpers consult this dynamically, including when async lookups finish.
+  window.__rankingTablesAgeLookupEnabled = () => activeWorkspace !== "two";
+
   const requestedInitialWorkspace = normalizeWorkspaceKey(
     rawStorageGet(ACTIVE_WORKSPACE_KEY) || "one"
   );
